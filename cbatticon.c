@@ -29,7 +29,7 @@
 /* info so the value is not always accurate when the notification is sent.  */
 
 #define STR_LTH 256
-#define UPDATE_INT 2
+#define UPDATE_INT 20
 #define ERROR_TIME -1
 
 static void get_battery (gchar *udev_device_suffix);
