@@ -55,14 +55,17 @@ static gchar* get_icon_name (gint state, gint percentage, gchar *time);
 /*
  * udev functions
  */
-
+`
+/**
+ * The different states to describe the battery.
+ **/
 enum {
-	MISSING = 0,
+	UNKNOWN = 0,
+	MISSING,
 	CHARGING,
 	DISCHARGING,
 	NOT_CHARGING,
 	CHARGED,
-	UNKNOWN,
 	LOW_POWER
 };
 
@@ -309,6 +312,10 @@ static gboolean get_battery_remaining_time (struct udev_device* battery, gint *t
  * tray icon functions
  */
 
+/**
+ * create_tray_icon()
+ * Creates a new tray icon and initializes the timer for it.
+ **/
 static GtkStatusIcon* create_tray_icon (void)
 {
 	GtkStatusIcon *tray_icon = gtk_status_icon_new ();
@@ -322,8 +329,13 @@ static GtkStatusIcon* create_tray_icon (void)
 	return tray_icon;
 }
 
+/**
+ * update_tray_icon(GtkStatusIcon)
+ * @param tray_icon - The tray icon to be updated.
+ **/
 static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
 {
+	/* This piece of code ensures that multiple updates do not occur? */
 	static gboolean lock = FALSE;
 
 	if (!lock) {
@@ -341,6 +353,12 @@ static void reset_estimated_vars(){
 	prev_remaining_capacity=-1;
 	prev_time=ERROR_TIME;
 }
+
+/**
+ * update_tray_icon_state(GtkStatusIcon)
+ * Update the state of the tray icon to match the information known about the battery.
+ * @param tray_icon - The GtkStatusIcon to update.
+ **/
 static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 {
 	static gint battery_state = -1;
