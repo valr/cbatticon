@@ -238,7 +238,7 @@ gchar * get_icon_name(gint state, gint percent, gchar *time)
 		g_string_append(filename, "-low");
 	else if (percent < 80)
 		g_string_append(filename, "-good");
-	else if (percent < 100)
+	else
 		g_string_append(filename, "-full");
 		
 	
