@@ -40,12 +40,6 @@ enum {
 
 gint battery_state = DISCHARGING; 
 
-// -1 - Battery missing
-// 0 - Critical, notified
-// 1 - normal
-// 2 - charging
-// 3 - charged
-
 void set_icon(GtkStatusIcon *icon, gint state, gint percent, gchar *time);
 
 void notify_user(gint state, gint percent, gchar *time);
@@ -176,17 +170,6 @@ static gboolean update_tray(GtkStatusIcon *widget)
 	return TRUE; 
 }
 
-
-void tray_icon_on_click(GtkStatusIcon *status_icon, gpointer user_data)
-{
-	printf("Clicked on tray icon!\n");
-}
-
-void tray_icon_on_menu(GtkStatusIcon *status_icon, guint button, guint activate_time, gpointer user_data)
-{
-	g_print("MENU! %i\n", button);
-}
-
 void notify_user(gint state, gint percent, gchar *time)
 {
 	GString *message = g_string_new("Battery ");
@@ -246,17 +229,17 @@ void notify_message(gchar *message)
 gchar * get_icon_name(gint state, gint percent, gchar *time)
 {
 	GString *filename;
-	filename = g_string_new("battery-");
+	filename = g_string_new("battery");
 	
 	
 	if (percent < 20)
-		g_string_append(filename, "caution");
+		g_string_append(filename, "-caution");
 	else if (percent < 40)
-		g_string_append(filename, "low");
+		g_string_append(filename, "-low");
 	else if (percent < 80)
-		g_string_append(filename, "good");
+		g_string_append(filename, "-good");
 	else if (percent < 100)
-		g_string_append(filename, "full");
+		g_string_append(filename, "-full");
 		
 	
 	if (state == CHARGING)
@@ -310,9 +293,6 @@ static GtkStatusIcon *create_tray_icon()
 
 	tray_icon = gtk_status_icon_new();
 	
-	g_signal_connect(G_OBJECT(tray_icon), "activate", G_CALLBACK(tray_icon_on_click), NULL);
-	g_signal_connect(G_OBJECT(tray_icon), "popup-menu", G_CALLBACK(tray_icon_on_menu), NULL);
-
 	gtk_status_icon_set_tooltip(tray_icon, "Tray Icon");
 
 	gtk_status_icon_set_visible(tray_icon, TRUE);
