@@ -28,7 +28,18 @@
 
 gboolean lock = FALSE;
 gint battery_num = 0;
-gint battery_state = 1; 
+
+
+enum {
+	BATTERY_MISSING,
+	LOW_POWER,
+	DISCHARGING,
+	CHARGING,
+	CHARGED
+};
+
+gint battery_state = DISCHARGING; 
+
 // -1 - Battery missing
 // 0 - Critical, notified
 // 1 - normal
@@ -97,7 +108,7 @@ void update_state(GtkStatusIcon *tray_icon, battery_t *binfo)
 {
 	if (!binfo->present)
 	{
-		set_icon(tray_icon, 3, -1, "");
+		set_icon(tray_icon, BATTERY_MISSING, 0, "");
 		gtk_status_icon_set_tooltip(tray_icon, "No battery present!");
 		return;
 	}
@@ -105,12 +116,12 @@ void update_state(GtkStatusIcon *tray_icon, battery_t *binfo)
 	//g_print("Battery State: %i\%\n", binfo->percentage);
 	if (binfo->charge_state == C_CHARGED)
 	{
-		if (battery_state != 3)
+		if (battery_state != CHARGED)
 		{
-			battery_state = 3;
-			notify_user(3, binfo->percentage, "");
+			battery_state = CHARGED;
+			notify_user(CHARGED, binfo->percentage, "");
 		}
-		set_icon(tray_icon, 3, 100, "");
+		set_icon(tray_icon, CHARGED, 100, "");
 		return;
 	}
 	if (binfo->charge_state == C_CHARGE)
@@ -120,20 +131,20 @@ void update_state(GtkStatusIcon *tray_icon, battery_t *binfo)
 		{
 			notify_message("Battery isn't charging!");
 		}
-		else if (battery_state != 2)
+		else if (battery_state != CHARGING)
 		{
-			battery_state = 2;
-			notify_user(2, binfo->percentage, get_time(binfo->charge_time));
+			battery_state = CHARGING;
+			notify_user(CHARGING, binfo->percentage, get_time(binfo->charge_time));
 		}
-		set_icon(tray_icon, 2, binfo->percentage, get_time(binfo->charge_time));
+		set_icon(tray_icon, CHARGING, binfo->percentage, get_time(binfo->charge_time));
 		return;
 	}
 	if ((binfo->percentage < 20) && (battery_state != 0))
 	{
 		battery_state = 0;
-		notify_user(0, binfo->percentage, get_time(binfo->remaining_time));
+		notify_user(LOW_POWER, binfo->percentage, get_time(binfo->remaining_time));
 	}
-	set_icon(tray_icon, 1, binfo->percentage,  get_time(binfo->remaining_time));
+	set_icon(tray_icon, DISCHARGING, binfo->percentage,  get_time(binfo->remaining_time));
 	
 }
 
@@ -150,7 +161,6 @@ static gboolean update_tray(GtkStatusIcon *widget)
 	if (!lock)
 	{
 		lock = TRUE;
-		//g_print("Checking battery!\n");
 		binfo = check_battery();
 		lock = FALSE;
 	}
@@ -181,13 +191,13 @@ void notify_user(gint state, gint percent, gchar *time)
 {
 	GString *message = g_string_new("Battery ");
 	
-	if (state == 3)
+	if (state == CHARGED)
 	{
 		g_string_append(message, "Charged!");
 	}
 	else
 	{
-		 if (state == 2)
+		 if (state == CHARGING)
 		{
 			g_string_append(message, "Charging!");
 		}
@@ -207,7 +217,7 @@ void notify_user(gint state, gint percent, gchar *time)
 	NotifyNotification *note;
 	note = notify_notification_new("Battery Monitor", message->str, get_icon_name(state, percent, time));
 	
-	if (state == 0)
+	if (state == LOW_POWER)
 	{
 		notify_notification_set_timeout(note, NOTIFY_EXPIRES_NEVER);
 		notify_notification_set_urgency(note, NOTIFY_URGENCY_CRITICAL);
@@ -251,11 +261,11 @@ gchar * get_icon_name(gint state, gint percent, gchar *time)
 		g_string_append(filename, "080");
 		
 	
-	if (state == 2)
+	if (state == CHARGING)
 	{
 		g_string_append(filename, "-charging");
 	}
-	else if (state == 3)
+	else if (state == CHARGED)
 	{
 		g_string_append(filename, "charged");
 	}
@@ -273,16 +283,15 @@ void set_icon(GtkStatusIcon *tray_icon, gint state, gint percent, gchar *time)
 	tooltip = g_string_new("Battery ");
 	
 	
-	if (state == 2)
+	if (state == CHARGING)
 	{
 		g_string_append(tooltip, " charging");
 	}
-	else if (state == 3)
+	else if (state == CHARGED)
 	{
 		g_string_append(tooltip, " charged");
 	}
 	
-	//g_string_append(tooltip, percent);
 	g_string_sprintfa(tooltip, " (%i\%)", percent);
 	
 	if (time != "")
@@ -292,9 +301,6 @@ void set_icon(GtkStatusIcon *tray_icon, gint state, gint percent, gchar *time)
 	
 	gtk_status_icon_set_tooltip(tray_icon, tooltip->str);
 	
-	//g_print("File: %s\n", filename->str);
-	
-	//gtk_status_icon_set_from_file(icon, filename->str);
 	gtk_status_icon_set_from_icon_name(tray_icon, get_icon_name(state, percent, time));
 }
 
@@ -317,7 +323,6 @@ static GtkStatusIcon *create_tray_icon()
 	
 	g_timeout_add(5000, (GSourceFunc) update_tray, (gpointer) tray_icon);
 	
-	//notify_message("Battery Monitor!");
 	return tray_icon;
 }
 
