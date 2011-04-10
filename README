@@ -1,0 +1,3 @@
+A GTK+ battery icon which uses libacpi to be lightweight and fast.
+
+Requires libnotify, libacpi, and GTK+ to build.
