@@ -246,19 +246,17 @@ void notify_message(gchar *message)
 gchar * get_icon_name(gint state, gint percent, gchar *time)
 {
 	GString *filename;
-	filename = g_string_new("gpm-battery-");
+	filename = g_string_new("battery-");
 	
 	
 	if (percent < 20)
-		g_string_append(filename, "000");
+		g_string_append(filename, "caution");
 	else if (percent < 40)
-		g_string_append(filename, "020");
-	else if (percent < 60)
-		g_string_append(filename, "040");
+		g_string_append(filename, "low");
 	else if (percent < 80)
-		g_string_append(filename, "060");
+		g_string_append(filename, "good");
 	else if (percent < 100)
-		g_string_append(filename, "080");
+		g_string_append(filename, "full");
 		
 	
 	if (state == CHARGING)
@@ -267,7 +265,7 @@ gchar * get_icon_name(gint state, gint percent, gchar *time)
 	}
 	else if (state == CHARGED)
 	{
-		g_string_append(filename, "charged");
+		g_string_append(filename, "-charged");
 	}
 	
 	return filename->str;
