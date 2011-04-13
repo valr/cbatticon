@@ -148,7 +148,7 @@ static gboolean update_tray(GtkStatusIcon *widget)
 	if (check_acpi_support() < 0)
 	{
 		g_print("No ACPI support!\n");
-		return FALSE;
+		return TRUE;
 	}
 	battery_t *binfo = NULL;
 	
@@ -161,7 +161,7 @@ static gboolean update_tray(GtkStatusIcon *widget)
 	else
 	{
 		g_print("LOCKED!?\n");
-		return FALSE;
+		return TRUE;
 	}
 	
 	update_state(widget, binfo);
@@ -299,7 +299,7 @@ static GtkStatusIcon *create_tray_icon()
 
 	update_tray(tray_icon);
 	
-	g_timeout_add(5000, (GSourceFunc) update_tray, (gpointer) tray_icon);
+	g_timeout_add_seconds(2, (GSourceFunc) update_tray, (gpointer) tray_icon);
 	
 	return tray_icon;
 }
