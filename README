@@ -1,5 +1,5 @@
-A GTK+ battery icon which uses libacpi to be lightweight and fast.
+A GTK+ battery icon which uses libudev to be lightweight and fast.
 
-Requires libnotify, libacpi, and GTK+ to build.
+Requires libnotify, libudev, and GTK+ to build.
 
 Based on code from xbattbar-acpi.
