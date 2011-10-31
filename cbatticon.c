@@ -493,7 +493,7 @@ int main(int argc, char **argv)
 	gtk_init (&argc, &argv);
 	notify_init ("Battery Monitor");
 
-	get_battery (argc > 1 ? argv[1] : "0");
+	get_battery (argc > 1 ? argv[1] : NULL);
 	tray_icon = create_tray_icon ();
 
 	gtk_main();
