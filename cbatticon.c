@@ -66,6 +66,8 @@ enum {
 struct udev *battery_context = NULL;
 static gchar *battery_path = NULL;
 
+int is_rate_possible=TRUE;//not all hardware supports get_current_rate
+
 static void get_battery (gchar *udev_device_suffix)
 {
 	struct udev *udev_context;
@@ -184,11 +186,15 @@ static gboolean get_battery_full_capacity (struct udev_device* battery, gdouble 
 
 static gboolean get_battery_current_rate (struct udev_device* battery, gdouble *rate)
 {
+	if(!is_rate_possible){
+		return FALSE;
+	}
 	const gchar *value = udev_device_get_sysattr_value (battery, "power_now");
 	if (!value) value = udev_device_get_sysattr_value (battery, "current_now");
-	if (!value)
+	if (!value){
+		is_rate_possible=FALSE;
 		return FALSE;
-
+	}
 	*rate = g_ascii_strtod (value, NULL);
 	if (errno)
 		return FALSE;
@@ -217,6 +223,10 @@ static gboolean get_battery_charge_percentage (struct udev_device* battery, gint
 
 static gboolean get_battery_charge_time (struct udev_device* battery, gint *time)
 {
+	if(!is_rate_possible){
+		*time=-1;
+		return TRUE;
+	}
 	gdouble full_capacity, remaining_capacity, current_rate;
 
 	if (!get_battery_full_capacity (battery, &full_capacity) ||
@@ -233,6 +243,10 @@ static gboolean get_battery_charge_time (struct udev_device* battery, gint *time
 
 static gboolean get_battery_remaining_time (struct udev_device* battery, gint *time)
 {
+	if(!is_rate_possible){
+		*time=-1;
+		return TRUE;
+	}
 	gdouble remaining_capacity, current_rate;
 
 	if (!get_battery_remaining_capacity (battery, &remaining_capacity) ||
@@ -447,6 +461,10 @@ static gchar* get_time_string (gint minutes)
 	static gchar time[STR_LTH];
 	gint hours;
 
+	if(minutes==-1){
+		time[0]='\0';
+		return time;
+	}
 	hours   = minutes / 60;
 	minutes = minutes - (60 * hours);
 
