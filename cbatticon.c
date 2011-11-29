@@ -29,6 +29,8 @@
 /* info so the value is not always accurate when the notification is sent.  */
 
 #define STR_LTH 256
+#define UPDATE_INT 2
+#define ERROR_TIME -1
 
 static void get_battery (gchar *udev_device_suffix);
 static gboolean get_battery_present (struct udev_device* battery, gint *present);
@@ -39,6 +41,7 @@ static gboolean get_battery_current_rate (struct udev_device* battery, gdouble *
 static gboolean get_battery_charge_percentage (struct udev_device* battery, gint *percentage);
 static gboolean get_battery_charge_time (struct udev_device* battery, gint *time);
 static gboolean get_battery_remaining_time (struct udev_device* battery, gint *time);
+static gboolean get_battery_estimated_time(struct udev_device* battery,gint *time,gdouble y);
 
 static GtkStatusIcon* create_tray_icon (void);
 static gboolean update_tray_icon (GtkStatusIcon *tray_icon);
@@ -65,6 +68,15 @@ enum {
 
 struct udev *battery_context = NULL;
 static gchar *battery_path = NULL;
+
+/*not all hardware supports get_current_rate so the next 4 variables
+ *are used to calculate estimated time.
+ */
+int is_rate_possible=TRUE;
+gdouble prev_remaining_capacity = -1;
+gint prev_time=ERROR_TIME;
+glong secs_last_time_change=0;
+
 
 static void get_battery (gchar *udev_device_suffix)
 {
@@ -186,13 +198,14 @@ static gboolean get_battery_current_rate (struct udev_device* battery, gdouble *
 {
 	const gchar *value = udev_device_get_sysattr_value (battery, "power_now");
 	if (!value) value = udev_device_get_sysattr_value (battery, "current_now");
-	if (!value)
+	if (!value){
+		is_rate_possible=FALSE;
 		return FALSE;
-
+	}
 	*rate = g_ascii_strtod (value, NULL);
 	if (errno)
 		return FALSE;
-
+	is_rate_possible=TRUE;
 	return TRUE;
 }
 
@@ -215,8 +228,47 @@ static gboolean get_battery_charge_percentage (struct udev_device* battery, gint
 	return TRUE;
 }
 
+//y = 0 if discharing or battery_ful_capacity
+static gboolean get_battery_estimated_time(struct udev_device* battery,gint *time,gdouble y){
+	gdouble remain_cap=0;
+	gdouble m=0;
+	gdouble calc_sec=0;
+
+	if(!get_battery_remaining_capacity(battery,&remain_cap))
+			return FALSE;
+
+	if(prev_remaining_capacity==-1)
+			prev_remaining_capacity = remain_cap;
+
+	*time=prev_time;
+	secs_last_time_change +=UPDATE_INT;
+
+	/*y=mx+b...x=(y-b)/m solving for when y = full_charge or 0
+	 *y2=remain_cap y1=prev_remain run=secs_last_time_change b=prev_remain
+	 */
+
+	if(prev_remaining_capacity!=remain_cap){
+		m = (remain_cap-prev_remaining_capacity)/(gdouble)(secs_last_time_change);
+		calc_sec = ((y-prev_remaining_capacity)/m) - (secs_last_time_change);
+		*time= (gint)((calc_sec)/(gdouble)60);
+
+		prev_remaining_capacity=remain_cap;
+		secs_last_time_change=0;
+		prev_time=*time;
+	}
+	return TRUE;
+
+}
+
 static gboolean get_battery_charge_time (struct udev_device* battery, gint *time)
 {
+	if(!is_rate_possible){
+		gdouble full=0;
+		if(get_battery_full_capacity(battery,&full))
+			if(!get_battery_estimated_time(battery,time,full))
+			*time=ERROR_TIME;
+		return TRUE;
+	}
 	gdouble full_capacity, remaining_capacity, current_rate;
 
 	if (!get_battery_full_capacity (battery, &full_capacity) ||
@@ -231,8 +283,15 @@ static gboolean get_battery_charge_time (struct udev_device* battery, gint *time
 	return TRUE;
 }
 
+
 static gboolean get_battery_remaining_time (struct udev_device* battery, gint *time)
 {
+	if(!is_rate_possible){
+		if(!get_battery_estimated_time(battery,time,0))
+			*time=ERROR_TIME;
+		return TRUE;
+	}
+
 	gdouble remaining_capacity, current_rate;
 
 	if (!get_battery_remaining_capacity (battery, &remaining_capacity) ||
@@ -258,7 +317,7 @@ static GtkStatusIcon* create_tray_icon (void)
 	gtk_status_icon_set_visible (tray_icon, TRUE);
 
 	update_tray_icon (tray_icon);
-	g_timeout_add_seconds (2, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
+	g_timeout_add_seconds (UPDATE_INT, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
 
 	return tray_icon;
 }
@@ -277,6 +336,11 @@ static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
 	return TRUE;
 }
 
+static void reset_estimated_vars(){
+	secs_last_time_change=0;
+	prev_remaining_capacity=-1;
+	prev_time=ERROR_TIME;
+}
 static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 {
 	static gint battery_state = -1;
@@ -321,6 +385,7 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 
 			if (battery_state != CHARGING) {
 				battery_state  = CHARGING;
+				reset_estimated_vars();
 				notify_battery_information (CHARGING, charge_percentage, time);
 			}
 
@@ -336,6 +401,7 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 
 			if (battery_state != DISCHARGING) {
 				battery_state  = DISCHARGING;
+				reset_estimated_vars();
 				battery_low    = 0;
 				notify_battery_information (DISCHARGING, charge_percentage, time);
 			}
@@ -446,7 +512,10 @@ static gchar* get_time_string (gint minutes)
 {
 	static gchar time[STR_LTH];
 	gint hours;
-
+	if(minutes<0){
+		time[0]='\0';
+		return time;
+	}
 	hours   = minutes / 60;
 	minutes = minutes - (60 * hours);
 
