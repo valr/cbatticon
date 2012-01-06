@@ -8,10 +8,10 @@
  * @param battery - A gchar array containing a string such as "BAT0"
  * @return A structure containing the battery's information.
  **/
-struct BatteryInfo *get_battery(char *battery)
+struct BatteryInfo *init_battery(char *battery)
 {
 	char battery_path[64];
-	if (strlen(battery) > 3)
+	if (strlen(battery) > 4)
 	{
 		fprintf(stderr, "Error: too many characters for battery.\n");
 		return NULL;
@@ -34,6 +34,7 @@ struct BatteryInfo *get_battery(char *battery)
 	sprintf(battery_path, "/sys/class/power_supply/%s/energy_full", battery);	
 	if ((data = fopen(battery_path, "r")) != NULL) {
 		fscanf(data, "%d", &info->max);
+		info->features |= 2;
 		fclose(data);	
 	}		
 	else {
@@ -61,36 +62,46 @@ int update_battery(struct BatteryInfo *info)
 	FILE *data = NULL;
 	char battery_path[64];
 
-	sprintf(battery_path, "/sys/class/power_supply/%s/energy_now", info->battery);	
+	if (info->features & 4) 
+		sprintf(battery_path, "/sys/class/power_supply/%s/energy_now", info->battery);	
+	else
+		sprintf(battery_path, "/sys/class/power_supply/%s/charge_now", info->battery);	
+	
+	/* load the battery capacity */
 	if ((data = fopen(battery_path, "r")) != NULL) {
 		fscanf(data, "%d", &info->capacity);
 		fclose(data);	
 	}		
-	else {
-		sprintf(battery_path, "/sys/class/power_supply/%s/charge_now", info->battery);	
-		if ((data = fopen(battery_path, "r")) != NULL) {
-			fscanf(data, "%d", &info->capacity);	
-			fclose(data);
-		}
-	}	
-	char c = 'k';	
-	sprintf(battery_path, "/sys/class/power_supply/%s/status", info->battery);
+	
+	/* load the battery's state */
+	char c = 'k';
+	if (info->features & 4)
+		sprintf(battery_path, "/sys/class/power_supply/%s/status", info->battery);
+	else
+		sprintf(battery_path, "/sys/class/power_supply/%s/status", info->battery);	
+
 	if ((data = fopen(battery_path, "r")) != NULL) {
-		fscanf(data, "%c", c);
+		fscanf(data, "%c", &c);
 		fclose(data);	
 	}
-	if (c == 'k') {
+	
+	if (c == 'k') 
 		info->status = MISSING;
-	}
-	else if (c == 'D') {
+	else if (c == 'D') 
 		info->status = DISCHARGING;
-	}
 	else if (c == 'C') {
-		if (info->capacity == info->max) {
+		if (info->capacity == info->max) 
 			info->status = CHARGED;
-		}
-		else {
+		else 
 			info->status = CHARGING;
-		} 
 	}
 }
+
+
+/**
+ * int get_rate(struct BatteryInfo *info)
+ * 
+ * Update the battery info's capacity, status, and so on.
+ * @param info - The battery info (already initiated by get_battery)
+ **/
+
