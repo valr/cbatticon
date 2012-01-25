@@ -23,6 +23,7 @@
 #include <libnotify/notify.h>
 #include <math.h>
 #include <errno.h>
+#include "libubat.h"
 
 /* todo: */
 /* problem of current_rate: it can take a bit of time to have the refreshed */
@@ -32,291 +33,17 @@
 #define UPDATE_INT 20
 #define ERROR_TIME -1
 
-static void get_battery (gchar *udev_device_suffix);
-static gboolean get_battery_present (struct udev_device* battery, gint *present);
-static gboolean get_battery_status (struct udev_device* battery, gint *status);
-static gboolean get_battery_remaining_capacity (struct udev_device* battery, gdouble *capacity);
-static gboolean get_battery_full_capacity (struct udev_device* battery, gdouble *capacity);
-static gboolean get_battery_current_rate (struct udev_device* battery, gdouble *rate);
-static gboolean get_battery_charge_percentage (struct udev_device* battery, gint *percentage);
-static gboolean get_battery_charge_time (struct udev_device* battery, gint *time);
-static gboolean get_battery_remaining_time (struct udev_device* battery, gint *time);
-static gboolean get_battery_estimated_time(struct udev_device* battery,gint *time,gdouble y);
-
-static GtkStatusIcon* create_tray_icon (void);
-static gboolean update_tray_icon (GtkStatusIcon *tray_icon);
-static void update_tray_icon_state (GtkStatusIcon *tray_icon);
-static void notify_message (gchar *message);
-static void notify_battery_information (gint state, gint percentage, gchar *time);
-static void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gint state, gint percentage, gchar *time);
-static gchar* get_time_string (gint minutes);
-static gchar* get_icon_name (gint state, gint percentage, gchar *time);
-
-/*
- * udev functions
- */
-`
-/**
- * The different states to describe the battery.
- **/
-enum {
-	UNKNOWN = 0,
-	MISSING,
-	CHARGING,
-	DISCHARGING,
-	NOT_CHARGING,
-	CHARGED,
-	LOW_POWER
-};
-
-struct udev *battery_context = NULL;
-static gchar *battery_path = NULL;
-
-/*not all hardware supports get_current_rate so the next 4 variables
- *are used to calculate estimated time.
- */
-int is_rate_possible=TRUE;
-gdouble prev_remaining_capacity = -1;
-gint prev_time=ERROR_TIME;
-glong secs_last_time_change=0;
-
-
-static void get_battery (gchar *udev_device_suffix)
-{
-	struct udev *udev_context;
-	struct udev_enumerate *udev_enumerate_context;
-	struct udev_list_entry *udev_devices_list, *udev_device_list_entry;
-	struct udev_device *udev_device;
-	gchar *udev_device_path;
-
-	udev_context = udev_new ();
-	if (!udev_context) {
-		g_fprintf(stderr, "Can't create udev context");
-		return;
-	}
-
-	udev_enumerate_context = udev_enumerate_new (udev_context);
-	if (!udev_enumerate_context) {
-		g_fprintf(stderr, "Can't create udev enumeration context");
-		return;
-	}
-
-	if (udev_enumerate_add_match_subsystem (udev_enumerate_context, "power_supply")) {
-		g_fprintf(stderr, "Can't add udev matching subsystem: power_supply");
-		return;
-	}
-
-	if (udev_enumerate_scan_devices (udev_enumerate_context)) {
-		g_fprintf(stderr, "Can't scan udev devices");
-		return;
-	}
-
-	udev_devices_list = udev_enumerate_get_list_entry (udev_enumerate_context);
-	udev_list_entry_foreach (udev_device_list_entry, udev_devices_list) {
-
-		udev_device_path = g_strdup (udev_list_entry_get_name (udev_device_list_entry));
-		udev_device = udev_device_new_from_syspath (udev_context, udev_device_path);
-
-		if (udev_device &&
-		    !g_strcmp0 (udev_device_get_sysattr_value (udev_device, "type"), "Battery") &&
-			(udev_device_suffix == NULL || g_str_has_suffix (udev_device_path, udev_device_suffix))) {
-
-			udev_device_unref (udev_device);
-			udev_enumerate_unref (udev_enumerate_context);
-
-			battery_context = udev_context;
-			battery_path = udev_device_path;
-			return;
-		}
-
-		udev_device_unref (udev_device);
-		g_free (udev_device_path);
-	}
-
-	udev_enumerate_unref (udev_enumerate_context);
-	udev_unref (udev_context);
-
-	g_fprintf(stderr, "No battery device found!");
-}
-
-static gboolean get_battery_present (struct udev_device* battery, gint *present)
-{
-	const gchar *value = udev_device_get_sysattr_value (battery, "present");
-	if (!value)
-		return FALSE;
-
-	*present = (!g_strcmp0 (value, "1") ? 1 : 0);
-	return TRUE;
-}
-
-static gboolean get_battery_status (struct udev_device* battery, gint *status)
-{
-	const gchar *value = udev_device_get_sysattr_value (battery, "status");
-	if (!value)
-		return FALSE;
-
-	if (!g_strcmp0 (value, "Charging"))
-		*status = CHARGING;
-	else if (!g_strcmp0 (value, "Discharging"))
-		*status = DISCHARGING;
-	else if (!g_strcmp0 (value, "Not charging"))
-		*status = NOT_CHARGING;
-	else if (!g_strcmp0 (value, "Full"))
-		*status = CHARGED;
-	else
-		*status = UNKNOWN;
-
-	return TRUE;
-}
-
-static gboolean get_battery_remaining_capacity (struct udev_device* battery, gdouble *capacity)
-{
-	const gchar *value = udev_device_get_sysattr_value (battery, "energy_now");
-	if (!value) value = udev_device_get_sysattr_value (battery, "charge_now");
-	if (!value)
-		return FALSE;
-
-	*capacity = g_ascii_strtod (value, NULL);
-	if (errno)
-		return FALSE;
-
-	return TRUE;
-}
-
-static gboolean get_battery_full_capacity (struct udev_device* battery, gdouble *capacity)
-{
-	const gchar *value = udev_device_get_sysattr_value (battery, "energy_full");
-	if (!value) value = udev_device_get_sysattr_value (battery, "charge_full");
-	if (!value)
-		return FALSE;
-
-	*capacity = g_ascii_strtod (value, NULL);
-	if (errno)
-		return FALSE;
-
-	return TRUE;
-}
-
-static gboolean get_battery_current_rate (struct udev_device* battery, gdouble *rate)
-{
-	const gchar *value = udev_device_get_sysattr_value (battery, "power_now");
-	if (!value) value = udev_device_get_sysattr_value (battery, "current_now");
-	if (!value){
-		is_rate_possible=FALSE;
-		return FALSE;
-	}
-	*rate = g_ascii_strtod (value, NULL);
-	if (errno)
-		return FALSE;
-	is_rate_possible=TRUE;
-	return TRUE;
-}
-
-/*
- * computation functions
- */
-
-static gboolean get_battery_charge_percentage (struct udev_device* battery, gint *percentage)
-{
-	gdouble remaining_capacity, full_capacity;
-
-	if (!get_battery_remaining_capacity (battery, &remaining_capacity) ||
-		!get_battery_full_capacity (battery, &full_capacity))
-		return FALSE;
-
-	if (full_capacity == 0.0)
-		return FALSE;
-
-	*percentage = (gint)fmin(floor(remaining_capacity / full_capacity * 100.0), 100.0);
-	return TRUE;
-}
-
-//y = 0 if discharing or battery_ful_capacity
-static gboolean get_battery_estimated_time(struct udev_device* battery,gint *time,gdouble y){
-	gdouble remain_cap=0;
-	gdouble m=0;
-	gdouble calc_sec=0;
-
-	if(!get_battery_remaining_capacity(battery,&remain_cap))
-			return FALSE;
-
-	if(prev_remaining_capacity==-1)
-			prev_remaining_capacity = remain_cap;
-
-	*time=prev_time;
-	secs_last_time_change +=UPDATE_INT;
-
-	/*y=mx+b...x=(y-b)/m solving for when y = full_charge or 0
-	 *y2=remain_cap y1=prev_remain run=secs_last_time_change b=prev_remain
-	 */
-
-	if(prev_remaining_capacity!=remain_cap){
-		m = (remain_cap-prev_remaining_capacity)/(gdouble)(secs_last_time_change);
-		calc_sec = ((y-prev_remaining_capacity)/m) - (secs_last_time_change);
-		*time= (gint)((calc_sec)/(gdouble)60);
-
-		prev_remaining_capacity=remain_cap;
-		secs_last_time_change=0;
-		prev_time=*time;
-	}
-	return TRUE;
-
-}
-
-static gboolean get_battery_charge_time (struct udev_device* battery, gint *time)
-{
-	if(!is_rate_possible){
-		gdouble full=0;
-		if(get_battery_full_capacity(battery,&full))
-			if(!get_battery_estimated_time(battery,time,full))
-			*time=ERROR_TIME;
-		return TRUE;
-	}
-	gdouble full_capacity, remaining_capacity, current_rate;
-
-	if (!get_battery_full_capacity (battery, &full_capacity) ||
-		!get_battery_remaining_capacity (battery, &remaining_capacity) ||
-		!get_battery_current_rate (battery, &current_rate))
-		return FALSE;
-
-	if (full_capacity == 0.0 || current_rate == 0.0)
-		return FALSE;
-
-	*time = (gint)(((full_capacity - remaining_capacity) / current_rate) * 60.0);
-	return TRUE;
-}
-
-
-static gboolean get_battery_remaining_time (struct udev_device* battery, gint *time)
-{
-	if(!is_rate_possible){
-		if(!get_battery_estimated_time(battery,time,0))
-			*time=ERROR_TIME;
-		return TRUE;
-	}
-
-	gdouble remaining_capacity, current_rate;
-
-	if (!get_battery_remaining_capacity (battery, &remaining_capacity) ||
-		!get_battery_current_rate (battery, &current_rate))
-		return FALSE;
-
-	if (current_rate == 0.0)
-		return FALSE;
-
-	*time = (gint)((remaining_capacity / current_rate) * 60.0);
-	return TRUE;
-}
-
-/*
- * tray icon functions
- */
+struct BatteryInfo *info;
+int old_status;
+void update_tray_icon_state(GtkStatusIcon *tray_icon);
+gchar* get_icon_name (gchar *time);
+void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gchar *time);
 
 /**
  * create_tray_icon()
  * Creates a new tray icon and initializes the timer for it.
  **/
-static GtkStatusIcon* create_tray_icon (void)
+GtkStatusIcon* create_tray_icon (void)
 {
 	GtkStatusIcon *tray_icon = gtk_status_icon_new ();
 
@@ -333,13 +60,14 @@ static GtkStatusIcon* create_tray_icon (void)
  * update_tray_icon(GtkStatusIcon)
  * @param tray_icon - The tray icon to be updated.
  **/
-static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
+gboolean update_tray_icon (GtkStatusIcon *tray_icon)
 {
 	/* This piece of code ensures that multiple updates do not occur? */
-	static gboolean lock = FALSE;
+	gboolean lock = FALSE;
 
 	if (!lock) {
 		lock = TRUE;
+		update_battery(info);
 		update_tray_icon_state (tray_icon);
 		lock = FALSE;
 	} else
@@ -348,172 +76,49 @@ static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
 	return TRUE;
 }
 
-static void reset_estimated_vars(){
-	secs_last_time_change=0;
-	prev_remaining_capacity=-1;
-	prev_time=ERROR_TIME;
-}
-
 /**
  * update_tray_icon_state(GtkStatusIcon)
  * Update the state of the tray icon to match the information known about the battery.
  * @param tray_icon - The GtkStatusIcon to update.
  **/
-static void update_tray_icon_state (GtkStatusIcon *tray_icon)
-{
-	static gint battery_state = -1;
-	static gint battery_low   = -1;
-	struct udev_device *battery_device;
-	gint battery_present, battery_status;
-	gint charge_percentage, charge_time, remaining_time;
-	gchar *time;
-
-	if (!battery_context || !battery_path)
+void update_tray_icon_state (GtkStatusIcon *tray_icon) {
+	if (info == NULL) {
+		g_fprintf(stderr, "No battery present in system!");
 		return;
-
-	battery_device = udev_device_new_from_syspath (battery_context, battery_path);
-	if (!battery_device)
-		return;
-
-	/* first check if battery is present... */
-	if (!get_battery_present (battery_device, &battery_present))
-		goto out;
-
-	if (!battery_present) {
-		if (battery_state != MISSING) {
-			battery_state  = MISSING;
-			notify_message ("No battery present!");
-		}
-
-		set_tooltip_and_icon (tray_icon, MISSING, 0, "");
-		goto out;
 	}
-
-	/* ...and then check its status */
-	if (!get_battery_status (battery_device, &battery_status))
-		goto out;
-
-	switch (battery_status) {
-		case CHARGING:
-			if (!get_battery_charge_percentage (battery_device, &charge_percentage) ||
-				!get_battery_charge_time (battery_device, &charge_time))
-				goto out;
-
-			time = get_time_string (charge_time);
-
-			if (battery_state != CHARGING) {
-				battery_state  = CHARGING;
-				reset_estimated_vars();
-				notify_battery_information (CHARGING, charge_percentage, time);
-			}
-
-			set_tooltip_and_icon (tray_icon, CHARGING, charge_percentage, time);
-			break;
-
-		case DISCHARGING:
-			if (!get_battery_charge_percentage (battery_device, &charge_percentage) ||
-				!get_battery_remaining_time (battery_device, &remaining_time))
-				goto out;
-
-			time = get_time_string (remaining_time);
-
-			if (battery_state != DISCHARGING) {
-				battery_state  = DISCHARGING;
-				reset_estimated_vars();
-				battery_low    = 0;
-				notify_battery_information (DISCHARGING, charge_percentage, time);
-			}
-
-			if (!battery_low && charge_percentage < 20) {
-				battery_state = DISCHARGING;
-				battery_low   = 1;
-				notify_battery_information (LOW_POWER, charge_percentage, time);
-			}
-
-			set_tooltip_and_icon(tray_icon, DISCHARGING, charge_percentage, time);
-			break;
-
-		case CHARGED:
-			charge_percentage = 100;
-
-			if (battery_state != CHARGED) {
-				battery_state  = CHARGED;
-				notify_battery_information (CHARGED, charge_percentage, "");
-			}
-
-			set_tooltip_and_icon (tray_icon, CHARGED, charge_percentage, "");
-			break;
-
-		case NOT_CHARGING:
-			if (battery_state != NOT_CHARGING) {
-				battery_state  = NOT_CHARGING;
-				notify_message ("Battery isn't charging!");
-			}
-			break;
+	if (old_status != info->status) {	
+		old_status = info->status;
+		notify_battery_information();	
+		
+		if (info->status == CHARGED)	
+			set_tooltip_and_icon(tray_icon, "");
+		
+		if (info->status == CHARGING)	
+			set_tooltip_and_icon(tray_icon, "");
+		return;		
 	}
-
-out:
-	udev_device_unref (battery_device);
+	set_tooltip_and_icon(tray_icon, "");
+	return;	
 }
 
-static void notify_message (gchar *message)
-{
-	NotifyNotification *note = notify_notification_new ("Battery Monitor", message, NULL);
-
-	notify_notification_set_timeout (note, 10000);
-	notify_notification_set_urgency (note, NOTIFY_URGENCY_CRITICAL);
-	notify_notification_show (note, NULL);
-}
-
-static void notify_battery_information (gint state, gint percentage, gchar *time)
-{
-	gchar message[STR_LTH], pct[STR_LTH], ti[STR_LTH];
-
-	g_stpcpy (message, "Battery ");
-
-	if (state == CHARGED)
-		g_strlcat (message, "charged!", STR_LTH);
-	else {
-		if (state == CHARGING)
-			g_strlcat (message, "charging!", STR_LTH);
-		else {
-			g_sprintf (pct, "has %i\% remaining", percentage);
-			g_strlcat (message, pct, STR_LTH);
-		}
-
-		if (time[0] != '\0') {
-			g_sprintf (ti, "\n%s", time);
-			g_strlcat (message, ti, STR_LTH);
-		}
-	}
-
-	NotifyNotification *note = notify_notification_new ("Battery Monitor", message, get_icon_name (state, percentage, time));
-
-	if (state == LOW_POWER) {
-		notify_notification_set_timeout (note, NOTIFY_EXPIRES_NEVER);
-		notify_notification_set_urgency (note, NOTIFY_URGENCY_CRITICAL);
-	}
-	else
-		notify_notification_set_timeout (note, 10000);
-
-	notify_notification_show (note, NULL);
-}
-
-static void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gint state, gint percentage, gchar *time)
+/**
+ * Set the tooltip and the icon.
+ **/
+void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gchar *time)
 {
 	gchar tooltip[STR_LTH], pct[STR_LTH], ti[STR_LTH];
 
-	if (state == MISSING)
+	if (info->status == MISSING)
 		g_stpcpy (tooltip, "No battery present!");
 	else {
 		g_stpcpy (tooltip, "Battery ");
 
-		if (state == CHARGING)
+		if (info->status == CHARGING)
 			g_strlcat (tooltip, "charging ", STR_LTH);
-		else if (state == CHARGED)
+		else if (info->status == CHARGED)
 			g_strlcat (tooltip, "charged ", STR_LTH);
 
-		g_sprintf (pct, "(%i\%)", percentage);
+		g_sprintf (pct, "(%i\%)", info->percent);
 		g_strlcat (tooltip, pct, STR_LTH);
 
 		if (time[0] != '\0') {
@@ -523,12 +128,58 @@ static void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gint state, gint per
 	}
 
 	gtk_status_icon_set_tooltip (tray_icon, tooltip);
-	gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (state, percentage, time));
+	gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (time));
 }
 
-static gchar* get_time_string (gint minutes)
+/**
+ * Notify the User of 
+ **/
+void notify_message (gchar *message)
 {
-	static gchar time[STR_LTH];
+	NotifyNotification *note = notify_notification_new ("Battery Monitor", message, NULL);
+
+	notify_notification_set_timeout (note, 10000);
+	notify_notification_set_urgency (note, NOTIFY_URGENCY_CRITICAL);
+	notify_notification_show (note, NULL);
+}
+
+void notify_battery_information ()
+{
+	gchar message[STR_LTH], pct[STR_LTH], ti[STR_LTH];
+
+	g_stpcpy (message, "Battery ");
+
+	if (info->status == CHARGED)
+		g_strlcat (message, "charged!", STR_LTH);
+	else {
+		if (info->status == CHARGING)
+			g_strlcat (message, "charging!", STR_LTH);
+		else {
+			g_sprintf (pct, "has %i\% remaining", info->percent);
+			g_strlcat (message, pct, STR_LTH);
+		}
+
+		//if (time[0] != '\0') {
+		//	g_sprintf (ti, "\n%s", time);
+		//	g_strlcat (message, ti, STR_LTH);
+		//}
+	}
+
+	NotifyNotification *note = notify_notification_new ("Battery Monitor", message, (gchar *)get_icon_name (time));
+
+	if (info->status == LOW_POWER) {
+		notify_notification_set_timeout (note, NOTIFY_EXPIRES_NEVER);
+		notify_notification_set_urgency (note, NOTIFY_URGENCY_CRITICAL);
+	}
+	else
+		notify_notification_set_timeout (note, 10000);
+
+	notify_notification_show (note, NULL);
+}
+
+gchar* get_time_string (gint minutes)
+{
+	gchar time[STR_LTH];
 	gint hours;
 	if(minutes<0){
 		time[0]='\0';
@@ -545,27 +196,27 @@ static gchar* get_time_string (gint minutes)
 	return time;
 }
 
-static gchar* get_icon_name (gint state, gint percentage, gchar *time)
+gchar* get_icon_name (gchar *time)
 {
-	static gchar icon_name[STR_LTH];
+	gchar icon_name[STR_LTH];
 
 	g_stpcpy (icon_name, "battery");
 
-	if (state == MISSING)
+	if (info->status == MISSING)
 		g_strlcat (icon_name, "-missing", STR_LTH);
 	else {
-		if (percentage < 20)
+		if (info->percent < 20)
 			g_strlcat (icon_name, "-caution", STR_LTH);
-		else if (percentage < 40)
+		else if (info->percent < 40)
 			g_strlcat (icon_name, "-low", STR_LTH);
-		else if (percentage < 80)
+		else if (info->percent < 80)
 			g_strlcat (icon_name, "-good", STR_LTH);
 		else
 			g_strlcat (icon_name, "-full", STR_LTH);
 
-		if (state == CHARGING)
+		if (info->status == CHARGING)
 			g_strlcat (icon_name, "-charging", STR_LTH);
-		else if (state == CHARGED)
+		else if (info->status == CHARGED)
 			g_strlcat (icon_name, "-charged", STR_LTH);
 	}
 
@@ -576,11 +227,12 @@ int main(int argc, char **argv)
 {
 	GtkStatusIcon *tray_icon;
 	gchar *battery_path;
-
+	old_status = UNKNOWN;
 	gtk_init (&argc, &argv);
 	notify_init ("Battery Monitor");
-
-	get_battery (argc > 1 ? argv[1] : NULL);
+	info = init_battery("BAT0"); 
+	if (info == NULL) return 1;
+//	get_battery (argc > 1 ? argv[1] : NULL);
 	tray_icon = create_tray_icon ();
 
 	gtk_main();

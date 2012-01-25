@@ -16,6 +16,14 @@ struct BatteryInfo *init_battery(char *battery)
 		fprintf(stderr, "Error: too many characters for battery.\n");
 		return NULL;
 	}
+
+	struct BatteryInfo *info = malloc(sizeof(struct BatteryInfo));
+	if (info == NULL) {
+		fprintf(stderr, "Error: unable to initiate the battery");
+		return NULL;
+	}
+
+
 	sprintf(battery_path, "/sys/class/power_supply/%s", battery);		
 	FILE *data = NULL;
 	if ((data = fopen(battery_path, "r")) == NULL) {	
@@ -24,11 +32,6 @@ struct BatteryInfo *init_battery(char *battery)
 	}
 	fclose(data);
 
-	struct BatteryInfo *info = malloc(sizeof(struct BatteryInfo));
-	if (info == NULL) {
-		fprintf(stderr, "Error: unable to initiate the battery");
-		return NULL;
-	}
 	
 
 	sprintf(battery_path, "/sys/class/power_supply/%s/energy_full", battery);	
@@ -93,6 +96,7 @@ int update_battery(struct BatteryInfo *info)
 		else 
 			info->status = CHARGING;
 	}
+	info->percent = (int)((float)info->capacity / (float)info->max * 100.0);
 }
 
 

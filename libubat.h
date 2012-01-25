@@ -11,6 +11,7 @@ struct BatteryInfo {
 	int capacity;		/* Capacity of the battery */
 	int rate;		/* The rate of dischage */
 	int max;	/* The max capacity (100%) */
+	int percent;	/* The battery's percentage (0-100) */
 	short features; /* a bit array that specifies features of the battery */
 };
 
