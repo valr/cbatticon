@@ -29,7 +29,6 @@
 /* info so the value is not always accurate when the notification is sent.  */
 
 #define STR_LTH 256
-#define UPDATE_INT 2
 #define ERROR_TIME -1
 
 static void get_battery (gchar *udev_device_suffix);
@@ -69,6 +68,15 @@ enum {
 };
 
 static gchar *battery_path = NULL;
+static gboolean list_battery = FALSE;
+static gint update_interval = 2;
+
+static GOptionEntry option_entries[] =
+{
+	{ "list-batteries", 'l', 0, G_OPTION_ARG_NONE, &list_battery, "List available batteries", NULL },
+	{ "update-interval", 'u', 0, G_OPTION_ARG_INT, &update_interval, "Set update interval (in seconds)", NULL },
+	{ NULL }
+};
 
 /*
  * not all hardware supports get_current_rate so the next 4 variables
@@ -114,6 +122,9 @@ static void get_battery (gchar *udev_device_suffix)
 		return;
 	}
 
+	if (list_battery)
+		g_fprintf (stdout, "List of available batteries:\n");
+
 	udev_devices_list = udev_enumerate_get_list_entry (udev_enumerate_context);
 	udev_list_entry_foreach (udev_device_list_entry, udev_devices_list) {
 
@@ -121,15 +132,21 @@ static void get_battery (gchar *udev_device_suffix)
 		udev_device = udev_device_new_from_syspath (udev_context, udev_device_path);
 
 		if (udev_device &&
-		    !g_strcmp0 (udev_device_get_sysattr_value (udev_device, "type"), "Battery") &&
-			(udev_device_suffix == NULL || g_str_has_suffix (udev_device_path, udev_device_suffix))) {
+		    !g_strcmp0 (udev_device_get_sysattr_value (udev_device, "type"), "Battery")) {
+			if (list_battery)
+				g_fprintf (stdout, "\t%s\n", udev_device_path);
+			else {
+				if (udev_device_suffix == NULL ||
+				    g_str_has_suffix (udev_device_path, udev_device_suffix)) {
 
-			battery_path = udev_device_path;
+					battery_path = udev_device_path;
 
-			udev_device_unref (udev_device);
-			udev_enumerate_unref (udev_enumerate_context);
-			udev_unref (udev_context);
-			return;
+					udev_device_unref (udev_device);
+					udev_enumerate_unref (udev_enumerate_context);
+					udev_unref (udev_context);
+					return;
+				}
+			}
 		}
 
 		udev_device_unref (udev_device);
@@ -139,7 +156,8 @@ static void get_battery (gchar *udev_device_suffix)
 	udev_enumerate_unref (udev_enumerate_context);
 	udev_unref (udev_context);
 
-	g_fprintf(stderr, "No battery device found!");
+	if (!list_battery)
+		g_fprintf (stderr, "No battery device found!\n");
 }
 
 /*
@@ -345,7 +363,7 @@ static gboolean get_battery_estimated_time (gint *time, gdouble y)
 		prev_remaining_capacity = remaining_capacity;
 
 	*time = prev_time;
-	secs_last_time_change += UPDATE_INT;
+	secs_last_time_change += update_interval;
 
 	/* y=mx+b...x=(y-b)/m solving for when y = full_charge or 0
 	 * y2=remaining_capacity y1=prev_remain run=secs_last_time_change b=prev_remain
@@ -383,7 +401,7 @@ static GtkStatusIcon* create_tray_icon (void)
 	gtk_status_icon_set_visible (tray_icon, TRUE);
 
 	update_tray_icon (tray_icon);
-	g_timeout_add_seconds (UPDATE_INT, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
+	g_timeout_add_seconds (update_interval, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
 
 	return tray_icon;
 }
@@ -401,6 +419,7 @@ static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
 
 	return TRUE;
 }
+
 static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 {
 	static gint battery_state = -1;
@@ -610,14 +629,28 @@ static gchar* get_icon_name (gint state, gint percentage, gchar *time)
 	return icon_name;
 }
 
-int main(int argc, char **argv)
+int main (int argc, char **argv)
 {
+	GError *error = NULL;
+	GOptionContext *option_context;
 	GtkStatusIcon *tray_icon;
 
-	gtk_init (&argc, &argv);
+	option_context = g_option_context_new ("[BATTERY_ID]");
+	g_option_context_add_main_entries (option_context, option_entries, NULL);
+	g_option_context_add_group (option_context, gtk_get_option_group (TRUE));
+	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
+		g_printerr ("cbatticon: %s\n", error->message);
+		g_error_free (error);
+		return 1;
+	}
+	g_option_context_free (option_context);
+
 	notify_init ("Battery Monitor");
 
 	get_battery (argc > 1 ? argv[1] : NULL);
+	if (list_battery)
+		return 0;
+
 	tray_icon = create_tray_icon ();
 
 	gtk_main();
