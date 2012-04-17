@@ -3,7 +3,7 @@
 
 int main()
 {
-	struct BatteryInfo *info = (struct BatteryInfo *)get_battery("BAT1");
+	struct BatteryInfo *info = (struct BatteryInfo *)init_battery("BAT0");
 	if (info == NULL) return 0;
 	printf("%d/%d - %d\n", info->capacity, info->max, info->status);
 	printf("%d\n", info->features);	

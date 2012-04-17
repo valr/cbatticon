@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
+
+
 /**
  * A structure describing the battery
  **/
@@ -20,7 +22,7 @@ struct BatteryInfo {
  * 1 - Battery is not present
  * 2 - Battery uses energy instead of charge (in /sys)
  * 4 - Battery doesn't describe rate of discharge, client must determine discharge rate
- * 
+ * 8 - Battery uses voltage (thus math is required) 
  * Therefore
  * 0110 means that the battery is present, and uses energy instead of charge, and doesn't desribe rate.
  **/
@@ -39,4 +41,10 @@ enum {
 	LOW_POWER
 };
 
+
+/**
+ * Function definitions
+ **/
+struct BatteryInfo *init_battery(char *battery);
+int update_battery(struct BatteryInfo *info);
 

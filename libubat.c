@@ -41,11 +41,20 @@ struct BatteryInfo *init_battery(char *battery)
 		fclose(data);	
 	}		
 	else {
-		sprintf(battery_path, "/sys/class/power_supply/%s/charge_full", battery);	
+		sprintf(battery_path, "/sys/class/power_supply/%s/voltage_max", battery);	
 		if ((data = fopen(battery_path, "r")) != NULL) {
+			info->features |= 8;
 			fscanf(data, "%d", &info->max);	
 			fclose(data);
 		}
+		else {
+			sprintf(battery_path, "/sys/class/power_supply/%s/charge_full", battery);	
+			if ((data = fopen(battery_path, "r")) != NULL) {
+				fscanf(data, "%d", &info->max);	
+				fclose(data);
+			}
+		}	
+	 
 	}	
 	
 	strcpy(info->battery, battery);
@@ -67,8 +76,11 @@ int update_battery(struct BatteryInfo *info)
 
 	if (info->features & 4) 
 		sprintf(battery_path, "/sys/class/power_supply/%s/energy_now", info->battery);	
+	else if (info->features & 8)
+		sprintf(battery_path, "/sys/class/power_supply/%s/voltage_now", info->battery);	
 	else
 		sprintf(battery_path, "/sys/class/power_supply/%s/charge_now", info->battery);	
+
 	
 	/* load the battery capacity */
 	if ((data = fopen(battery_path, "r")) != NULL) {

@@ -19,7 +19,6 @@
  */
 
 #include <gtk/gtk.h>
-#include <libudev.h>
 #include <libnotify/notify.h>
 #include <math.h>
 #include <errno.h>
@@ -36,8 +35,10 @@
 struct BatteryInfo *info;
 int old_status;
 void update_tray_icon_state(GtkStatusIcon *tray_icon);
-gchar* get_icon_name (gchar *time);
+gchar* get_icon_name ();
 void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gchar *time);
+void notify_battery_info();
+void notify_message(gchar *message);
 
 /**
  * create_tray_icon()
@@ -88,16 +89,16 @@ void update_tray_icon_state (GtkStatusIcon *tray_icon) {
 	}
 	if (old_status != info->status) {	
 		old_status = info->status;
-		notify_battery_information();	
+		notify_battery_info();	
 		
 		if (info->status == CHARGED)	
 			set_tooltip_and_icon(tray_icon, "");
 		
 		if (info->status == CHARGING)	
 			set_tooltip_and_icon(tray_icon, "");
-		return;		
+		set_tooltip_and_icon(tray_icon, "");
 	}
-	set_tooltip_and_icon(tray_icon, "");
+	
 	return;	
 }
 
@@ -128,22 +129,30 @@ void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gchar *time)
 	}
 
 	gtk_status_icon_set_tooltip (tray_icon, tooltip);
-	gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (time));
+	gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name ());
 }
 
 /**
- * Notify the User of 
+ * notify_message(gchar *message)
+ * 
+ * Notify the user of a change to the battery.
+ * @param message - The message to display.
  **/
 void notify_message (gchar *message)
 {
-	NotifyNotification *note = notify_notification_new ("Battery Monitor", message, NULL);
+	//NotifyNotification *note = notify_notification_new ("Battery Monitor", message, NULL);
 
-	notify_notification_set_timeout (note, 10000);
-	notify_notification_set_urgency (note, NOTIFY_URGENCY_CRITICAL);
-	notify_notification_show (note, NULL);
+	//notify_notification_set_timeout (note, 10000);
+	//notify_notification_set_urgency (note, NOTIFY_URGENCY_CRITICAL);
+	//notify_notification_show (note, NULL);
 }
 
-void notify_battery_information ()
+/**
+ * notify_battery_info(gchar *message)
+ * 
+ * Notify the user of the battery's state.
+ **/
+void notify_battery_info()
 {
 	gchar message[STR_LTH], pct[STR_LTH], ti[STR_LTH];
 
@@ -165,16 +174,16 @@ void notify_battery_information ()
 		//}
 	}
 
-	NotifyNotification *note = notify_notification_new ("Battery Monitor", message, (gchar *)get_icon_name (time));
+	//NotifyNotification *note = notify_notification_new ("Battery Monitor", message, (gchar *)get_icon_name (time));
 
 	if (info->status == LOW_POWER) {
-		notify_notification_set_timeout (note, NOTIFY_EXPIRES_NEVER);
-		notify_notification_set_urgency (note, NOTIFY_URGENCY_CRITICAL);
+		//notify_notification_set_timeout (note, NOTIFY_EXPIRES_NEVER);
+		//notify_notification_set_urgency (note, NOTIFY_URGENCY_CRITICAL);
 	}
-	else
-		notify_notification_set_timeout (note, 10000);
-
-	notify_notification_show (note, NULL);
+	else {
+		//notify_notification_set_timeout (note, 10000);
+	}
+	//notify_notification_show (note, NULL);
 }
 
 gchar* get_time_string (gint minutes)
@@ -196,7 +205,7 @@ gchar* get_time_string (gint minutes)
 	return time;
 }
 
-gchar* get_icon_name (gchar *time)
+gchar* get_icon_name ()
 {
 	gchar icon_name[STR_LTH];
 
@@ -219,7 +228,7 @@ gchar* get_icon_name (gchar *time)
 		else if (info->status == CHARGED)
 			g_strlcat (icon_name, "-charged", STR_LTH);
 	}
-
+	printf("Battery Icon: %s\n", icon_name);
 	return icon_name;
 }
 
