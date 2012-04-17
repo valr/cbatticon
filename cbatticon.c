@@ -31,6 +31,7 @@
 #define STR_LTH 256
 #define ERROR_TIME -1
 
+static gboolean get_options (int argc, char **argv);
 static void get_battery (gchar *udev_device_suffix);
 
 static gboolean get_sysattr_string (gchar *attribute, gchar **value);
@@ -71,13 +72,6 @@ static gchar *battery_path = NULL;
 static gboolean list_battery = FALSE;
 static gint update_interval = 2;
 
-static GOptionEntry option_entries[] =
-{
-	{ "list-batteries", 'l', 0, G_OPTION_ARG_NONE, &list_battery, "List available batteries", NULL },
-	{ "update-interval", 'u', 0, G_OPTION_ARG_INT, &update_interval, "Set update interval (in seconds)", NULL },
-	{ NULL }
-};
-
 /*
  * not all hardware supports get_current_rate so the next 4 variables
  * are used to calculate estimated time.
@@ -87,6 +81,38 @@ int is_rate_possible = TRUE;
 gdouble prev_remaining_capacity = -1;
 gint prev_time = ERROR_TIME;
 glong secs_last_time_change = 0;
+
+/*
+ * command line options function
+ */
+
+static gboolean get_options (int argc, char **argv)
+{
+	GError *error = NULL;
+	GOptionContext *option_context;
+	static GOptionEntry option_entries[] = {
+		{ "list-batteries", 'l', 0, G_OPTION_ARG_NONE, &list_battery, "List available batteries", NULL },
+		{ "update-interval", 'u', 0, G_OPTION_ARG_INT, &update_interval, "Set update interval (in seconds)", NULL },
+		{ NULL }
+	};
+
+	option_context = g_option_context_new ("[BATTERY_ID]");
+	g_option_context_add_main_entries (option_context, option_entries, NULL);
+	g_option_context_add_group (option_context, gtk_get_option_group (TRUE));
+
+	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
+		g_printerr ("cbatticon: %s\n", error->message);
+		g_error_free (error);
+		return FALSE;
+	}
+
+	g_option_context_free (option_context);
+
+	if (update_interval < 2)
+		update_interval = 2;
+
+	return TRUE;
+}
 
 /*
  * udev function
@@ -134,7 +160,7 @@ static void get_battery (gchar *udev_device_suffix)
 		if (udev_device &&
 		    !g_strcmp0 (udev_device_get_sysattr_value (udev_device, "type"), "Battery")) {
 			if (list_battery)
-				g_fprintf (stdout, "\t%s\n", udev_device_path);
+				g_fprintf (stdout, "%s\n", udev_device_path);
 			else {
 				if (udev_device_suffix == NULL ||
 				    g_str_has_suffix (udev_device_path, udev_device_suffix)) {
@@ -631,25 +657,15 @@ static gchar* get_icon_name (gint state, gint percentage, gchar *time)
 
 int main (int argc, char **argv)
 {
-	GError *error = NULL;
-	GOptionContext *option_context;
 	GtkStatusIcon *tray_icon;
 
-	option_context = g_option_context_new ("[BATTERY_ID]");
-	g_option_context_add_main_entries (option_context, option_entries, NULL);
-	g_option_context_add_group (option_context, gtk_get_option_group (TRUE));
-	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
-		g_printerr ("cbatticon: %s\n", error->message);
-		g_error_free (error);
+	if (!get_options (argc, argv))
 		return 1;
-	}
-	g_option_context_free (option_context);
 
 	notify_init ("Battery Monitor");
 
 	get_battery (argc > 1 ? argv[1] : NULL);
-	if (list_battery)
-		return 0;
+	if (list_battery) return 0;
 
 	tray_icon = create_tray_icon ();
 
