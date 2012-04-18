@@ -11,6 +11,7 @@ struct BatteryInfo {
 	char battery[8]; /* The battery's name */
 	int status;		/* The battery's state */
 	int capacity;		/* Capacity of the battery */
+	int min;		/* If min is needed */ 
 	int rate;		/* The rate of dischage */
 	int max;	/* The max capacity (100%) */
 	int percent;	/* The battery's percentage (0-100) */

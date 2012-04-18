@@ -27,7 +27,7 @@ struct BatteryInfo *init_battery(char *battery)
 	sprintf(battery_path, "/sys/class/power_supply/%s", battery);		
 	FILE *data = NULL;
 	if ((data = fopen(battery_path, "r")) == NULL) {	
-		fprintf(stderr, "Error: no data for battery. (Is /sys populated?)\n");
+		fprintf(stderr, "Error: no data for battery. (Is %s in /sys populated?)\n", battery);
 		return NULL;
 	}
 	fclose(data);
@@ -46,6 +46,14 @@ struct BatteryInfo *init_battery(char *battery)
 			info->features |= 8;
 			fscanf(data, "%d", &info->max);	
 			fclose(data);
+			sprintf(battery_path, "/sys/class/power_supply/%s/voltage_min", battery);
+			if ((data = fopen(battery_path, "r")) != NULL) {
+				fscanf(data, "%d", &info->min);
+				fclose(data);
+			}
+			else {
+				info->min = 0;
+			}
 		}
 		else {
 			sprintf(battery_path, "/sys/class/power_supply/%s/charge_full", battery);	
@@ -108,7 +116,10 @@ int update_battery(struct BatteryInfo *info)
 		else 
 			info->status = CHARGING;
 	}
-	info->percent = (int)((float)info->capacity / (float)info->max * 100.0);
+	if (info->features & 8)
+		info->percent = (int)((((float)info->capacity - (float)info->min) / ((float)info->max - (float)info->min)) * 100);
+	else 
+		info->percent = (int)((float)info->capacity / (float)info->max * 100.0);
 }
 
 
