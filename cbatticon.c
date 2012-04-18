@@ -261,7 +261,7 @@ static gboolean get_sysattr_double (gchar *attribute, gdouble *value)
 
 	if (sysattr_status) {
 		*value = g_ascii_strtod (sysattr_content, NULL);
-		if (errno) sysattr_status = FALSE;
+		if (errno || *value < 0.01) sysattr_status = FALSE;
 		g_free (sysattr_content);
 	}
 
@@ -282,12 +282,17 @@ static gboolean get_battery_remaining_capacity (gdouble *capacity)
 
 static gboolean get_battery_full_capacity (gdouble *capacity)
 {
-	gboolean status;
+	static gboolean status = FALSE;
+	static gdouble fixed_capacity = 0.0;
 
 	g_return_val_if_fail (capacity != NULL, FALSE);
 
-	status = get_sysattr_double ("energy_full", capacity);
-	if (!status) status = get_sysattr_double ("charge_full", capacity);
+	if (!status) {
+		status = get_sysattr_double ("energy_full", &fixed_capacity);
+		if (!status) status = get_sysattr_double ("charge_full", &fixed_capacity);
+	}
+
+	*capacity = fixed_capacity;
 
 	return status;
 }
@@ -463,8 +468,8 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 
 	if (!battery_present) {
 		if (battery_state != MISSING) {
-			battery_state  = MISSING;
-			notify_message ("No battery present!");
+		    battery_state  = MISSING;
+		    notify_message ("No battery present!");
 		}
 
 		set_tooltip_and_icon (tray_icon, MISSING, 0, "");
@@ -478,7 +483,7 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 	switch (battery_status) {
 		case CHARGING:
 			if (!get_battery_charge_percentage (&charge_percentage) ||
-				!get_battery_charge_time (&charge_time))
+			    !get_battery_charge_time (&charge_time))
 				return;
 
 			time = get_time_string (charge_time);
@@ -495,7 +500,7 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 
 		case DISCHARGING:
 			if (!get_battery_charge_percentage (&charge_percentage) ||
-				!get_battery_remaining_time (&remaining_time))
+			    !get_battery_remaining_time (&remaining_time))
 				return;
 
 			time = get_time_string (remaining_time);
