@@ -23,5 +23,5 @@ Defaults:
   If you call cbatticon without any parameter, it will use these defaults:
 
   update interval : 5 seconds
-  icon type       : the first one available (search is done in this sequence : standard, notification and symbolic)
+  icon type       : the first one available (in this sequence : standard, notification and symbolic)
   battery id      : the first one that is reported by udev
