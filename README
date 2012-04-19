@@ -1,5 +1,14 @@
 A GTK+ battery icon which uses libudev to be lightweight and fast.
 
-Requires libnotify, libudev, and GTK+ to build.
-
+Requires libnotify, libudev, and GTK2 to build.
 Based on code from xbattbar-acpi.
+
+Usage:
+  cbatticon [OPTION...] [BATTERY ID]
+
+Options:
+  -h, --help                Show help options
+  -u, --update-interval     Set update interval (in seconds)
+  -i, --icon-type           Set icon type ('standard', 'notification' or 'symbolic')
+  -t, --list-icon-types     List available icon types
+  -b, --list-batteries      List available batteries

@@ -21,6 +21,7 @@
 #include <gtk/gtk.h>
 #include <libudev.h>
 #include <libnotify/notify.h>
+#include <stdlib.h>
 #include <math.h>
 #include <errno.h>
 
@@ -28,11 +29,8 @@
 /* problem of current_rate: it can take a bit of time to have the refreshed */
 /* info so the value is not always accurate when the notification is sent.  */
 
-#define STR_LTH 256
-#define ERROR_TIME -1
-
-static gboolean get_options (int argc, char **argv);
-static void get_battery (gchar *udev_device_suffix);
+static void get_options (int argc, char **argv);
+static void get_battery (gchar *udev_device_suffix, gboolean list_battery);
 
 static gboolean get_sysattr_string (gchar *attribute, gchar **value);
 static gboolean get_battery_present (gint *present);
@@ -56,7 +54,23 @@ static void notify_message (gchar *message);
 static void notify_battery_information (gint state, gint percentage, gchar *time);
 static void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gint state, gint percentage, gchar *time);
 static gchar* get_time_string (gint minutes);
-static gchar* get_icon_name (gint state, gint percentage, gchar *time);
+static gchar* get_icon_name (gint state, gint percentage);
+
+#define STR_LTH 256
+#define ERROR_TIME -1
+
+#define HAS_STANDARD_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-full")
+#define HAS_NOTIFICATION_ICON_TYPE gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "notification-battery-100")
+#define HAS_SYMBOLIC_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-full-symbolic")
+
+#define DEFAULT_INTERVAL 5
+
+enum {
+	UNKNOWN_ICON = 0,
+	BATTERY_ICON,
+	BATTERY_ICON_SYMBOLIC,
+	BATTERY_ICON_NOTIFICATION
+};
 
 enum {
 	MISSING = 0,
@@ -69,8 +83,8 @@ enum {
 };
 
 static gchar *battery_path = NULL;
-static gboolean list_battery = FALSE;
-static gint update_interval = 2;
+static gint icon_type = UNKNOWN_ICON;
+static gint update_interval = DEFAULT_INTERVAL;
 
 /*
  * not all hardware supports get_current_rate so the next 4 variables
@@ -86,39 +100,87 @@ glong secs_last_time_change = 0;
  * command line options function
  */
 
-static gboolean get_options (int argc, char **argv)
+static void get_options (int argc, char **argv)
 {
 	GError *error = NULL;
 	GOptionContext *option_context;
+
+	static gchar *icon_type_string = NULL;
+	static gboolean list_icon_type = FALSE;
+	static gboolean list_battery = FALSE;
 	static GOptionEntry option_entries[] = {
-		{ "list-batteries", 'l', 0, G_OPTION_ARG_NONE, &list_battery, "List available batteries", NULL },
 		{ "update-interval", 'u', 0, G_OPTION_ARG_INT, &update_interval, "Set update interval (in seconds)", NULL },
+		{ "icon-type", 'i', 0, G_OPTION_ARG_STRING, &icon_type_string, "Set icon type ('standard', 'notification' or 'symbolic')", NULL },
+		{ "list-icon-types", 't', 0, G_OPTION_ARG_NONE, &list_icon_type, "List available icon types", NULL },
+		{ "list-batteries", 'b', 0, G_OPTION_ARG_NONE, &list_battery, "List available batteries", NULL },
 		{ NULL }
 	};
 
-	option_context = g_option_context_new ("[BATTERY_ID]");
+	option_context = g_option_context_new ("[BATTERY ID]");
 	g_option_context_add_main_entries (option_context, option_entries, NULL);
 	g_option_context_add_group (option_context, gtk_get_option_group (TRUE));
 
 	if (!g_option_context_parse (option_context, &argc, &argv, &error)) {
 		g_printerr ("cbatticon: %s\n", error->message);
 		g_error_free (error);
-		return FALSE;
+		exit (1);
 	}
 
 	g_option_context_free (option_context);
 
-	if (update_interval < 2)
-		update_interval = 2;
+	/* option : list available icon types */
 
-	return TRUE;
+	if (list_icon_type) {
+		g_fprintf (stdout, "List of available icon types:\n\n");
+		g_fprintf (stdout, "Standard type     : %s\n", HAS_STANDARD_ICON_TYPE     ? "available" : "unavailable");
+		g_fprintf (stdout, "Notification type : %s\n", HAS_NOTIFICATION_ICON_TYPE ? "available" : "unavailable");
+		g_fprintf (stdout, "Symbolic type     : %s\n", HAS_SYMBOLIC_ICON_TYPE     ? "available" : "unavailable");
+		exit (0);
+	}
+
+	/* option : list available batteries */
+
+	if (list_battery) {
+		g_fprintf (stdout, "List of available batteries:\n\n");
+		get_battery (NULL, TRUE);
+		exit (0);
+	}
+
+	/* option : set icon type */
+
+	if (icon_type_string) {
+		if (!g_strcmp0 (icon_type_string, "standard") && (HAS_STANDARD_ICON_TYPE))
+			icon_type = BATTERY_ICON;
+		else if (!g_strcmp0 (icon_type_string, "notification") && (HAS_NOTIFICATION_ICON_TYPE))
+			icon_type = BATTERY_ICON_NOTIFICATION;
+		else if (!g_strcmp0 (icon_type_string, "symbolic") && (HAS_SYMBOLIC_ICON_TYPE))
+			icon_type = BATTERY_ICON_SYMBOLIC;
+		else g_fprintf (stderr, "Unknown icon type: %s\n", icon_type_string);
+
+		g_free (icon_type_string);
+	}
+
+	if (icon_type == UNKNOWN_ICON) {
+		if (HAS_STANDARD_ICON_TYPE)
+			icon_type = BATTERY_ICON;
+		else if (HAS_NOTIFICATION_ICON_TYPE)
+			icon_type = BATTERY_ICON_NOTIFICATION;
+		else if (HAS_SYMBOLIC_ICON_TYPE)
+			icon_type = BATTERY_ICON_SYMBOLIC;
+		else g_fprintf (stderr, "No icon type found!");
+	}
+
+	/* option : set update interval */
+
+	if (update_interval < 1)
+		update_interval = 1;
 }
 
 /*
  * udev function
  */
 
-static void get_battery (gchar *udev_device_suffix)
+static void get_battery (gchar *udev_device_suffix, gboolean list_battery)
 {
 	struct udev *udev_context;
 	struct udev_enumerate *udev_enumerate_context;
@@ -128,28 +190,25 @@ static void get_battery (gchar *udev_device_suffix)
 
 	udev_context = udev_new ();
 	if (!udev_context) {
-		g_fprintf(stderr, "Can't create udev context");
+		g_fprintf (stderr, "Can't create udev context");
 		return;
 	}
 
 	udev_enumerate_context = udev_enumerate_new (udev_context);
 	if (!udev_enumerate_context) {
-		g_fprintf(stderr, "Can't create udev enumeration context");
+		g_fprintf (stderr, "Can't create udev enumeration context");
 		return;
 	}
 
 	if (udev_enumerate_add_match_subsystem (udev_enumerate_context, "power_supply")) {
-		g_fprintf(stderr, "Can't add udev matching subsystem: power_supply");
+		g_fprintf (stderr, "Can't add udev matching subsystem: power_supply");
 		return;
 	}
 
 	if (udev_enumerate_scan_devices (udev_enumerate_context)) {
-		g_fprintf(stderr, "Can't scan udev devices");
+		g_fprintf (stderr, "Can't scan udev devices");
 		return;
 	}
-
-	if (list_battery)
-		g_fprintf (stdout, "List of available batteries:\n");
 
 	udev_devices_list = udev_enumerate_get_list_entry (udev_enumerate_context);
 	udev_list_entry_foreach (udev_device_list_entry, udev_devices_list) {
@@ -159,9 +218,11 @@ static void get_battery (gchar *udev_device_suffix)
 
 		if (udev_device &&
 		    !g_strcmp0 (udev_device_get_sysattr_value (udev_device, "type"), "Battery")) {
-			if (list_battery)
-				g_fprintf (stdout, "%s\n", udev_device_path);
-			else {
+			if (list_battery) {
+				gchar *battery_id = g_path_get_basename (udev_device_path);
+				g_fprintf (stdout, "battery id: %s\tbattery path: %s\n", battery_id, udev_device_path);
+				g_free (battery_id);
+			} else {
 				if (udev_device_suffix == NULL ||
 				    g_str_has_suffix (udev_device_path, udev_device_suffix)) {
 
@@ -446,7 +507,7 @@ static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
 		update_tray_icon_state (tray_icon);
 		lock = FALSE;
 	} else
-		g_fprintf(stderr, "Tray update locked!?");
+		g_fprintf (stderr, "Tray update locked!?");
 
 	return TRUE;
 }
@@ -573,7 +634,7 @@ static void notify_battery_information (gint state, gint percentage, gchar *time
 		}
 	}
 
-	NotifyNotification *note = notify_notification_new ("Battery Monitor", message, get_icon_name (state, percentage, time));
+	NotifyNotification *note = notify_notification_new ("Battery Monitor", message, get_icon_name (state, percentage));
 
 	if (state == LOW_POWER) {
 		notify_notification_set_timeout (note, NOTIFY_EXPIRES_NEVER);
@@ -609,7 +670,7 @@ static void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gint state, gint per
 	}
 
 	gtk_status_icon_set_tooltip (tray_icon, tooltip);
-	gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (state, percentage, time));
+	gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (state, percentage));
 }
 
 static gchar* get_time_string (gint minutes)
@@ -633,29 +694,43 @@ static gchar* get_time_string (gint minutes)
 	return time;
 }
 
-static gchar* get_icon_name (gint state, gint percentage, gchar *time)
+static gchar* get_icon_name (gint state, gint percentage)
 {
 	static gchar icon_name[STR_LTH];
 
-	g_stpcpy (icon_name, "battery");
+	if (icon_type == BATTERY_ICON_NOTIFICATION)
+		g_stpcpy (icon_name, "notification-battery");
+	else
+		g_stpcpy (icon_name, "battery");
 
-	if (state == MISSING)
-		g_strlcat (icon_name, "-missing", STR_LTH);
-	else {
-		if (percentage < 20)
-			g_strlcat (icon_name, "-caution", STR_LTH);
-		else if (percentage < 40)
-			g_strlcat (icon_name, "-low", STR_LTH);
-		else if (percentage < 80)
-			g_strlcat (icon_name, "-good", STR_LTH);
+	if (state == MISSING) {
+		if (icon_type == BATTERY_ICON_NOTIFICATION)
+			g_strlcat (icon_name, "-empty", STR_LTH);
 		else
-			g_strlcat (icon_name, "-full", STR_LTH);
+			g_strlcat (icon_name, "-missing", STR_LTH);
+	} else {
+		if (icon_type == BATTERY_ICON_NOTIFICATION) {
+			if (percentage < 20)       g_strlcat (icon_name, "-020", STR_LTH);
+			else if (percentage < 40)  g_strlcat (icon_name, "-040", STR_LTH);
+			else if (percentage < 60)  g_strlcat (icon_name, "-060", STR_LTH);
+			else if (percentage < 80)  g_strlcat (icon_name, "-080", STR_LTH);
+			else			   g_strlcat (icon_name, "-100", STR_LTH);
 
-		if (state == CHARGING)
-			g_strlcat (icon_name, "-charging", STR_LTH);
-		else if (state == CHARGED)
-			g_strlcat (icon_name, "-charged", STR_LTH);
+			if (state == CHARGING)     g_strlcat (icon_name, "-plugged", STR_LTH);
+			else if (state == CHARGED) g_strlcat (icon_name, "-plugged", STR_LTH);
+		} else {
+			if (percentage < 20)       g_strlcat (icon_name, "-caution", STR_LTH);
+			else if (percentage < 40)  g_strlcat (icon_name, "-low", STR_LTH);
+			else if (percentage < 80)  g_strlcat (icon_name, "-good", STR_LTH);
+			else			   g_strlcat (icon_name, "-full", STR_LTH);
+
+			if (state == CHARGING)     g_strlcat (icon_name, "-charging", STR_LTH);
+			else if (state == CHARGED) g_strlcat (icon_name, "-charged", STR_LTH);
+		}
 	}
+
+	if (icon_type == BATTERY_ICON_SYMBOLIC)
+		g_strlcat (icon_name, "-symbolic", STR_LTH);
 
 	return icon_name;
 }
@@ -664,16 +739,12 @@ int main (int argc, char **argv)
 {
 	GtkStatusIcon *tray_icon;
 
-	if (!get_options (argc, argv))
-		return 1;
-
+	get_options (argc, argv);
 	notify_init ("Battery Monitor");
-
-	get_battery (argc > 1 ? argv[1] : NULL);
-	if (list_battery) return 0;
+	get_battery (argc > 1 ? argv[1] : NULL, FALSE);
 
 	tray_icon = create_tray_icon ();
-
 	gtk_main();
+
 	return 0;
 }
