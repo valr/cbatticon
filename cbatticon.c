@@ -41,10 +41,9 @@ static gboolean get_battery_remaining_capacity (gdouble *capacity);
 static gboolean get_battery_full_capacity (gdouble *capacity);
 static gboolean get_battery_current_rate (gdouble *rate);
 
-static gboolean get_battery_charge_percentage (gint *percentage);
-static gboolean get_battery_charge_time (gint *time);
-static gboolean get_battery_remaining_time (gint *time);
-static gboolean get_battery_estimated_time (gint *time, gdouble y);
+static gboolean get_battery_charge_info (gint *percentage, gint *time);
+static gboolean get_battery_remaining_charge_info (gint *percentage, gint *time);
+static gboolean get_battery_estimated_time (gdouble remaining_capacity, gdouble y, gint *time);
 static void reset_estimated_vars (void);
 
 static GtkStatusIcon* create_tray_icon (void);
@@ -376,41 +375,24 @@ static gboolean get_battery_current_rate (gdouble *rate)
  * computation functions
  */
 
-static gboolean get_battery_charge_percentage (gint *percentage)
-{
-	gdouble remaining_capacity, full_capacity;
-
-	if (!get_battery_remaining_capacity (&remaining_capacity) ||
-	    !get_battery_full_capacity (&full_capacity))
-		return FALSE;
-
-	if (full_capacity == 0.0)
-		return FALSE;
-
-	*percentage = (gint)fmin(floor(remaining_capacity / full_capacity * 100.0), 100.0);
-	return TRUE;
-}
-
-static gboolean get_battery_charge_time (gint *time)
+static gboolean get_battery_charge_info (gint *percentage, gint *time)
 {
 	gdouble full_capacity, remaining_capacity, current_rate;
 
-	if (!is_rate_possible) {
-		full_capacity = 0;
+	if (!get_battery_full_capacity (&full_capacity) ||
+	    !get_battery_remaining_capacity (&remaining_capacity))
+		return FALSE;
 
-		if (get_battery_full_capacity (&full_capacity))
-			if (!get_battery_estimated_time (time, full_capacity))
-				*time = ERROR_TIME;
+	*percentage = (gint)fmin(floor(remaining_capacity / full_capacity * 100.0), 100.0);
+
+	if (!is_rate_possible) {
+		if (!get_battery_estimated_time (remaining_capacity, full_capacity, time))
+			*time = ERROR_TIME;
 
 		return TRUE;
 	}
 
-	if (!get_battery_full_capacity (&full_capacity) ||
-	    !get_battery_remaining_capacity (&remaining_capacity) ||
-	    !get_battery_current_rate (&current_rate))
-		return FALSE;
-
-	if (full_capacity == 0.0 || current_rate == 0.0)
+	if (!get_battery_current_rate (&current_rate))
 		return FALSE;
 
 	*time = (gint)(((full_capacity - remaining_capacity) / current_rate) * 60.0);
@@ -418,22 +400,24 @@ static gboolean get_battery_charge_time (gint *time)
 	return TRUE;
 }
 
-static gboolean get_battery_remaining_time (gint *time)
+static gboolean get_battery_remaining_charge_info (gint *percentage, gint *time)
 {
-	gdouble remaining_capacity, current_rate;
+	gdouble full_capacity, remaining_capacity, current_rate;
+
+	if (!get_battery_full_capacity (&full_capacity) ||
+	    !get_battery_remaining_capacity (&remaining_capacity))
+		return FALSE;
+
+	*percentage = (gint)fmin(floor(remaining_capacity / full_capacity * 100.0), 100.0);
 
 	if (!is_rate_possible) {
-		if (!get_battery_estimated_time (time, 0))
+		if (!get_battery_estimated_time (remaining_capacity, 0, time))
 			*time = ERROR_TIME;
 
 		return TRUE;
 	}
 
-	if (!get_battery_remaining_capacity (&remaining_capacity) ||
-	    !get_battery_current_rate (&current_rate))
-		return FALSE;
-
-	if (current_rate == 0.0)
+	if (!get_battery_current_rate (&current_rate))
 		return FALSE;
 
 	*time = (gint)((remaining_capacity / current_rate) * 60.0);
@@ -442,14 +426,10 @@ static gboolean get_battery_remaining_time (gint *time)
 }
 
 /* y = 0 if discharging or battery_full_capacity */
-static gboolean get_battery_estimated_time (gint *time, gdouble y)
+static gboolean get_battery_estimated_time (gdouble remaining_capacity, gdouble y, gint *time)
 {
-	gdouble remaining_capacity = 0;
 	gdouble m = 0;
 	gdouble calc_sec = 0;
-
-	if (!get_battery_remaining_capacity (&remaining_capacity))
-		return FALSE;
 
 	if (prev_remaining_capacity == -1)
 		prev_remaining_capacity = remaining_capacity;
@@ -517,8 +497,8 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 	static gint battery_state = -1;
 	static gint battery_low   = -1;
 	gint battery_present, battery_status;
-	gint charge_percentage, charge_time, remaining_time;
-	gchar *time;
+	gint percentage, time;
+	gchar *time_string;
 
 	if (!battery_path)
 		return;
@@ -543,55 +523,53 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 
 	switch (battery_status) {
 		case CHARGING:
-			if (!get_battery_charge_percentage (&charge_percentage) ||
-			    !get_battery_charge_time (&charge_time))
+			if (!get_battery_charge_info (&percentage, &time))
 				return;
 
-			time = get_time_string (charge_time);
+			time_string = get_time_string (time);
 
 			if (battery_state != CHARGING) {
 				reset_estimated_vars ();
 
 				battery_state = CHARGING;
-				notify_battery_information (CHARGING, charge_percentage, time);
+				notify_battery_information (CHARGING, percentage, time_string);
 			}
 
-			set_tooltip_and_icon (tray_icon, CHARGING, charge_percentage, time);
+			set_tooltip_and_icon (tray_icon, CHARGING, percentage, time_string);
 			break;
 
 		case DISCHARGING:
-			if (!get_battery_charge_percentage (&charge_percentage) ||
-			    !get_battery_remaining_time (&remaining_time))
+			if (!get_battery_remaining_charge_info (&percentage, &time))
 				return;
 
-			time = get_time_string (remaining_time);
+			time_string = get_time_string (time);
 
 			if (battery_state != DISCHARGING) {
 				reset_estimated_vars();
 
 				battery_state = DISCHARGING;
 				battery_low   = 0;
-				notify_battery_information (DISCHARGING, charge_percentage, time);
+				notify_battery_information (DISCHARGING, percentage, time_string);
 			}
 
-			if (!battery_low && charge_percentage < 20) {
+			if (!battery_low && percentage < 20) {
 				battery_state = DISCHARGING;
 				battery_low   = 1;
-				notify_battery_information (LOW_POWER, charge_percentage, time);
+				notify_battery_information (LOW_POWER, percentage, time_string);
 			}
 
-			set_tooltip_and_icon(tray_icon, DISCHARGING, charge_percentage, time);
+			set_tooltip_and_icon(tray_icon, DISCHARGING, percentage, time_string);
 			break;
 
 		case CHARGED:
-			charge_percentage = 100;
+			percentage = 100;
 
 			if (battery_state != CHARGED) {
 				battery_state = CHARGED;
-				notify_battery_information (CHARGED, charge_percentage, "");
+				notify_battery_information (CHARGED, percentage, "");
 			}
 
-			set_tooltip_and_icon (tray_icon, CHARGED, charge_percentage, "");
+			set_tooltip_and_icon (tray_icon, CHARGED, percentage, "");
 			break;
 
 		case NOT_CHARGING:
@@ -612,7 +590,7 @@ static void notify_message (gchar *message)
 	notify_notification_show (note, NULL);
 }
 
-static void notify_battery_information (gint state, gint percentage, gchar *time)
+static void notify_battery_information (gint state, gint percentage, gchar *time_string)
 {
 	gchar message[STR_LTH], pct[STR_LTH], ti[STR_LTH];
 
@@ -628,8 +606,8 @@ static void notify_battery_information (gint state, gint percentage, gchar *time
 			g_strlcat (message, pct, STR_LTH);
 		}
 
-		if (time[0] != '\0') {
-			g_sprintf (ti, "\n%s", time);
+		if (time_string[0] != '\0') {
+			g_sprintf (ti, "\n%s", time_string);
 			g_strlcat (message, ti, STR_LTH);
 		}
 	}
@@ -646,7 +624,7 @@ static void notify_battery_information (gint state, gint percentage, gchar *time
 	notify_notification_show (note, NULL);
 }
 
-static void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gint state, gint percentage, gchar *time)
+static void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gint state, gint percentage, gchar *time_string)
 {
 	gchar tooltip[STR_LTH], pct[STR_LTH], ti[STR_LTH];
 
@@ -663,8 +641,8 @@ static void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gint state, gint per
 		g_sprintf (pct, "(%i\%)", percentage);
 		g_strlcat (tooltip, pct, STR_LTH);
 
-		if (time[0] != '\0') {
-			g_sprintf (ti, "\n%s", time);
+		if (time_string[0] != '\0') {
+			g_sprintf (ti, "\n%s", time_string);
 			g_strlcat (tooltip, ti, STR_LTH);
 		}
 	}
@@ -675,23 +653,23 @@ static void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gint state, gint per
 
 static gchar* get_time_string (gint minutes)
 {
-	static gchar time[STR_LTH];
+	static gchar time_string[STR_LTH];
 	gint hours;
 
 	if (minutes < 0) {
-		time[0]='\0';
-		return time;
+		time_string[0]='\0';
+		return time_string;
 	}
 
 	hours   = minutes / 60;
 	minutes = minutes - (60 * hours);
 
 	if (hours > 0)
-		g_sprintf(time, "%2d hours, %2d minutes remaining", hours, minutes);
+		g_sprintf(time_string, "%2d hours, %2d minutes remaining", hours, minutes);
 	else
-		g_sprintf(time, "%2d minutes remaining", minutes);
+		g_sprintf(time_string, "%2d minutes remaining", minutes);
 
-	return time;
+	return time_string;
 }
 
 static gchar* get_icon_name (gint state, gint percentage)
