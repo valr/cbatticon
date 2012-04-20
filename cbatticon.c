@@ -109,10 +109,10 @@ static void get_options (int argc, char **argv)
 	static gboolean list_icon_type = FALSE;
 	static gboolean list_battery = FALSE;
 	static GOptionEntry option_entries[] = {
-		{ "update-interval", 'u', 0, G_OPTION_ARG_INT, &update_interval, "Set update interval (in seconds)", NULL },
-		{ "icon-type", 'i', 0, G_OPTION_ARG_STRING, &icon_type_string, "Set icon type ('standard', 'notification' or 'symbolic')", NULL },
-		{ "list-icon-types", 't', 0, G_OPTION_ARG_NONE, &list_icon_type, "List available icon types", NULL },
-		{ "list-batteries", 'b', 0, G_OPTION_ARG_NONE, &list_battery, "List available batteries", NULL },
+		{ "update-interval", 'u', 0, G_OPTION_ARG_INT   , &update_interval , "Set update interval (in seconds)"                        , NULL },
+		{ "icon-type"      , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string, "Set icon type ('standard', 'notification' or 'symbolic')", NULL },
+		{ "list-icon-types", 't', 0, G_OPTION_ARG_NONE  , &list_icon_type  , "List available icon types"                               , NULL },
+		{ "list-batteries" , 'b', 0, G_OPTION_ARG_NONE  , &list_battery    , "List available batteries"                                , NULL },
 		{ NULL }
 	};
 
@@ -552,7 +552,7 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 			if (battery_state != CHARGING) {
 				reset_estimated_vars ();
 
-				battery_state  = CHARGING;
+				battery_state = CHARGING;
 				notify_battery_information (CHARGING, charge_percentage, time);
 			}
 
@@ -569,8 +569,8 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 			if (battery_state != DISCHARGING) {
 				reset_estimated_vars();
 
-				battery_state  = DISCHARGING;
-				battery_low    = 0;
+				battery_state = DISCHARGING;
+				battery_low   = 0;
 				notify_battery_information (DISCHARGING, charge_percentage, time);
 			}
 
@@ -587,7 +587,7 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 			charge_percentage = 100;
 
 			if (battery_state != CHARGED) {
-				battery_state  = CHARGED;
+				battery_state = CHARGED;
 				notify_battery_information (CHARGED, charge_percentage, "");
 			}
 
@@ -596,7 +596,7 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 
 		case NOT_CHARGING:
 			if (battery_state != NOT_CHARGING) {
-				battery_state  = NOT_CHARGING;
+				battery_state = NOT_CHARGING;
 				notify_message ("Battery isn't charging!");
 			}
 			break;
