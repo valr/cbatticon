@@ -109,11 +109,11 @@ static void get_options (int argc, char **argv)
 	static gboolean list_icon_type = FALSE;
 	static gboolean list_battery = FALSE;
 	static GOptionEntry option_entries[] = {
-	{ "update-interval"       , 'u', 0, G_OPTION_ARG_INT   , &update_interval       , "Set update interval (in seconds)"                            , NULL },
-	{ "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string      , "Set icon type ('standard', 'notification' or 'symbolic')"    , NULL },
-	{ "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &command_critical_level, "Command to spawn when critical battery level (5%) is reached", NULL },
-	{ "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &list_icon_type        , "List available icon types"                                   , NULL },
-	{ "list-batteries"        , 'b', 0, G_OPTION_ARG_NONE  , &list_battery          , "List available batteries"                                    , NULL },
+	{ "update-interval"       , 'u', 0, G_OPTION_ARG_INT   , &update_interval       , "Set update interval (in seconds)"                              , NULL },
+	{ "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string      , "Set icon type ('standard', 'notification' or 'symbolic')"      , NULL },
+	{ "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &command_critical_level, "Command to execute when critical battery level (5%) is reached", NULL },
+	{ "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &list_icon_type        , "List available icon types"                                     , NULL },
+	{ "list-batteries"        , 'b', 0, G_OPTION_ARG_NONE  , &list_battery          , "List available batteries"                                      , NULL },
 	{ NULL }};
 
 	option_context = g_option_context_new ("[BATTERY ID]");
