@@ -18,7 +18,7 @@ Examples:
   cbatticon
   cbatticon -t
   cbatticon -b
-  cbatticon -u 5 -i symbolic -c "systemctl poweroff"
+  cbatticon -u 20 -i notification -c "systemctl poweroff"
 
 Defaults:
   If you call cbatticon without any parameter, it will use these defaults:
