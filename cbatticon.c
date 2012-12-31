@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2012 Colin Jones
+ * Copyright (c) 2011-2013 Colin Jones
  * Based on code by Matteo Marchesotti
  * Copyright (c) 2007 Matteo Marchesotti <matteo.marchesotti@fsfe.org>
  *
@@ -19,6 +19,7 @@
  */
 
 #include <gtk/gtk.h>
+#include <glib/gprintf.h>
 #include <libudev.h>
 #include <libnotify/notify.h>
 #include <stdlib.h>
@@ -46,7 +47,7 @@ static gboolean get_battery_remaining_charge_info (gint *percentage, gint *time)
 static gboolean get_battery_estimated_time (gdouble remaining_capacity, gdouble y, gint *time);
 static void reset_estimated_vars (void);
 
-static GtkStatusIcon* create_tray_icon (void);
+static void create_tray_icon (void);
 static gboolean update_tray_icon (GtkStatusIcon *tray_icon);
 static void update_tray_icon_state (GtkStatusIcon *tray_icon);
 static void notify_message (gchar *message, gint timeout);
@@ -466,17 +467,15 @@ static void reset_estimated_vars (void)
  * tray icon functions
  */
 
-static GtkStatusIcon* create_tray_icon (void)
+static void create_tray_icon (void)
 {
 	GtkStatusIcon *tray_icon = gtk_status_icon_new ();
 
-	gtk_status_icon_set_tooltip (tray_icon, "Battery Monitor");
+	gtk_status_icon_set_tooltip_text (tray_icon, "Battery Monitor");
 	gtk_status_icon_set_visible (tray_icon, TRUE);
 
 	update_tray_icon (tray_icon);
 	g_timeout_add_seconds (update_interval, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
-
-	return tray_icon;
 }
 
 static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
@@ -667,7 +666,7 @@ static void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gint state, gint per
 		}
 	}
 
-	gtk_status_icon_set_tooltip (tray_icon, tooltip);
+	gtk_status_icon_set_tooltip_text (tray_icon, tooltip);
 	gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (state, percentage));
 }
 
@@ -735,13 +734,11 @@ static gchar* get_icon_name (gint state, gint percentage)
 
 int main (int argc, char **argv)
 {
-	GtkStatusIcon *tray_icon;
-
 	get_options (argc, argv);
 	notify_init ("Battery Monitor");
 	get_battery (argc > 1 ? argv[1] : NULL, FALSE);
 
-	tray_icon = create_tray_icon ();
+	create_tray_icon ();
 	gtk_main();
 
 	return 0;
