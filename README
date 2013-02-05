@@ -10,7 +10,9 @@ Options:
   -h, --help                       Show help options
   -u, --update-interval            Set update interval (in seconds)
   -i, --icon-type                  Set icon type ('standard', 'notification' or 'symbolic')
-  -c, --command-critical-level     Command to execute when critical battery level (5%) is reached
+  -c, --command-critical-level     Command to execute when critical battery level is reached
+  -l, --low-level                  Set low battery level (in percent)
+  -r, --critical-level             Set critical battery level (in percent)
   -t, --list-icon-types            List available icon types
   -b, --list-batteries             List available batteries
 
@@ -18,11 +20,14 @@ Examples:
   cbatticon
   cbatticon -t
   cbatticon -b
-  cbatticon -u 20 -i notification -c "systemctl poweroff"
+  cbatticon -u 20 -i notification -c "systemctl poweroff" -l 15 -r 3
 
-Defaults:
-  If you call cbatticon without any parameter, it will use these defaults:
-
-  update interval : 5 seconds
-  icon type       : the first one available (in this sequence : standard, notification and symbolic)
-  battery id      : the first one that is reported by udev
+Default value for options:
+  update interval        : 5 seconds
+  icon type              : the first one that is available in this sequence:
+                           standard, notification or symbolic
+                           (check your setup with --list-icon-types)
+  command critical level : none
+  low level              : 20 percent
+  critical level         : 5 percent
+  battery id             : the first one that is reported by udev
