@@ -1,1 +1,8 @@
+# target
 cbatticon
+
+# Object files
+*.o
+
+# vim files
+*.swp
