@@ -21,7 +21,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-
 #include <gtk/gtk.h>
 #include <glib/gprintf.h>
 #include <libudev.h>
@@ -29,10 +28,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <errno.h>
-
-/* todo: */
-/* problem of current_rate: it can take a bit of time to have the refreshed */
-/* info so the value is not always accurate when the notification is sent.  */
 
 static void get_options (int argc, char **argv);
 static void get_battery (gchar *udev_device_suffix, gboolean list_battery);
@@ -324,7 +319,7 @@ static gboolean get_battery_status (gint *status)
 
     sysattr_status = get_sysattr_string ("status", &sysattr_value);
     if (sysattr_status) {
-             if (g_str_has_prefix (sysattr_value, "Charging"))
+        if (g_str_has_prefix (sysattr_value, "Charging"))
             *status = CHARGING;
         else if (g_str_has_prefix (sysattr_value, "Discharging"))
             *status = DISCHARGING;
@@ -527,13 +522,14 @@ static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
 
 static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 {
-    static gint battery_state    = -1;
-    static gint battery_low      = -1;
-    static gint battery_critical = -1;
     gint battery_present, battery_status;
     gint percentage, time;
     gchar *time_string;
     GError *error = NULL;
+    static gint battery_state        = -1;
+    static gint battery_low          = -1;
+    static gint battery_critical     = -1;
+    static gint battery_not_charging = -1;
 
     if (!battery_path)
         return;
@@ -544,11 +540,11 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 
     if (!battery_present) {
         if (battery_state != MISSING) {
-            battery_state  = MISSING;
+            battery_state = MISSING;
             notify_message ("No battery present!", NOTIFY_EXPIRES_NEVER);
         }
 
-        set_tooltip_and_icon (tray_icon, MISSING, 0, "");
+        set_tooltip_and_icon (tray_icon, battery_state, 0, "");
         return;
     }
 
@@ -567,12 +563,13 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
                 reset_estimated_vars ();
 
                 battery_state = CHARGING;
-                notify_battery_information (CHARGING, percentage, time_string);
+                notify_battery_information (battery_state, percentage, time_string);
             }
 
-            set_tooltip_and_icon (tray_icon, CHARGING, percentage, time_string);
+            set_tooltip_and_icon (tray_icon, battery_state, percentage, time_string);
             break;
 
+        case NOT_CHARGING:
         case DISCHARGING:
             if (!get_battery_remaining_charge_info (&percentage, &time))
                 return;
@@ -582,35 +579,38 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
             if (battery_state != DISCHARGING) {
                 reset_estimated_vars();
 
-                battery_state    = DISCHARGING;
-                battery_low      = 0;
-                battery_critical = 0;
-                notify_battery_information (DISCHARGING, percentage, time_string);
+                battery_low          = 0;
+                battery_critical     = 0;
+                battery_not_charging = 0;
+
+                battery_state = DISCHARGING;
+                notify_battery_information (battery_state, percentage, time_string);
             }
 
             if (!battery_low && percentage < low_level) {
-                battery_state = DISCHARGING;
-                battery_low   = 1;
+                battery_low = 1;
                 notify_battery_information (LOW_POWER, percentage, time_string);
             }
 
             if (!battery_critical && percentage <= critical_level) {
-                battery_state    = DISCHARGING;
                 battery_critical = 1;
-
                 notify_message ("Critical battery level reached!", NOTIFY_EXPIRES_NEVER);
-                g_usleep (G_USEC_PER_SEC * 10);
 
+                g_usleep (G_USEC_PER_SEC * 10);
                 if (command_critical_level &&
                     g_spawn_command_line_async (command_critical_level, &error) == FALSE) {
                     notify_message ("Error: cannot spawn critical battery level command!", NOTIFY_EXPIRES_NEVER);
-
                     g_printerr ("Cannot spawn critical battery level command: %s\n%s\n", command_critical_level, error->message);
                     g_error_free (error); error = NULL;
                 }
             }
 
-            set_tooltip_and_icon(tray_icon, DISCHARGING, percentage, time_string);
+            if (!battery_not_charging && battery_status == NOT_CHARGING) {
+                battery_not_charging = 1;
+                notify_message ("Battery isn't charging!", NOTIFY_EXPIRES_NEVER);
+            }
+
+            set_tooltip_and_icon (tray_icon, battery_state, percentage, time_string);
             break;
 
         case CHARGED:
@@ -618,17 +618,21 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 
             if (battery_state != CHARGED) {
                 battery_state = CHARGED;
-                notify_battery_information (CHARGED, percentage, "");
+                notify_battery_information (battery_state, percentage, "");
             }
 
-            set_tooltip_and_icon (tray_icon, CHARGED, percentage, "");
+            set_tooltip_and_icon (tray_icon, battery_state, percentage, "");
             break;
 
-        case NOT_CHARGING:
-            if (battery_state != NOT_CHARGING) {
-                battery_state = NOT_CHARGING;
-                notify_message ("Battery isn't charging!", 10000);
+        case UNKNOWN:
+            if (battery_state != UNKNOWN) {
+                battery_state = UNKNOWN;
+                /* Should this status be notified ?
+                notify_message ("Battery status is unknown!",  10000);
+                */
             }
+
+            set_tooltip_and_icon (tray_icon, battery_state, 0, "");
             break;
     }
 }
@@ -646,7 +650,7 @@ static void notify_battery_information (gint state, gint percentage, gchar *time
 {
     gchar message[STR_LTH], pct[STR_LTH], ti[STR_LTH];
 
-    g_stpcpy (message, "Battery ");
+    g_strlcpy (message, "Battery ", STR_LTH);
 
     if (state == CHARGED)
         g_strlcat (message, "charged!", STR_LTH);
@@ -669,8 +673,7 @@ static void notify_battery_information (gint state, gint percentage, gchar *time
     if (state == LOW_POWER) {
         notify_notification_set_timeout (note, NOTIFY_EXPIRES_NEVER);
         notify_notification_set_urgency (note, NOTIFY_URGENCY_CRITICAL);
-    }
-    else
+    } else
         notify_notification_set_timeout (note, 10000);
 
     notify_notification_show (note, NULL);
@@ -680,24 +683,32 @@ static void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gint state, gint per
 {
     gchar tooltip[STR_LTH], pct[STR_LTH], ti[STR_LTH];
 
-    if (state == MISSING)
-        g_stpcpy (tooltip, "No battery present!");
-    else {
-        g_stpcpy (tooltip, "Battery ");
+	switch (state) {
+		case MISSING:
+			g_strlcpy (tooltip, "No battery present!", STR_LTH);
+			break;
 
-        if (state == CHARGING)
-            g_strlcat (tooltip, "charging ", STR_LTH);
-        else if (state == CHARGED)
-            g_strlcat (tooltip, "charged ", STR_LTH);
+		case UNKNOWN:
+			g_strlcpy (tooltip, "Battery status is unknown!", STR_LTH);
+			break;
 
-        g_sprintf (pct, "(%i\%)", percentage);
-        g_strlcat (tooltip, pct, STR_LTH);
+		default:
+			g_strlcpy (tooltip, "Battery ", STR_LTH);
 
-        if (time_string[0] != '\0') {
-            g_sprintf (ti, "\n%s", time_string);
-            g_strlcat (tooltip, ti, STR_LTH);
-        }
-    }
+			if (state == CHARGING)
+				g_strlcat (tooltip, "charging ", STR_LTH);
+			else if (state == CHARGED)
+				g_strlcat (tooltip, "charged ", STR_LTH);
+
+			g_sprintf (pct, "(%i\%)", percentage);
+			g_strlcat (tooltip, pct, STR_LTH);
+
+			if (time_string[0] != '\0') {
+				g_sprintf (ti, "\n%s", time_string);
+				g_strlcat (tooltip, ti, STR_LTH);
+			}
+			break;
+	}
 
     gtk_status_icon_set_tooltip_text (tray_icon, tooltip);
     gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (state, percentage));
@@ -729,11 +740,11 @@ static gchar* get_icon_name (gint state, gint percentage)
     static gchar icon_name[STR_LTH];
 
     if (icon_type == BATTERY_ICON_NOTIFICATION)
-        g_stpcpy (icon_name, "notification-battery");
+        g_strlcpy (icon_name, "notification-battery", STR_LTH);
     else
-        g_stpcpy (icon_name, "battery");
+        g_strlcpy (icon_name, "battery", STR_LTH);
 
-    if (state == MISSING) {
+    if (state == MISSING || state == UNKNOWN) {
         if (icon_type == BATTERY_ICON_NOTIFICATION)
             g_strlcat (icon_name, "-empty", STR_LTH);
         else
