@@ -149,9 +149,9 @@ static void get_options (int argc, char **argv)
 
     if (list_icon_type) {
         g_print ("List of available icon types:\n");
-        g_print ("Standard\t%s\n", HAS_STANDARD_ICON_TYPE     ? "available" : "unavailable");
-        g_print ("Notification\t%s\n", HAS_NOTIFICATION_ICON_TYPE ? "available" : "unavailable");
-        g_print ("Symbolic\t%s\n", HAS_SYMBOLIC_ICON_TYPE     ? "available" : "unavailable");
+        g_print ("standard\t%s\n", HAS_STANDARD_ICON_TYPE     ? "available" : "unavailable");
+        g_print ("notification\t%s\n", HAS_NOTIFICATION_ICON_TYPE ? "available" : "unavailable");
+        g_print ("symbolic\t%s\n", HAS_SYMBOLIC_ICON_TYPE     ? "available" : "unavailable");
         exit (0);
     }
 
