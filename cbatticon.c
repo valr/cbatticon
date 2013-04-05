@@ -30,11 +30,12 @@
 #include <errno.h>
 
 static void get_options (int argc, char **argv);
-static void get_battery (gchar *udev_device_suffix, gboolean list_battery);
+static gboolean get_battery (gchar *udev_device_suffix, gboolean list_battery);
 
-static gboolean get_sysattr_string (gchar *attribute, gchar **value);
+static gboolean get_sysattr_string (gchar *path, gchar *attribute, gchar **value);
 static gboolean get_battery_present (gint *present);
 static gboolean get_battery_status (gint *status);
+static gboolean get_ac_online (gint *online);
 
 static gboolean get_sysattr_double (gchar *attribute, gdouble *value);
 static gboolean get_battery_remaining_capacity (gdouble *capacity);
@@ -73,6 +74,7 @@ enum {
 };
 
 static gchar *battery_path = NULL;
+static gchar *ac_path = NULL;
 
 enum {
     UNKNOWN_ICON = 0,
@@ -208,7 +210,7 @@ static void get_options (int argc, char **argv)
  * udev function
  */
 
-static void get_battery (gchar *udev_device_suffix, gboolean list_battery)
+static gboolean get_battery (gchar *udev_device_suffix, gboolean list_battery)
 {
     struct udev *udev_context;
     struct udev_enumerate *udev_enumerate_context;
@@ -219,23 +221,23 @@ static void get_battery (gchar *udev_device_suffix, gboolean list_battery)
     udev_context = udev_new ();
     if (!udev_context) {
         g_printerr ("Can't create udev context\n");
-        return;
+        return FALSE;
     }
 
     udev_enumerate_context = udev_enumerate_new (udev_context);
     if (!udev_enumerate_context) {
         g_printerr ("Can't create udev enumeration context\n");
-        return;
+        return FALSE;
     }
 
     if (udev_enumerate_add_match_subsystem (udev_enumerate_context, "power_supply")) {
         g_printerr ("Can't add udev matching subsystem: power_supply\n");
-        return;
+        return FALSE;
     }
 
     if (udev_enumerate_scan_devices (udev_enumerate_context)) {
         g_printerr ("Can't scan udev devices\n");
-        return;
+        return FALSE;
     }
 
     udev_devices_list = udev_enumerate_get_list_entry (udev_enumerate_context);
@@ -244,22 +246,27 @@ static void get_battery (gchar *udev_device_suffix, gboolean list_battery)
         udev_device_path = g_strdup (udev_list_entry_get_name (udev_device_list_entry));
         udev_device = udev_device_new_from_syspath (udev_context, udev_device_path);
 
-        if (udev_device &&
-            !g_strcmp0 (udev_device_get_sysattr_value (udev_device, "type"), "Battery")) {
-            if (list_battery) {
-                gchar *battery_id = g_path_get_basename (udev_device_path);
-                g_print ("id: %s\tpath: %s\n", battery_id, udev_device_path);
-                g_free (battery_id);
-            } else {
-                if (udev_device_suffix == NULL ||
-                    g_str_has_suffix (udev_device_path, udev_device_suffix)) {
+        if (udev_device) {
+            /* process battery */
+            if (!g_strcmp0 (udev_device_get_sysattr_value (udev_device, "type"), "Battery")) {
+                if (list_battery) {
+                    gchar *battery_id = g_path_get_basename (udev_device_path);
+                    g_print ("id: %s\tpath: %s\n", battery_id, udev_device_path);
+                    g_free (battery_id);
+                }
 
-                    battery_path = udev_device_path;
+                if (battery_path == NULL) {
+                    if (udev_device_suffix == NULL ||
+                        g_str_has_suffix (udev_device_path, udev_device_suffix)) {
+                        battery_path = g_strdup (udev_device_path);
+                    }
+                }
+            }
 
-                    udev_device_unref (udev_device);
-                    udev_enumerate_unref (udev_enumerate_context);
-                    udev_unref (udev_context);
-                    return;
+            /* process main supply (AC) */
+            if (!g_strcmp0 (udev_device_get_sysattr_value (udev_device, "type"), "Mains")) {
+                if (ac_path == NULL) {
+                    ac_path = g_strdup (udev_device_path);
                 }
             }
         }
@@ -271,23 +278,28 @@ static void get_battery (gchar *udev_device_suffix, gboolean list_battery)
     udev_enumerate_unref (udev_enumerate_context);
     udev_unref (udev_context);
 
-    if (!list_battery)
+    if (!list_battery && !battery_path) {
         g_printerr ("No battery device found!\n");
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 /*
  * sysfs functions
  */
 
-static gboolean get_sysattr_string (gchar *attribute, gchar **value)
+static gboolean get_sysattr_string (gchar *path, gchar *attribute, gchar **value)
 {
     gchar *sysattr_filename;
     gboolean sysattr_status;
 
+    g_return_val_if_fail (path != NULL, FALSE);
     g_return_val_if_fail (attribute != NULL, FALSE);
     g_return_val_if_fail (value != NULL, FALSE);
 
-    sysattr_filename = g_build_filename (battery_path, attribute, NULL);
+    sysattr_filename = g_build_filename (path, attribute, NULL);
     sysattr_status   = g_file_get_contents (sysattr_filename, value, NULL, NULL);
     g_free (sysattr_filename);
 
@@ -301,7 +313,7 @@ static gboolean get_battery_present (gint *present)
 
     g_return_val_if_fail (present != NULL, FALSE);
 
-    sysattr_status = get_sysattr_string ("present", &sysattr_value);
+    sysattr_status = get_sysattr_string (battery_path, "present", &sysattr_value);
     if (sysattr_status) {
         *present = (g_str_has_prefix (sysattr_value, "1") ? 1 : 0);
         g_free (sysattr_value);
@@ -317,7 +329,7 @@ static gboolean get_battery_status (gint *status)
 
     g_return_val_if_fail (status != NULL, FALSE);
 
-    sysattr_status = get_sysattr_string ("status", &sysattr_value);
+    sysattr_status = get_sysattr_string (battery_path, "status", &sysattr_value);
     if (sysattr_status) {
         if (g_str_has_prefix (sysattr_value, "Charging"))
             *status = CHARGING;
@@ -330,6 +342,25 @@ static gboolean get_battery_status (gint *status)
         else
             *status = UNKNOWN;
 
+        g_free (sysattr_value);
+    }
+
+    return sysattr_status;
+}
+
+static gboolean get_ac_online (gint *online)
+{
+    gchar *sysattr_value;
+    gboolean sysattr_status;
+
+    g_return_val_if_fail (online != NULL, FALSE);
+
+    if (!ac_path)
+        return FALSE;
+
+    sysattr_status = get_sysattr_string (ac_path, "online", &sysattr_value);
+    if (sysattr_status) {
+        *online = (g_str_has_prefix (sysattr_value, "1") ? 1 : 0);
         g_free (sysattr_value);
     }
 
@@ -522,7 +553,7 @@ static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
 
 static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 {
-    gint battery_present, battery_status;
+    gint battery_present, battery_status, battery_online;
     gint percentage, time;
     gchar *time_string;
     GError *error = NULL;
@@ -551,6 +582,18 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
     /* ...and then check its status */
     if (!get_battery_status (&battery_status))
         return;
+
+    /* ...if status is unknown, try guessing its status */
+    if (battery_status == UNKNOWN && get_ac_online (&battery_online)) {
+        if (battery_online) {
+            battery_status = CHARGING;
+
+            if (get_battery_charge_info (&percentage, &time) && percentage >= 99)
+                battery_status = CHARGED;
+        } else {
+            battery_status = DISCHARGING;
+        }
+    }
 
     switch (battery_status) {
         case CHARGING:
@@ -627,9 +670,7 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
         case UNKNOWN:
             if (battery_state != UNKNOWN) {
                 battery_state = UNKNOWN;
-                /* Should this status be notified ?
-                notify_message ("Battery status is unknown!",  10000);
-                */
+                /* notify_message ("Battery status is unknown!", 10000); */
             }
 
             set_tooltip_and_icon (tray_icon, battery_state, 0, "");
@@ -683,32 +724,32 @@ static void set_tooltip_and_icon (GtkStatusIcon *tray_icon, gint state, gint per
 {
     gchar tooltip[STR_LTH], pct[STR_LTH], ti[STR_LTH];
 
-	switch (state) {
-		case MISSING:
-			g_strlcpy (tooltip, "No battery present!", STR_LTH);
-			break;
+    switch (state) {
+        case MISSING:
+            g_strlcpy (tooltip, "No battery present!", STR_LTH);
+            break;
 
-		case UNKNOWN:
-			g_strlcpy (tooltip, "Battery status is unknown!", STR_LTH);
-			break;
+        case UNKNOWN:
+            g_strlcpy (tooltip, "Battery status is unknown!", STR_LTH);
+            break;
 
-		default:
-			g_strlcpy (tooltip, "Battery ", STR_LTH);
+        default:
+            g_strlcpy (tooltip, "Battery ", STR_LTH);
 
-			if (state == CHARGING)
-				g_strlcat (tooltip, "charging ", STR_LTH);
-			else if (state == CHARGED)
-				g_strlcat (tooltip, "charged ", STR_LTH);
+            if (state == CHARGING)
+                g_strlcat (tooltip, "charging ", STR_LTH);
+            else if (state == CHARGED)
+                g_strlcat (tooltip, "charged ", STR_LTH);
 
-			g_sprintf (pct, "(%i\%)", percentage);
-			g_strlcat (tooltip, pct, STR_LTH);
+            g_sprintf (pct, "(%i\%)", percentage);
+            g_strlcat (tooltip, pct, STR_LTH);
 
-			if (time_string[0] != '\0') {
-				g_sprintf (ti, "\n%s", time_string);
-				g_strlcat (tooltip, ti, STR_LTH);
-			}
-			break;
-	}
+            if (time_string[0] != '\0') {
+                g_sprintf (ti, "\n%s", time_string);
+                g_strlcat (tooltip, ti, STR_LTH);
+            }
+            break;
+    }
 
     gtk_status_icon_set_tooltip_text (tray_icon, tooltip);
     gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (state, percentage));
@@ -780,7 +821,9 @@ int main (int argc, char **argv)
 {
     get_options (argc, argv);
     notify_init ("Battery Monitor");
-    get_battery (argc > 1 ? argv[1] : NULL, FALSE);
+
+    if (!get_battery (argc > 1 ? argv[1] : NULL, FALSE))
+        return -1;
 
     create_tray_icon ();
     gtk_main();
