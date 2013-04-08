@@ -149,9 +149,9 @@ static void get_options (int argc, char **argv)
 
     if (list_icon_type) {
         g_print ("List of available icon types:\n");
-        g_print ("standard\t%s\n", HAS_STANDARD_ICON_TYPE     ? "available" : "unavailable");
+        g_print ("standard\t%s\n", HAS_STANDARD_ICON_TYPE         ? "available" : "unavailable");
         g_print ("notification\t%s\n", HAS_NOTIFICATION_ICON_TYPE ? "available" : "unavailable");
-        g_print ("symbolic\t%s\n", HAS_SYMBOLIC_ICON_TYPE     ? "available" : "unavailable");
+        g_print ("symbolic\t%s\n", HAS_SYMBOLIC_ICON_TYPE         ? "available" : "unavailable");
         exit (0);
     }
 
@@ -262,7 +262,7 @@ static gboolean get_battery (gchar *udev_device_suffix, gboolean list_battery)
                 }
             }
 
-            /* process main supply (AC) */
+            /* process main power supply (AC) */
             if (!g_strcmp0 (udev_device_get_sysattr_value (udev_device, "type"), "Mains")) {
                 if (ac_path == NULL) {
                     ac_path = g_strdup (udev_device_path);
