@@ -24,9 +24,11 @@
 #include <glib/gprintf.h>
 #include <libudev.h>
 #include <libnotify/notify.h>
-#include <stdlib.h>
-#include <math.h>
+
 #include <errno.h>
+#include <math.h>
+#include <stdlib.h>
+#include <syslog.h>
 
 static void get_options (int argc, char **argv);
 static gboolean get_battery (gchar *udev_device_suffix, gboolean list_battery);
@@ -664,14 +666,17 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 			if (spawn_command_critical == 1) {
 				spawn_command_critical = 0;
 
-                g_usleep (G_USEC_PER_SEC * 10);
-                if (command_critical_level &&
-                    g_spawn_command_line_async (command_critical_level, &error) == FALSE) {
-                    notify_message ("Cannot spawn critical battery level command!", command_critical_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+                if (command_critical_level) {
+					syslog (LOG_CRIT, "Spawning critical battery level command in 30 seconds: %s", command_critical_level);
+					g_usleep (G_USEC_PER_SEC * 30);
 
-                    g_printerr ("Cannot spawn critical battery level command: %s\n%s\n", command_critical_level, error->message);
-                    g_error_free (error); error = NULL;
-                }
+					if (g_spawn_command_line_async (command_critical_level, &error) == FALSE) {
+						syslog (LOG_CRIT, "Cannot spawn critical battery level command: %s", error->message);
+						g_error_free (error); error = NULL;
+
+						notify_message ("Cannot spawn critical battery level command!", command_critical_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+					}
+				}
 			}
             break;
 
