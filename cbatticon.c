@@ -43,7 +43,7 @@ static gboolean get_battery_current_rate (gdouble *rate);
 
 static gboolean get_battery_charge_info (gint *percentage, gint *time);
 static gboolean get_battery_remaining_charge_info (gint *percentage, gint *time);
-static gboolean get_battery_estimated_time (gdouble remaining_capacity, gdouble y, gint *time);
+static void get_battery_estimated_time (gdouble remaining_capacity, gdouble y, gint *time);
 static void reset_estimated_vars (void);
 
 static void create_tray_icon (void);
@@ -57,7 +57,6 @@ static gchar* get_time_string (gint minutes);
 static gchar* get_icon_name (gint state, gint percentage);
 
 #define STR_LTH 256
-#define ERROR_TIME -1
 
 #define HAS_STANDARD_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-full")
 #define HAS_NOTIFICATION_ICON_TYPE gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "notification-battery-100")
@@ -75,7 +74,7 @@ enum {
 };
 
 static gchar *battery_path = NULL;
-static gchar *ac_path = NULL;
+static gchar *ac_path      = NULL;
 
 enum {
     UNKNOWN_ICON = 0,
@@ -99,10 +98,10 @@ static gint critical_level           = DEFAULT_CRITICAL_LEVEL;
  * are used to calculate estimated time
  */
 
-gboolean is_rate_possible       = TRUE;
-gdouble prev_remaining_capacity = -1;
-gint prev_time                  = ERROR_TIME;
-glong secs_last_time_change     = 0;
+static gboolean is_current_rate_possible   = TRUE;
+static gdouble previous_remaining_capacity = -1;
+static gdouble seconds_time_change         = 0;
+static gint previous_time                  = -1;
 
 /*
  * command line options function
@@ -421,13 +420,18 @@ static gboolean get_battery_full_capacity (gdouble *capacity)
 static gboolean get_battery_current_rate (gdouble *rate)
 {
     gboolean status;
+	static gboolean current_rate_checked = FALSE;
 
     g_return_val_if_fail (rate != NULL, FALSE);
 
     status = get_sysattr_double ("power_now", rate);
     if (!status) status = get_sysattr_double ("current_now", rate);
 
-    is_rate_possible = status;
+	/* determine at startup if current rate can be obtained or not */
+	if (!current_rate_checked) {
+		current_rate_checked = TRUE;
+		is_current_rate_possible = status;
+	}
 
     return status;
 }
@@ -446,17 +450,13 @@ static gboolean get_battery_charge_info (gint *percentage, gint *time)
 
     *percentage = (gint)fmin (floor (remaining_capacity / full_capacity * 100.0), 100.0);
 
-    if (!is_rate_possible) {
-        if (!get_battery_estimated_time (remaining_capacity, full_capacity, time))
-            *time = ERROR_TIME;
+    if (is_current_rate_possible) {
+		if (!get_battery_current_rate (&current_rate))
+			return FALSE;
 
-        return TRUE;
-    }
-
-    if (!get_battery_current_rate (&current_rate))
-        return FALSE;
-
-    *time = (gint)(((full_capacity - remaining_capacity) / current_rate) * 60.0);
+		*time = (gint)(((full_capacity - remaining_capacity) / current_rate) * 60.0);
+	} else
+        get_battery_estimated_time (remaining_capacity, full_capacity, time);
 
     return TRUE;
 }
@@ -471,56 +471,47 @@ static gboolean get_battery_remaining_charge_info (gint *percentage, gint *time)
 
     *percentage = (gint)fmin (floor (remaining_capacity / full_capacity * 100.0), 100.0);
 
-    if (!is_rate_possible) {
-        if (!get_battery_estimated_time (remaining_capacity, 0, time))
-            *time = ERROR_TIME;
+    if (is_current_rate_possible) {
+		if (!get_battery_current_rate (&current_rate))
+			return FALSE;
 
-        return TRUE;
-    }
-
-    if (!get_battery_current_rate (&current_rate))
-        return FALSE;
-
-    *time = (gint)((remaining_capacity / current_rate) * 60.0);
+		*time = (gint)((remaining_capacity / current_rate) * 60.0);
+	} else
+        get_battery_estimated_time (remaining_capacity, 0, time);
 
     return TRUE;
 }
 
 /* y = 0 if discharging or battery_full_capacity */
-static gboolean get_battery_estimated_time (gdouble remaining_capacity, gdouble y, gint *time)
+static void get_battery_estimated_time (gdouble remaining_capacity, gdouble y, gint *time)
 {
-    gdouble m = 0;
-    gdouble calc_sec = 0;
+    if (previous_remaining_capacity == -1)
+        previous_remaining_capacity = remaining_capacity;
 
-    if (prev_remaining_capacity == -1)
-        prev_remaining_capacity = remaining_capacity;
-
-    *time = prev_time;
-    secs_last_time_change += update_interval;
+    seconds_time_change += (gdouble)update_interval;
+    *time = previous_time;
 
     /*
      * y=mx+b...x=(y-b)/m solving for when y = full_charge or 0
-     * y2=remaining_capacity y1=prev_remain run=secs_last_time_change b=prev_remain
+     * y2=remaining_capacity y1=prev_remain run=seconds_time_change b=prev_remain
      */
 
-    if (prev_remaining_capacity != remaining_capacity) {
-        m = (remaining_capacity - prev_remaining_capacity) / (gdouble)(secs_last_time_change);
-        calc_sec = ((y - prev_remaining_capacity) / m) - (secs_last_time_change);
-        *time = (gint)((calc_sec) / (gdouble)60);
+    if (remaining_capacity != previous_remaining_capacity) {
+        gdouble m = (remaining_capacity - previous_remaining_capacity) / seconds_time_change;
+        gdouble calculated_seconds = ((y - previous_remaining_capacity) / m) - seconds_time_change;
+        *time = (gint)(calculated_seconds / 60.0);
 
-        prev_remaining_capacity = remaining_capacity;
-        prev_time = *time;
-        secs_last_time_change = 0;
+        previous_remaining_capacity = remaining_capacity;
+        seconds_time_change = 0;
+        previous_time = *time;
     }
-
-    return TRUE;
 }
 
 static void reset_estimated_vars (void)
 {
-    prev_remaining_capacity = -1;
-    prev_time = ERROR_TIME;
-    secs_last_time_change = 0;
+    previous_remaining_capacity = -1;
+    seconds_time_change         = 0;
+    previous_time               = -1;
 }
 
 /*
@@ -633,6 +624,9 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
 
         case DISCHARGING:
         case NOT_CHARGING:
+            if (!is_current_rate_possible && battery_state != DISCHARGING)
+                reset_estimated_vars ();
+
             if (!get_battery_remaining_charge_info (&percentage, &time))
                 return;
 
@@ -642,8 +636,6 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
             if (battery_state != DISCHARGING) {
                 battery_state  = DISCHARGING;
                 notify_message (battery_string, time_string, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL);
-
-                reset_estimated_vars ();
 
                 battery_low            = 0;
                 battery_critical       = 0;
@@ -684,6 +676,9 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
             break;
 
         case CHARGING:
+            if (!is_current_rate_possible && battery_state != CHARGING)
+                reset_estimated_vars ();
+
             if (!get_battery_charge_info (&percentage, &time))
                 return;
 
@@ -693,8 +688,6 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
             if (battery_state != CHARGING) {
                 battery_state  = CHARGING;
                 notify_message (battery_string, time_string, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL);
-
-                reset_estimated_vars ();
             }
 
 			gtk_status_icon_set_tooltip_text (tray_icon, get_tooltip_string (battery_string, time_string));
