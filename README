@@ -1,6 +1,6 @@
-A GTK+ battery icon which uses libudev to be lightweight and fast.
+A lightweight and fast GTK+ battery icon.
 
-Requires libnotify, libudev, and GTK2 to build.
+Requires libnotify and GTK2 to build (libudev is not required anymore!).
 Based on code from xbattbar-acpi.
 
 Usage:
@@ -30,4 +30,4 @@ Default value for options:
   command critical level : none
   low level              : 20 percent
   critical level         : 5 percent
-  battery id             : the first one that is reported by udev
+  battery id             : the first one that is reported by sysfs

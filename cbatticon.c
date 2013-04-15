@@ -4,7 +4,7 @@
  * Based on code by Matteo Marchesotti
  * Copyright (C) 2007 Matteo Marchesotti <matteo.marchesotti@fsfe.org>
  *
- * cbatticon: a GTK+ battery icon which uses libudev to be lightweight and fast.
+ * cbatticon: a lightweight and fast GTK+ battery icon.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 
 #include <gtk/gtk.h>
 #include <glib/gprintf.h>
-#include <libudev.h>
 #include <libnotify/notify.h>
 
 #include <errno.h>
@@ -31,7 +30,7 @@
 #include <syslog.h>
 
 static void get_options (int argc, char **argv);
-static gboolean get_battery (gchar *udev_device_suffix, gboolean list_battery);
+static gboolean get_battery (gchar *battery_suffix, gboolean list_battery);
 
 static gboolean get_sysattr_string (gchar *path, gchar *attribute, gchar **value);
 static gboolean get_battery_present (gint *present);
@@ -74,6 +73,8 @@ enum {
     LOW_LEVEL,
     CRITICAL_LEVEL
 };
+
+#define SYSFS_PATH "/sys/class/power_supply"
 
 static gchar *battery_path = NULL;
 static gchar *ac_path      = NULL;
@@ -208,77 +209,64 @@ static void get_options (int argc, char **argv)
     }
 }
 
-/*
- * udev function
- */
-
-static gboolean get_battery (gchar *udev_device_suffix, gboolean list_battery)
+static gboolean get_battery (gchar *battery_suffix, gboolean list_battery)
 {
-    struct udev *udev_context;
-    struct udev_enumerate *udev_enumerate_context;
-    struct udev_list_entry *udev_devices_list, *udev_device_list_entry;
-    struct udev_device *udev_device;
-    gchar *udev_device_path;
+	GDir *directory;
+    GError *error = NULL;
+	const gchar *file; 
+	gchar *path;
+	gchar *sysattr_value;
+	gboolean sysattr_status;
 
-    udev_context = udev_new ();
-    if (!udev_context) {
-        g_printerr ("Can't create udev context\n");
-        return FALSE;
-    }
+	directory = g_dir_open (SYSFS_PATH, 0, &error);
+	if (directory) {
+		file = g_dir_read_name (directory);
+		while (file) {
+			path = g_build_filename (SYSFS_PATH, file, NULL);
 
-    udev_enumerate_context = udev_enumerate_new (udev_context);
-    if (!udev_enumerate_context) {
-        g_printerr ("Can't create udev enumeration context\n");
-        return FALSE;
-    }
+			sysattr_status = get_sysattr_string (path, "type", &sysattr_value);
+			if (sysattr_status) {
 
-    if (udev_enumerate_add_match_subsystem (udev_enumerate_context, "power_supply")) {
-        g_printerr ("Can't add udev matching subsystem: power_supply\n");
-        return FALSE;
-    }
+				/* process battery */
+				if (g_str_has_prefix (sysattr_value, "Battery")) {
+					if (list_battery) {
+						gchar *battery_id = g_path_get_basename (path);
+						g_print ("id: %s\tpath: %s\n", battery_id, path);
+						g_free (battery_id);
+					}
 
-    if (udev_enumerate_scan_devices (udev_enumerate_context)) {
-        g_printerr ("Can't scan udev devices\n");
-        return FALSE;
-    }
+					if (battery_path == NULL) {
+						if (battery_suffix == NULL ||
+							g_str_has_suffix (path, battery_suffix)) {
+							battery_path = g_strdup (path);
 
-    udev_devices_list = udev_enumerate_get_list_entry (udev_enumerate_context);
-    udev_list_entry_foreach (udev_device_list_entry, udev_devices_list) {
+							/* workaround for limited/bugged batteries/drivers */
+							/* that don't provide current rate                 */
+							gdouble dummy;
+							is_current_rate_possible = get_battery_current_rate (&dummy);
+						}
+					}
+				}
 
-        udev_device_path = g_strdup (udev_list_entry_get_name (udev_device_list_entry));
-        udev_device = udev_device_new_from_syspath (udev_context, udev_device_path);
+				/* process main power supply (AC) */
+				if (g_str_has_prefix (sysattr_value, "Mains")) {
+					if (ac_path == NULL) {
+						ac_path = g_strdup (path);
+					}
+				}
 
-        if (udev_device) {
-            /* process battery */
-            if (!g_strcmp0 (udev_device_get_sysattr_value (udev_device, "type"), "Battery")) {
-                if (list_battery) {
-                    gchar *battery_id = g_path_get_basename (udev_device_path);
-                    g_print ("id: %s\tpath: %s\n", battery_id, udev_device_path);
-                    g_free (battery_id);
-                }
+				g_free (sysattr_value);
+			}
 
-                if (battery_path == NULL) {
-                    if (udev_device_suffix == NULL ||
-                        g_str_has_suffix (udev_device_path, udev_device_suffix)) {
-                        battery_path = g_strdup (udev_device_path);
-                    }
-                }
-            }
+			g_free (path);
+			file = g_dir_read_name (directory);
+		}
 
-            /* process main power supply (AC) */
-            if (!g_strcmp0 (udev_device_get_sysattr_value (udev_device, "type"), "Mains")) {
-                if (ac_path == NULL) {
-                    ac_path = g_strdup (udev_device_path);
-                }
-            }
-        }
-
-        udev_device_unref (udev_device);
-        g_free (udev_device_path);
-    }
-
-    udev_enumerate_unref (udev_enumerate_context);
-    udev_unref (udev_context);
+		g_dir_close (directory);
+	} else {
+        g_printerr ("Cannot open sysfs directory: %s (%s)\n", SYSFS_PATH, error->message);
+		g_error_free (error); error = NULL;
+	}
 
     if (!list_battery && !battery_path) {
         g_printerr ("No battery device found!\n");
@@ -422,18 +410,11 @@ static gboolean get_battery_full_capacity (gdouble *capacity)
 static gboolean get_battery_current_rate (gdouble *rate)
 {
     gboolean status;
-	static gboolean current_rate_checked = FALSE;
 
     g_return_val_if_fail (rate != NULL, FALSE);
 
     status = get_sysattr_double ("power_now", rate);
     if (!status) status = get_sysattr_double ("current_now", rate);
-
-	/* determine at startup if current rate can be obtained or not */
-	if (!current_rate_checked) {
-		current_rate_checked = TRUE;
-		is_current_rate_possible = status;
-	}
 
     return status;
 }
@@ -563,15 +544,14 @@ static void update_tray_icon_state (GtkStatusIcon *tray_icon)
     if (!get_battery_present (&battery_present))
         return;
 
-    /* first check if battery is present... */
     if (!battery_present) {
 		battery_status = MISSING;
     } else {
-		/* ...and then check its status */
 		if (!get_battery_status (&battery_status))
 			return;
 
-		/* ...if status is unknown, try guessing its status */
+		/* workaround for limited/bugged batteries/drivers */
+		/* that unduly return unknown status               */
 		if (battery_status == UNKNOWN && get_ac_online (&battery_online)) {
 			if (battery_online) {
 				battery_status = CHARGING;

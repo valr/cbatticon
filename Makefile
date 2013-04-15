@@ -22,7 +22,7 @@ INSTALL_DATA = $(INSTALL) -m644
 # flags and libs
 CFLAGS ?= -O2
 CFLAGS += -Wall -Wno-format
-PKG_DEPS = gtk+-2.0 libnotify libudev
+PKG_DEPS = gtk+-2.0 libnotify
 LIBS += $(shell $(PKG_CONFIG) --libs $(PKG_DEPS)) -lm
 CFLAGS += $(shell $(PKG_CONFIG) --cflags $(PKG_DEPS))
 
