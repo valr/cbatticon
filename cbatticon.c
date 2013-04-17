@@ -171,7 +171,7 @@ static gboolean get_options (int argc, char **argv)
             icon_type = BATTERY_ICON;
         else if (g_strcmp0 (icon_type_string, "notification") == 0 && HAS_NOTIFICATION_ICON_TYPE == TRUE)
             icon_type = BATTERY_ICON_NOTIFICATION;
-        else if (g_strcmp0 (icon_type_string, "symbolic") && HAS_SYMBOLIC_ICON_TYPE == TRUE)
+        else if (g_strcmp0 (icon_type_string, "symbolic") == 0 && HAS_SYMBOLIC_ICON_TYPE == TRUE)
             icon_type = BATTERY_ICON_SYMBOLIC;
         else g_printerr ("Unknown icon type: %s\n", icon_type_string);
 
@@ -210,7 +210,7 @@ static gboolean get_options (int argc, char **argv)
     if (critical_level > low_level) {
         low_level = DEFAULT_LOW_LEVEL;
         critical_level = DEFAULT_CRITICAL_LEVEL;
-        g_printerr ("Critical level higher than low level! They have been reset to default\n");
+        g_printerr ("Critical level is higher than low level! They have been reset to default\n");
     }
 
     return TRUE;
@@ -276,6 +276,7 @@ static gboolean get_battery (gchar *battery_suffix, gboolean list_battery)
     } else {
         g_printerr ("Cannot open sysfs directory: %s (%s)\n", SYSFS_PATH, error->message);
         g_error_free (error); error = NULL;
+        return FALSE;
     }
 
     if (list_battery == FALSE && battery_path == NULL) {
@@ -432,7 +433,8 @@ static gboolean get_battery_charge_info (gint *percentage, gint *time)
 {
     gdouble full_capacity, remaining_capacity, current_rate;
 
-/* g_return_val_if_fail (??? != NULL, FALSE); */
+	g_return_val_if_fail (percentage != NULL, FALSE);
+	g_return_val_if_fail (time != NULL, FALSE);
 
     if (get_battery_full_capacity (&full_capacity) == FALSE ||
         get_battery_remaining_capacity (&remaining_capacity) == FALSE)
@@ -456,7 +458,8 @@ static gboolean get_battery_remaining_charge_info (gint *percentage, gint *time)
 {
     gdouble full_capacity, remaining_capacity, current_rate;
 
-/* g_return_val_if_fail (??? != NULL, FALSE); */
+	g_return_val_if_fail (percentage != NULL, FALSE);
+	g_return_val_if_fail (time != NULL, FALSE);
 
     if (get_battery_full_capacity (&full_capacity) == FALSE ||
         get_battery_remaining_capacity (&remaining_capacity) == FALSE)
