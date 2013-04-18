@@ -530,17 +530,9 @@ static void create_tray_icon (void)
 
 static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
 {
-    static gboolean lock = FALSE;
-
     g_return_val_if_fail (tray_icon != NULL, FALSE);
 
-    if (lock == FALSE) {
-        lock = TRUE;
-        update_tray_icon_status (tray_icon);
-        lock = FALSE;
-    } else {
-        g_printerr ("Tray icon update locked!?\n");
-    }
+    update_tray_icon_status (tray_icon);
 
     return TRUE;
 }
