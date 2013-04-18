@@ -433,8 +433,8 @@ static gboolean get_battery_charge_info (gint *percentage, gint *time)
 {
     gdouble full_capacity, remaining_capacity, current_rate;
 
-	g_return_val_if_fail (percentage != NULL, FALSE);
-	g_return_val_if_fail (time != NULL, FALSE);
+    g_return_val_if_fail (percentage != NULL, FALSE);
+    g_return_val_if_fail (time != NULL, FALSE);
 
     if (get_battery_full_capacity (&full_capacity) == FALSE ||
         get_battery_remaining_capacity (&remaining_capacity) == FALSE)
@@ -458,8 +458,8 @@ static gboolean get_battery_remaining_charge_info (gint *percentage, gint *time)
 {
     gdouble full_capacity, remaining_capacity, current_rate;
 
-	g_return_val_if_fail (percentage != NULL, FALSE);
-	g_return_val_if_fail (time != NULL, FALSE);
+    g_return_val_if_fail (percentage != NULL, FALSE);
+    g_return_val_if_fail (time != NULL, FALSE);
 
     if (get_battery_full_capacity (&full_capacity) == FALSE ||
         get_battery_remaining_capacity (&remaining_capacity) == FALSE)
@@ -559,7 +559,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 
     gint percentage, time;
     gchar *battery_string, *time_string;
-	NotifyNotification *notification = NULL;
+    NotifyNotification *notification = NULL;
     GError *error = NULL;
 
     g_return_if_fail (tray_icon != NULL);
@@ -690,11 +690,11 @@ static void notify_message (NotifyNotification **notification, gchar *summary, g
     g_return_if_fail (notification != NULL);
     g_return_if_fail (summary != NULL);
 
-	if (*notification == NULL) {
-		*notification = notify_notification_new (summary, body, NULL);
-	} else {
-		notify_notification_update (*notification, summary, body, NULL);
-	}
+    if (*notification == NULL) {
+        *notification = notify_notification_new (summary, body, NULL);
+    } else {
+        notify_notification_update (*notification, summary, body, NULL);
+    }
 
     notify_notification_set_timeout (*notification, timeout);
     notify_notification_set_urgency (*notification, urgency);
