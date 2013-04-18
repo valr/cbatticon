@@ -38,9 +38,9 @@ static gboolean get_battery_present (gboolean *present);
 static gboolean get_battery_status (gint *status);
 static gboolean get_ac_online (gboolean *online);
 
-static gboolean get_battery_full_capacity (gdouble *capacity);
-static gboolean get_battery_remaining_capacity (gdouble *capacity);
-static gboolean get_battery_current_rate (gdouble *rate);
+static gboolean get_battery_full_capacity (gboolean *use_charge, gdouble *capacity);
+static gboolean get_battery_remaining_capacity (gboolean use_charge, gdouble *capacity);
+static gboolean get_battery_current_rate (gboolean use_charge, gdouble *rate);
 
 static gboolean get_battery_charge_info (gint *percentage, gint *time);
 static gboolean get_battery_remaining_charge_info (gint *percentage, gint *time);
@@ -252,8 +252,8 @@ static gboolean get_battery (gchar *battery_suffix, gboolean list_battery)
 
                             /* workaround for limited/bugged batteries/drivers */
                             /* that don't provide current rate                 */
-                            gdouble dummy;
-                            is_current_rate_possible = get_battery_current_rate (&dummy);
+                            is_current_rate_possible = get_battery_current_rate (FALSE, NULL)
+                                                     | get_battery_current_rate (TRUE, NULL);
                         }
                     }
                 }
@@ -310,15 +310,18 @@ static gboolean get_sysattr_double (gchar *path, gchar *attribute, gdouble *valu
 
     g_return_val_if_fail (path != NULL, FALSE);
     g_return_val_if_fail (attribute != NULL, FALSE);
-    g_return_val_if_fail (value != NULL, FALSE);
 
     sysattr_filename = g_build_filename (path, attribute, NULL);
     sysattr_status = g_file_get_contents (sysattr_filename, &sysattr_value, NULL, NULL);
+
     g_free (sysattr_filename);
 
     if (sysattr_status == TRUE) {
-        *value = g_ascii_strtod (sysattr_value, NULL);
-        if (errno != 0 || *value < 0.01) sysattr_status = FALSE;
+        if (value != NULL) {
+            *value = g_ascii_strtod (sysattr_value, NULL);
+            if (errno != 0 || *value < 0.01) sysattr_status = FALSE;
+        }
+
         g_free (sysattr_value);
     }
 
@@ -386,43 +389,42 @@ static gboolean get_ac_online (gboolean *online)
     return sysattr_status;
 }
 
-static gboolean get_battery_full_capacity (gdouble *capacity)
+static gboolean get_battery_full_capacity (gboolean *use_charge, gdouble *capacity)
 {
     gboolean sysattr_status;
 
+    g_return_val_if_fail (use_charge != NULL, FALSE);
     g_return_val_if_fail (capacity != NULL, FALSE);
 
     sysattr_status = get_sysattr_double (battery_path, "energy_full", capacity);
-    if (sysattr_status == FALSE)
+    *use_charge = FALSE;
+
+    if (sysattr_status == FALSE) {
         sysattr_status = get_sysattr_double (battery_path, "charge_full", capacity);
+        *use_charge = TRUE;
+    }
 
     return sysattr_status;
 }
 
-static gboolean get_battery_remaining_capacity (gdouble *capacity)
+static gboolean get_battery_remaining_capacity (gboolean use_charge, gdouble *capacity)
 {
-    gboolean sysattr_status;
-
     g_return_val_if_fail (capacity != NULL, FALSE);
 
-    sysattr_status = get_sysattr_double (battery_path, "energy_now", capacity);
-    if (sysattr_status == FALSE)
-        sysattr_status = get_sysattr_double (battery_path, "charge_now", capacity);
-
-    return sysattr_status;
+    if (use_charge == FALSE) {
+        return get_sysattr_double (battery_path, "energy_now", capacity);
+    } else {
+        return get_sysattr_double (battery_path, "charge_now", capacity);
+    }
 }
 
-static gboolean get_battery_current_rate (gdouble *rate)
+static gboolean get_battery_current_rate (gboolean use_charge, gdouble *rate)
 {
-    gboolean sysattr_status;
-
-    g_return_val_if_fail (rate != NULL, FALSE);
-
-    sysattr_status = get_sysattr_double (battery_path, "power_now", rate);
-    if (sysattr_status == FALSE)
-        sysattr_status = get_sysattr_double (battery_path, "current_now", rate);
-
-    return sysattr_status;
+    if (use_charge == FALSE) {
+        return get_sysattr_double (battery_path, "power_now", rate);
+    } else {
+        return get_sysattr_double (battery_path, "current_now", rate);
+    }
 }
 
 /*
@@ -432,18 +434,19 @@ static gboolean get_battery_current_rate (gdouble *rate)
 static gboolean get_battery_charge_info (gint *percentage, gint *time)
 {
     gdouble full_capacity, remaining_capacity, current_rate;
+    gboolean use_charge;
 
     g_return_val_if_fail (percentage != NULL, FALSE);
     g_return_val_if_fail (time != NULL, FALSE);
 
-    if (get_battery_full_capacity (&full_capacity) == FALSE ||
-        get_battery_remaining_capacity (&remaining_capacity) == FALSE)
+    if (get_battery_full_capacity (&use_charge, &full_capacity) == FALSE ||
+        get_battery_remaining_capacity (use_charge, &remaining_capacity) == FALSE)
         return FALSE;
 
     *percentage = (gint)fmin (floor (remaining_capacity / full_capacity * 100.0), 100.0);
 
     if (is_current_rate_possible == TRUE) {
-        if (get_battery_current_rate (&current_rate) == FALSE)
+        if (get_battery_current_rate (use_charge, &current_rate) == FALSE)
             return FALSE;
 
         *time = (gint)((full_capacity - remaining_capacity) / current_rate * 60.0);
@@ -457,18 +460,19 @@ static gboolean get_battery_charge_info (gint *percentage, gint *time)
 static gboolean get_battery_remaining_charge_info (gint *percentage, gint *time)
 {
     gdouble full_capacity, remaining_capacity, current_rate;
+    gboolean use_charge;
 
     g_return_val_if_fail (percentage != NULL, FALSE);
     g_return_val_if_fail (time != NULL, FALSE);
 
-    if (get_battery_full_capacity (&full_capacity) == FALSE ||
-        get_battery_remaining_capacity (&remaining_capacity) == FALSE)
+    if (get_battery_full_capacity (&use_charge, &full_capacity) == FALSE ||
+        get_battery_remaining_capacity (use_charge, &remaining_capacity) == FALSE)
         return FALSE;
 
     *percentage = (gint)fmin (floor (remaining_capacity / full_capacity * 100.0), 100.0);
 
     if (is_current_rate_possible == TRUE) {
-        if (get_battery_current_rate (&current_rate) == FALSE)
+        if (get_battery_current_rate (use_charge, &current_rate) == FALSE)
             return FALSE;
 
         *time = (gint)(remaining_capacity / current_rate * 60.0);
@@ -610,7 +614,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
             break;
 
         case CHARGING:
-            if (is_current_rate_possible == FALSE && old_battery_status != CHARGING)
+            if (old_battery_status != CHARGING && is_current_rate_possible == FALSE)
                 reset_estimated_vars ();
 
             if (get_battery_charge_info (&percentage, &time) == FALSE)
@@ -621,7 +625,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 
         case DISCHARGING:
         case NOT_CHARGING:
-            if (is_current_rate_possible == FALSE && old_battery_status != DISCHARGING)
+            if (old_battery_status != DISCHARGING && is_current_rate_possible == FALSE)
                 reset_estimated_vars ();
 
             if (get_battery_remaining_charge_info (&percentage, &time) == FALSE)
