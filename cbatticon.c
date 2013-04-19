@@ -4,7 +4,7 @@
  * Based on code by Matteo Marchesotti
  * Copyright (C) 2007 Matteo Marchesotti <matteo.marchesotti@fsfe.org>
  *
- * cbatticon: a lightweight and fast GTK+ battery icon.
+ * cbatticon: a lightweight and fast battery icon that sits in your system tray.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,9 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#define CBATTICON_VERSION_NUMBER 1.2.0
+#define CBATTICON_VERSION_STRING "1.2.0"
 
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
@@ -88,9 +91,9 @@ static gchar *ac_path      = NULL;
 
 static gint update_interval          = DEFAULT_UPDATE_INTERVAL;
 static gint icon_type                = UNKNOWN_ICON;
-static gchar *command_critical_level = NULL;
 static gint low_level                = DEFAULT_LOW_LEVEL;
 static gint critical_level           = DEFAULT_CRITICAL_LEVEL;
+static gchar *command_critical_level = NULL;
 
 /*
  * workaround for limited/bugged batteries/drivers that don't provide current rate
@@ -111,15 +114,17 @@ static gboolean get_options (int argc, char **argv)
     GOptionContext *option_context;
     GError *error = NULL;
 
-    gchar *icon_type_string = NULL;
-    gboolean list_icon_type = FALSE;
-    gboolean list_battery   = FALSE;
+    gchar *icon_type_string  = NULL;
+    gboolean display_version = FALSE;
+    gboolean list_icon_type  = FALSE;
+    gboolean list_battery    = FALSE;
     GOptionEntry option_entries[] = {
+        { "version"               , 'v', 0, G_OPTION_ARG_NONE  , &display_version       , "Display the version of cbatticon"                         , NULL },
         { "update-interval"       , 'u', 0, G_OPTION_ARG_INT   , &update_interval       , "Set update interval (in seconds)"                         , NULL },
         { "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string      , "Set icon type ('standard', 'notification' or 'symbolic')" , NULL },
-        { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &command_critical_level, "Command to execute when critical battery level is reached", NULL },
         { "low-level"             , 'l', 0, G_OPTION_ARG_INT   , &low_level             , "Set low battery level (in percent)"                       , NULL },
         { "critical-level"        , 'r', 0, G_OPTION_ARG_INT   , &critical_level        , "Set critical battery level (in percent)"                  , NULL },
+        { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &command_critical_level, "Command to execute when critical battery level is reached", NULL },
         { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &list_icon_type        , "List available icon types"                                , NULL },
         { "list-batteries"        , 'b', 0, G_OPTION_ARG_NONE  , &list_battery          , "List available batteries"                                 , NULL },
         { NULL }
@@ -137,6 +142,15 @@ static gboolean get_options (int argc, char **argv)
     }
 
     g_option_context_free (option_context);
+
+    /* option : display the version */
+
+    if (display_version == TRUE) {
+        g_print ("cbatticon: a lightweight and fast battery icon that sits in your system tray.\n");
+        g_print ("version %s\n", CBATTICON_VERSION_STRING);
+
+        return FALSE;
+    }
 
     /* option : list available batteries */
 

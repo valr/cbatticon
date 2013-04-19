@@ -28,7 +28,7 @@ CFLAGS += $(shell $(PKG_CONFIG) --cflags $(PKG_DEPS))
 
 # variables
 PACKAGE_NAME = cbatticon
-VERSION = 0 
+VERSION = $(shell grep CBATTICON_VERSION_NUMBER cbatticon.c | awk '{print $$3}')
 PREFIX ?= /usr
 BINDIR = $(PREFIX)/bin
 DOCDIR = $(PREFIX)/share/doc/$(PACKAGE_NAME)-$(VERSION)
@@ -36,7 +36,6 @@ DOCDIR = $(PREFIX)/share/doc/$(PACKAGE_NAME)-$(VERSION)
 BIN = $(PACKAGE_NAME)
 SOURCEFILES := $(wildcard *.c)
 OBJECTS := $(patsubst %.c,%.o,$(SOURCEFILES))
-
 
 $(BIN): $(OBJECTS)
 	@echo -e '\033[1;31mLinking CC executable $@\033[0m'
