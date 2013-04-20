@@ -9,6 +9,7 @@ Usage:
 
 Options:
   -h, --help                       Show help options
+  -v, --version                    Display the version of cbatticon
   -u, --update-interval            Set update interval (in seconds)
   -i, --icon-type                  Set icon type ('standard', 'notification' or 'symbolic')
   -l, --low-level                  Set low battery level (in percent)
