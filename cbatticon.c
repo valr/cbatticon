@@ -87,10 +87,10 @@ enum {
 };
 
 struct configuration {
-    gint update_interval;
-    gint icon_type;
-    gint low_level;
-    gint critical_level;
+    gint   update_interval;
+    gint   icon_type;
+    gint   low_level;
+    gint   critical_level;
     gchar *command_critical_level;
 } configuration = {
     DEFAULT_UPDATE_INTERVAL,
