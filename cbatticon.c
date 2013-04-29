@@ -86,14 +86,22 @@ enum {
     CRITICAL_LEVEL
 };
 
+struct configuration {
+    gint update_interval;
+    gint icon_type;
+    gint low_level;
+    gint critical_level;
+    gchar *command_critical_level;
+} configuration = {
+    DEFAULT_UPDATE_INTERVAL,
+    UNKNOWN_ICON,
+    DEFAULT_LOW_LEVEL,
+    DEFAULT_CRITICAL_LEVEL,
+    NULL
+};
+
 static gchar *battery_path = NULL;
 static gchar *ac_path      = NULL;
-
-static gint update_interval          = DEFAULT_UPDATE_INTERVAL;
-static gint icon_type                = UNKNOWN_ICON;
-static gint low_level                = DEFAULT_LOW_LEVEL;
-static gint critical_level           = DEFAULT_CRITICAL_LEVEL;
-static gchar *command_critical_level = NULL;
 
 /*
  * workaround for limited/bugged batteries/drivers that don't provide current rate
@@ -119,14 +127,14 @@ static gboolean get_options (int argc, char **argv)
     gboolean list_icon_type  = FALSE;
     gboolean list_battery    = FALSE;
     GOptionEntry option_entries[] = {
-        { "version"               , 'v', 0, G_OPTION_ARG_NONE  , &display_version       , "Display the version of cbatticon"                         , NULL },
-        { "update-interval"       , 'u', 0, G_OPTION_ARG_INT   , &update_interval       , "Set update interval (in seconds)"                         , NULL },
-        { "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string      , "Set icon type ('standard', 'notification' or 'symbolic')" , NULL },
-        { "low-level"             , 'l', 0, G_OPTION_ARG_INT   , &low_level             , "Set low battery level (in percent)"                       , NULL },
-        { "critical-level"        , 'r', 0, G_OPTION_ARG_INT   , &critical_level        , "Set critical battery level (in percent)"                  , NULL },
-        { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &command_critical_level, "Command to execute when critical battery level is reached", NULL },
-        { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &list_icon_type        , "List available icon types"                                , NULL },
-        { "list-batteries"        , 'b', 0, G_OPTION_ARG_NONE  , &list_battery          , "List available batteries"                                 , NULL },
+        { "version"               , 'v', 0, G_OPTION_ARG_NONE  , &display_version                     , "Display the version of cbatticon"                         , NULL },
+        { "update-interval"       , 'u', 0, G_OPTION_ARG_INT   , &configuration.update_interval       , "Set update interval (in seconds)"                         , NULL },
+        { "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string                    , "Set icon type ('standard', 'notification' or 'symbolic')" , NULL },
+        { "low-level"             , 'l', 0, G_OPTION_ARG_INT   , &configuration.low_level             , "Set low battery level (in percent)"                       , NULL },
+        { "critical-level"        , 'r', 0, G_OPTION_ARG_INT   , &configuration.critical_level        , "Set critical battery level (in percent)"                  , NULL },
+        { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &configuration.command_critical_level, "Command to execute when critical battery level is reached", NULL },
+        { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &list_icon_type                      , "List available icon types"                                , NULL },
+        { "list-batteries"        , 'b', 0, G_OPTION_ARG_NONE  , &list_battery                        , "List available batteries"                                 , NULL },
         { NULL }
     };
 
@@ -180,48 +188,48 @@ static gboolean get_options (int argc, char **argv)
 
     if (icon_type_string != NULL) {
         if (g_strcmp0 (icon_type_string, "standard") == 0 && HAS_STANDARD_ICON_TYPE == TRUE)
-            icon_type = BATTERY_ICON;
+            configuration.icon_type = BATTERY_ICON;
         else if (g_strcmp0 (icon_type_string, "notification") == 0 && HAS_NOTIFICATION_ICON_TYPE == TRUE)
-            icon_type = BATTERY_ICON_NOTIFICATION;
+            configuration.icon_type = BATTERY_ICON_NOTIFICATION;
         else if (g_strcmp0 (icon_type_string, "symbolic") == 0 && HAS_SYMBOLIC_ICON_TYPE == TRUE)
-            icon_type = BATTERY_ICON_SYMBOLIC;
+            configuration.icon_type = BATTERY_ICON_SYMBOLIC;
         else g_printerr ("Unknown icon type: %s\n", icon_type_string);
 
         g_free (icon_type_string);
     }
 
-    if (icon_type == UNKNOWN_ICON) {
+    if (configuration.icon_type == UNKNOWN_ICON) {
         if (HAS_STANDARD_ICON_TYPE == TRUE)
-            icon_type = BATTERY_ICON;
+            configuration.icon_type = BATTERY_ICON;
         else if (HAS_NOTIFICATION_ICON_TYPE == TRUE)
-            icon_type = BATTERY_ICON_NOTIFICATION;
+            configuration.icon_type = BATTERY_ICON_NOTIFICATION;
         else if (HAS_SYMBOLIC_ICON_TYPE == TRUE)
-            icon_type = BATTERY_ICON_SYMBOLIC;
+            configuration.icon_type = BATTERY_ICON_SYMBOLIC;
         else g_printerr ("No icon type found!\n");
     }
 
     /* option : update interval */
 
-    if (update_interval <= 0) {
-        update_interval = DEFAULT_UPDATE_INTERVAL;
+    if (configuration.update_interval <= 0) {
+        configuration.update_interval = DEFAULT_UPDATE_INTERVAL;
         g_printerr ("Invalid update interval! It has been reset to default (%d seconds)\n", DEFAULT_UPDATE_INTERVAL);
     }
 
     /* option : low and critical levels */
 
-    if (low_level < 0 || low_level > 100) {
-        low_level = DEFAULT_LOW_LEVEL;
+    if (configuration.low_level < 0 || configuration.low_level > 100) {
+        configuration.low_level = DEFAULT_LOW_LEVEL;
         g_printerr ("Invalid low level! It has been reset to default (%d percent)\n", DEFAULT_LOW_LEVEL);
     }
 
-    if (critical_level < 0 || critical_level > 100) {
-        critical_level = DEFAULT_CRITICAL_LEVEL;
+    if (configuration.critical_level < 0 || configuration.critical_level > 100) {
+        configuration.critical_level = DEFAULT_CRITICAL_LEVEL;
         g_printerr ("Invalid critical level! It has been reset to default (%d percent)\n", DEFAULT_CRITICAL_LEVEL);
     }
 
-    if (critical_level > low_level) {
-        low_level = DEFAULT_LOW_LEVEL;
-        critical_level = DEFAULT_CRITICAL_LEVEL;
+    if (configuration.critical_level > configuration.low_level) {
+        configuration.critical_level = DEFAULT_CRITICAL_LEVEL;
+        configuration.low_level = DEFAULT_LOW_LEVEL;
         g_printerr ("Critical level is higher than low level! They have been reset to default\n");
     }
 
@@ -531,7 +539,7 @@ static void create_tray_icon (void)
     gtk_status_icon_set_visible (tray_icon, TRUE);
 
     update_tray_icon (tray_icon);
-    g_timeout_add_seconds (update_interval, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
+    g_timeout_add_seconds (configuration.update_interval, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
 }
 
 static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
@@ -651,14 +659,14 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
                 spawn_command_critical = FALSE;
             }
 
-            if (battery_low == FALSE && percentage <= low_level) {
+            if (battery_low == FALSE && percentage <= configuration.low_level) {
                 battery_low = TRUE;
 
                 battery_string = get_battery_string (LOW_LEVEL, percentage);
                 notify_message (&notification, battery_string, time_string, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
             }
 
-            if (battery_critical == FALSE && percentage <= critical_level) {
+            if (battery_critical == FALSE && percentage <= configuration.critical_level) {
                 battery_critical = TRUE;
 
                 battery_string = get_battery_string (CRITICAL_LEVEL, percentage);
@@ -673,15 +681,15 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
             if (spawn_command_critical == TRUE) {
                 spawn_command_critical = FALSE;
 
-                if (command_critical_level != NULL) {
-                    syslog (LOG_CRIT, "Spawning critical battery level command in 30 seconds: %s", command_critical_level);
+                if (configuration.command_critical_level != NULL) {
+                    syslog (LOG_CRIT, "Spawning critical battery level command in 30 seconds: %s", configuration.command_critical_level);
                     g_usleep (G_USEC_PER_SEC * 30);
 
-                    if (g_spawn_command_line_async (command_critical_level, &error) == FALSE) {
+                    if (g_spawn_command_line_async (configuration.command_critical_level, &error) == FALSE) {
                         syslog (LOG_CRIT, "Cannot spawn critical battery level command: %s", error->message);
                         g_error_free (error); error = NULL;
 
-                        notify_message (&notification, "Cannot spawn critical battery level command!", command_critical_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+                        notify_message (&notification, "Cannot spawn critical battery level command!", configuration.command_critical_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
                     }
                 }
             }
@@ -794,20 +802,20 @@ static gchar* get_icon_name (gint state, gint percentage)
 {
     static gchar icon_name[STR_LTH];
 
-    if (icon_type == BATTERY_ICON_NOTIFICATION) {
+    if (configuration.icon_type == BATTERY_ICON_NOTIFICATION) {
         g_strlcpy (icon_name, "notification-battery", STR_LTH);
     } else {
         g_strlcpy (icon_name, "battery", STR_LTH);
     }
 
     if (state == MISSING || state == UNKNOWN) {
-        if (icon_type == BATTERY_ICON_NOTIFICATION) {
+        if (configuration.icon_type == BATTERY_ICON_NOTIFICATION) {
             g_strlcat (icon_name, "-empty", STR_LTH);
         } else {
             g_strlcat (icon_name, "-missing", STR_LTH);
         }
     } else {
-        if (icon_type == BATTERY_ICON_NOTIFICATION) {
+        if (configuration.icon_type == BATTERY_ICON_NOTIFICATION) {
                  if (percentage <= 20)  g_strlcat (icon_name, "-020", STR_LTH);
             else if (percentage <= 40)  g_strlcat (icon_name, "-040", STR_LTH);
             else if (percentage <= 60)  g_strlcat (icon_name, "-060", STR_LTH);
@@ -827,7 +835,7 @@ static gchar* get_icon_name (gint state, gint percentage)
         }
     }
 
-    if (icon_type == BATTERY_ICON_SYMBOLIC) {
+    if (configuration.icon_type == BATTERY_ICON_SYMBOLIC) {
         g_strlcat (icon_name, "-symbolic", STR_LTH);
     }
 
