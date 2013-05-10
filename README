@@ -15,6 +15,7 @@ Options:
   -l, --low-level                  Set low battery level (in percent)
   -r, --critical-level             Set critical battery level (in percent)
   -c, --command-critical-level     Command to execute when critical battery level is reached
+  -n, --hide-notification          Hide the notification popups
   -t, --list-icon-types            List available icon types
   -b, --list-batteries             List available batteries
 

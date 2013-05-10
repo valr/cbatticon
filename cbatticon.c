@@ -87,17 +87,19 @@ enum {
 };
 
 struct configuration {
-    gint   update_interval;
-    gint   icon_type;
-    gint   low_level;
-    gint   critical_level;
-    gchar *command_critical_level;
+    gint     update_interval;
+    gint     icon_type;
+    gint     low_level;
+    gint     critical_level;
+    gchar   *command_critical_level;
+    gboolean hide_notification;
 } configuration = {
     DEFAULT_UPDATE_INTERVAL,
     UNKNOWN_ICON,
     DEFAULT_LOW_LEVEL,
     DEFAULT_CRITICAL_LEVEL,
-    NULL
+    NULL,
+    FALSE
 };
 
 static gchar *battery_path = NULL;
@@ -133,6 +135,7 @@ static gboolean get_options (int argc, char **argv)
         { "low-level"             , 'l', 0, G_OPTION_ARG_INT   , &configuration.low_level             , "Set low battery level (in percent)"                       , NULL },
         { "critical-level"        , 'r', 0, G_OPTION_ARG_INT   , &configuration.critical_level        , "Set critical battery level (in percent)"                  , NULL },
         { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &configuration.command_critical_level, "Command to execute when critical battery level is reached", NULL },
+        { "hide-notification"     , 'n', 0, G_OPTION_ARG_NONE  , &configuration.hide_notification     , "Hide the notification popups"                             , NULL },
         { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &list_icon_type                      , "List available icon types"                                , NULL },
         { "list-batteries"        , 'b', 0, G_OPTION_ARG_NONE  , &list_battery                        , "List available batteries"                                 , NULL },
         { NULL }
@@ -702,6 +705,10 @@ static void notify_message (NotifyNotification **notification, gchar *summary, g
     g_return_if_fail (notification != NULL);
     g_return_if_fail (summary != NULL);
 
+    if (configuration.hide_notification == TRUE) {
+        return;
+    }
+
     if (*notification == NULL) {
         *notification = notify_notification_new (summary, body, NULL);
     } else {
@@ -848,8 +855,10 @@ int main (int argc, char **argv)
         return -1;
     }
 
-    if (notify_init ("cbatticon") == FALSE) {
-        return -1;
+    if (configuration.hide_notification == FALSE) {
+        if (notify_init ("cbatticon") == FALSE) {
+            return -1;
+        }
     }
 
     if (get_battery (argc > 1 ? argv[1] : NULL, FALSE) == FALSE) {
