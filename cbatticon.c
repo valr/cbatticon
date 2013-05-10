@@ -20,8 +20,8 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define CBATTICON_VERSION_NUMBER 1.2.0
-#define CBATTICON_VERSION_STRING "1.2.0"
+#define CBATTICON_VERSION_NUMBER 1.3.1
+#define CBATTICON_VERSION_STRING "1.3.1"
 
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
