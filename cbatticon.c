@@ -710,7 +710,13 @@ static void notify_message (NotifyNotification **notification, gchar *summary, g
     }
 
     if (*notification == NULL) {
-        *notification = notify_notification_new (summary, body, NULL);
+        *notification = notify_notification_new (summary, body, NULL
+#if NOTIFY_CHECK_VERSION (0, 7, 0)
+    	);
+#else
+		, NULL);
+#endif
+
     } else {
         notify_notification_update (*notification, summary, body, NULL);
     }
