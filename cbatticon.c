@@ -20,8 +20,8 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define CBATTICON_VERSION_NUMBER 1.3.1
-#define CBATTICON_VERSION_STRING "1.3.1"
+#define CBATTICON_VERSION_NUMBER 1.3.2
+#define CBATTICON_VERSION_STRING "1.3.2"
 
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
@@ -710,7 +710,11 @@ static void notify_message (NotifyNotification **notification, gchar *summary, g
     }
 
     if (*notification == NULL) {
+#if NOTIFY_CHECK_VERSION (0, 7, 0)
         *notification = notify_notification_new (summary, body, NULL);
+#else
+        *notification = notify_notification_new (summary, body, NULL, NULL);
+#endif
     } else {
         notify_notification_update (*notification, summary, body, NULL);
     }
