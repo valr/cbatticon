@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011-2013 Colin Jones
+ * Copyright (C) 2014-2014 Valère Monseur
  *
  * Based on code by Matteo Marchesotti
  * Copyright (C) 2007 Matteo Marchesotti <matteo.marchesotti@fsfe.org>
@@ -93,12 +94,14 @@ struct configuration {
     gint     critical_level;
     gchar   *command_critical_level;
     gboolean hide_notification;
+    gboolean debug_output;
 } configuration = {
     DEFAULT_UPDATE_INTERVAL,
     UNKNOWN_ICON,
     DEFAULT_LOW_LEVEL,
     DEFAULT_CRITICAL_LEVEL,
     NULL,
+    FALSE,
     FALSE
 };
 
@@ -130,6 +133,7 @@ static gboolean get_options (int argc, char **argv)
     gboolean list_battery    = FALSE;
     GOptionEntry option_entries[] = {
         { "version"               , 'v', 0, G_OPTION_ARG_NONE  , &display_version                     , "Display the version of cbatticon"                         , NULL },
+        { "debug"                 , 'd', 0, G_OPTION_ARG_NONE  , &configuration.debug_output          , "Display debug information"                                , NULL },
         { "update-interval"       , 'u', 0, G_OPTION_ARG_INT   , &configuration.update_interval       , "Set update interval (in seconds)"                         , NULL },
         { "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string                    , "Set icon type ('standard', 'notification' or 'symbolic')" , NULL },
         { "low-level"             , 'l', 0, G_OPTION_ARG_INT   , &configuration.low_level             , "Set low battery level (in percent)"                       , NULL },
@@ -740,6 +744,10 @@ static gchar* get_tooltip_string (gchar *battery, gchar *time)
         g_strlcat (tooltip_string, time, STR_LTH);
     }
 
+    if (configuration.debug_output == TRUE) {
+        g_printf ("tooltip : %s\n", tooltip_string);
+    }
+
     return tooltip_string;
 }
 
@@ -785,6 +793,10 @@ static gchar* get_battery_string (gint state, gint percentage)
             break;
     }
 
+    if (configuration.debug_output == TRUE) {
+        g_printf ("battery : %s\n", battery_string);
+    }
+
     return battery_string;
 }
 
@@ -804,6 +816,10 @@ static gchar* get_time_string (gint minutes)
         g_sprintf (time_string, "%2d hours, %2d minutes remaining", hours, minutes);
     } else {
         g_sprintf (time_string, "%2d minutes remaining", minutes);
+    }
+
+    if (configuration.debug_output == TRUE) {
+        g_printf ("time    : %s\n", time_string);
     }
 
     return time_string;
@@ -848,6 +864,10 @@ static gchar* get_icon_name (gint state, gint percentage)
 
     if (configuration.icon_type == BATTERY_ICON_SYMBOLIC) {
         g_strlcat (icon_name, "-symbolic", STR_LTH);
+    }
+
+    if (configuration.debug_output == TRUE) {
+        g_printf ("icon    : %s\n", icon_name);
     }
 
     return icon_name;
