@@ -84,7 +84,8 @@ enum {
     DISCHARGING,
     NOT_CHARGING,
     LOW_LEVEL,
-    CRITICAL_LEVEL
+    CRITICAL_LEVEL,
+    AC_ONLY
 };
 
 struct configuration {
@@ -330,7 +331,6 @@ static gboolean get_sysattr_string (gchar *path, gchar *attribute, gchar **value
     gchar *sysattr_filename;
     gboolean sysattr_status;
 
-    g_return_val_if_fail (path != NULL, FALSE);
     g_return_val_if_fail (attribute != NULL, FALSE);
     g_return_val_if_fail (value != NULL, FALSE);
 
@@ -346,7 +346,6 @@ static gboolean get_sysattr_double (gchar *path, gchar *attribute, gdouble *valu
     gchar *sysattr_filename, *sysattr_value;
     gboolean sysattr_status;
 
-    g_return_val_if_fail (path != NULL, FALSE);
     g_return_val_if_fail (attribute != NULL, FALSE);
 
     sysattr_filename = g_build_filename (path, attribute, NULL);
@@ -613,30 +612,29 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
     GError *error = NULL;
 
     g_return_if_fail (tray_icon != NULL);
-    g_return_if_fail (battery_path != NULL);
 
     if (get_battery_present (&battery_present) == FALSE) {
-        return;
-    }
-
-    if (battery_present == FALSE) {
-        battery_status = MISSING;
+        battery_status = AC_ONLY;
     } else {
-        if (get_battery_status (&battery_status) == FALSE) {
-            return;
-        }
+        if (battery_present == FALSE) {
+            battery_status = MISSING;
+        } else {
+            if (get_battery_status (&battery_status) == FALSE) {
+                return;
+            }
 
-        /* workaround for limited/bugged batteries/drivers */
-        /* that unduly return unknown status               */
-        if (battery_status == UNKNOWN && get_ac_online (&battery_online) == TRUE) {
-            if (battery_online == TRUE) {
-                battery_status = CHARGING;
+            /* workaround for limited/bugged batteries/drivers */
+            /* that unduly return unknown status               */
+            if (battery_status == UNKNOWN && get_ac_online (&battery_online) == TRUE) {
+                if (battery_online == TRUE) {
+                    battery_status = CHARGING;
 
-                if (get_battery_charge (FALSE, &percentage, NULL) == TRUE && percentage >= 99) {
-                    battery_status = CHARGED;
+                    if (get_battery_charge (FALSE, &percentage, NULL) == TRUE && percentage >= 99) {
+                        battery_status = CHARGED;
+                    }
+                } else {
+                    battery_status = DISCHARGING;
                 }
-            } else {
-                battery_status = DISCHARGING;
             }
         }
     }
@@ -657,6 +655,10 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
             gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (battery_status, percentage));
 
     switch (battery_status) {
+        case AC_ONLY:
+            HANDLE_BATTERY_STATUS (0, -1, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL)
+            break;
+
         case MISSING:
             HANDLE_BATTERY_STATUS (0, -1, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL)
             break;
@@ -797,6 +799,10 @@ static gchar* get_battery_string (gint state, gint percentage)
     static gchar battery_string[STR_LTH];
 
     switch (state) {
+        case AC_ONLY:
+            g_strlcpy (battery_string, "AC only, no battery!", STR_LTH);
+            break;
+
         case MISSING:
             g_strlcpy (battery_string, "Battery is missing!", STR_LTH);
             break;
@@ -882,6 +888,8 @@ static gchar* get_icon_name (gint state, gint percentage)
         } else {
             g_strlcat (icon_name, "-missing", STR_LTH);
         }
+    } else if (state == AC_ONLY) {
+        g_strlcpy (icon_name, "ac-adapter", STR_LTH);
     } else {
         if (configuration.icon_type == BATTERY_ICON_NOTIFICATION) {
                  if (percentage <= 20)  g_strlcat (icon_name, "-020", STR_LTH);
@@ -926,8 +934,16 @@ int main (int argc, char **argv)
         }
     }
 
-    if (get_battery (argc > 1 ? argv[1] : NULL, FALSE) == FALSE) {
-        return -1;
+    if (get_battery (argc > 1 ? argv[1] : NULL, FALSE)) {
+        gboolean online;
+
+        if (get_ac_online(&online) == FALSE) {
+            return -1;
+        } else {
+            if (!online) {
+                return -1;
+            }
+        }
     }
 
     create_tray_icon ();
