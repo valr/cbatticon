@@ -1,7 +1,7 @@
 ##
 ## to set by the user
 ##
-# verbosity (default off)
+# verbosity, 0 for off, 1 for on (default off)
 V = 0
 # libnotify support, 0 for on, 1 for off (default on)
 WITH_NOTIFY = 1
