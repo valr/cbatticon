@@ -251,7 +251,7 @@ static gboolean get_battery (gchar *battery_suffix, gboolean list_battery)
 {
     GDir *directory;
     GError *error = NULL;
-    const gchar *file; 
+    const gchar *file;
     gchar *path;
     gchar *sysattr_value;
     gboolean sysattr_status;
