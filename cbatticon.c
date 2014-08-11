@@ -51,6 +51,7 @@ static gboolean get_battery_time_estimation (gdouble remaining_capacity, gdouble
 static void reset_battery_time_estimation (void);
 
 static void create_tray_icon (void);
+static void tray_icon_on_click(GtkStatusIcon *status_icon, gpointer user_data);
 static gboolean update_tray_icon (GtkStatusIcon *tray_icon);
 static void update_tray_icon_status (GtkStatusIcon *tray_icon);
 
@@ -94,6 +95,7 @@ struct configuration {
     gint     low_level;
     gint     critical_level;
     gchar   *command_critical_level;
+    gchar   *command_left_click;
     gboolean hide_notification;
     gboolean debug_output;
 } configuration = {
@@ -101,6 +103,7 @@ struct configuration {
     UNKNOWN_ICON,
     DEFAULT_LOW_LEVEL,
     DEFAULT_CRITICAL_LEVEL,
+    NULL,
     NULL,
     FALSE,
     FALSE
@@ -140,6 +143,7 @@ static gboolean get_options (int argc, char **argv)
         { "low-level"             , 'l', 0, G_OPTION_ARG_INT   , &configuration.low_level             , "Set low battery level (in percent)"                       , NULL },
         { "critical-level"        , 'r', 0, G_OPTION_ARG_INT   , &configuration.critical_level        , "Set critical battery level (in percent)"                  , NULL },
         { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &configuration.command_critical_level, "Command to execute when critical battery level is reached", NULL },
+        { "command-left-click"    , 'x', 0, G_OPTION_ARG_STRING, &configuration.command_left_click    , "Command to execute when left clicking on tray icon"       , NULL },
         { "hide-notification"     , 'n', 0, G_OPTION_ARG_NONE  , &configuration.hide_notification     , "Hide the notification popups"                             , NULL },
         { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &list_icon_type                      , "List available icon types"                                , NULL },
         { "list-batteries"        , 'b', 0, G_OPTION_ARG_NONE  , &list_battery                        , "List available batteries"                                 , NULL },
@@ -583,7 +587,26 @@ static void create_tray_icon (void)
 
     update_tray_icon (tray_icon);
     g_timeout_add_seconds (configuration.update_interval, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
+
+    g_signal_connect(G_OBJECT(tray_icon), "activate", G_CALLBACK(tray_icon_on_click), NULL);
 }
+
+static void tray_icon_on_click(GtkStatusIcon *status_icon, gpointer user_data) {
+    GError *error = NULL;
+    NotifyNotification *notification = NULL;
+
+    if (configuration.command_left_click != NULL) {
+        if (g_spawn_command_line_async (configuration.command_left_click, &error) == FALSE) {
+            syslog (LOG_WARNING, "Cannot spawn left click command: %s", error->message);
+            g_error_free (error);
+            error = NULL;
+
+            notify_message (&notification, "Cannot spawn left click command!",
+                    configuration.command_left_click, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+        }
+    }
+}
+
 
 static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
 {
