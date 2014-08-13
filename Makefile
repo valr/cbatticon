@@ -3,11 +3,17 @@
 ##
 # verbosity (default off)
 V = 0
+# libnotify support, 0 for on, 1 for off (default on)
+WITH_NOTIFY = 1
 
 ifeq ($(V),0)
 VERBOSE=@
 else
 VERBOSE=
+endif
+
+ifneq ($(WITH_NOTIFY),1)
+CPPFLAGS += -DWITHOUT_NOTIFY
 endif
 
 # programs
@@ -21,7 +27,10 @@ INSTALL_DATA = $(INSTALL) -m644
 # flags and libs
 CFLAGS ?= -O2
 CFLAGS += -Wall -Wno-format
-PKG_DEPS = gtk+-2.0 libnotify
+PKG_DEPS = gtk+-2.0
+ifeq ($(WITH_NOTIFY),1)
+PKG_DEPS += libnotify
+endif
 LIBS += $(shell $(PKG_CONFIG) --libs $(PKG_DEPS)) -lm
 CFLAGS += $(shell $(PKG_CONFIG) --cflags $(PKG_DEPS))
 
