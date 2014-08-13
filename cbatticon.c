@@ -26,7 +26,9 @@
 
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
+#ifndef WITHOUT_NOTIFY
 #include <libnotify/notify.h>
+#endif
 
 #include <errno.h>
 #include <math.h>
@@ -55,7 +57,14 @@ static gboolean update_tray_icon (GtkStatusIcon *tray_icon);
 static void update_tray_icon_status (GtkStatusIcon *tray_icon);
 static void tray_icon_on_click (GtkStatusIcon *status_icon, gpointer user_data);
 
+#ifndef WITHOUT_NOTIFY
+#define NOTIFY_MESSAGE(...) \
+	notify_message(__VA_ARGS__)
 static void notify_message (NotifyNotification **notification, gchar *summary, gchar *body, gint timeout, NotifyUrgency urgency);
+#else
+#define NOTIFY_MESSAGE(...)
+typedef int NotifyNotification;
+#endif
 
 static gchar* get_tooltip_string (gchar *battery, gchar *time);
 static gchar* get_battery_string (gint state, gint percentage);
@@ -95,7 +104,9 @@ struct configuration {
     gint     critical_level;
     gchar   *command_critical_level;
     gchar   *command_left_click;
+#ifndef WITHOUT_NOTIFY
     gboolean hide_notification;
+#endif
     gboolean debug_output;
 } configuration = {
     DEFAULT_UPDATE_INTERVAL,
@@ -104,7 +115,9 @@ struct configuration {
     DEFAULT_CRITICAL_LEVEL,
     NULL,
     NULL,
+#ifndef WITHOUT_NOTIFY
     FALSE,
+#endif
     FALSE
 };
 
@@ -143,7 +156,9 @@ static gboolean get_options (int argc, char **argv)
         { "critical-level"        , 'r', 0, G_OPTION_ARG_INT   , &configuration.critical_level        , "Set critical battery level (in percent)"                  , NULL },
         { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &configuration.command_critical_level, "Command to execute when critical battery level is reached", NULL },
         { "command-left-click"    , 'x', 0, G_OPTION_ARG_STRING, &configuration.command_left_click    , "Command to execute when left clicking on tray icon"       , NULL },
+#ifndef WITHOUT_NOTIFY
         { "hide-notification"     , 'n', 0, G_OPTION_ARG_NONE  , &configuration.hide_notification     , "Hide the notification popups"                             , NULL },
+#endif
         { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &list_icon_type                      , "List available icon types"                                , NULL },
         { "list-power-supplies"   , 'p', 0, G_OPTION_ARG_NONE  , &list_power_supply                   , "List available power supplies (battery and AC)"           , NULL },
         { NULL }
@@ -601,7 +616,28 @@ static void create_tray_icon (void)
 
     update_tray_icon (tray_icon);
     g_timeout_add_seconds (configuration.update_interval, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
+<<<<<<< HEAD
     g_signal_connect (G_OBJECT (tray_icon), "activate", G_CALLBACK (tray_icon_on_click), NULL);
+=======
+
+    g_signal_connect(G_OBJECT(tray_icon), "activate", G_CALLBACK(tray_icon_on_click), NULL);
+}
+
+static void tray_icon_on_click(GtkStatusIcon *status_icon, gpointer user_data) {
+    GError *error = NULL;
+    NotifyNotification *notification = NULL;
+
+    if (configuration.command_left_click != NULL) {
+        if (g_spawn_command_line_async (configuration.command_left_click, &error) == FALSE) {
+            syslog (LOG_WARNING, "Cannot spawn left click command: %s", error->message);
+            g_error_free (error);
+            error = NULL;
+
+            NOTIFY_MESSAGE (&notification, "Cannot spawn left click command!",
+                    configuration.command_left_click, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+        }
+    }
+>>>>>>> aff4459... Make libnotify optional (default on)
 }
 
 static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
@@ -683,7 +719,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
                                                                                                             \
             if (old_battery_status != battery_status) {                                                     \
                 old_battery_status  = battery_status;                                                       \
-                notify_message (&notification, battery_string, time_string, EXP, URG);                      \
+                NOTIFY_MESSAGE (&notification, battery_string, time_string, EXP, URG);                      \
             }                                                                                               \
                                                                                                             \
             gtk_status_icon_set_tooltip_text (tray_icon, get_tooltip_string (battery_string, time_string)); \
@@ -729,7 +765,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 
             if (old_battery_status != DISCHARGING) {
                 old_battery_status  = DISCHARGING;
-                notify_message (&notification, battery_string, time_string, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL);
+                NOTIFY_MESSAGE (&notification, battery_string, time_string, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL);
 
                 battery_low            = FALSE;
                 battery_critical       = FALSE;
@@ -740,14 +776,14 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
                 battery_low = TRUE;
 
                 battery_string = get_battery_string (LOW_LEVEL, percentage);
-                notify_message (&notification, battery_string, time_string, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
+                NOTIFY_MESSAGE (&notification, battery_string, time_string, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
             }
 
             if (battery_critical == FALSE && percentage <= configuration.critical_level) {
                 battery_critical = TRUE;
 
                 battery_string = get_battery_string (CRITICAL_LEVEL, percentage);
-                notify_message (&notification, battery_string, time_string, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+                NOTIFY_MESSAGE (&notification, battery_string, time_string, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
 
                 spawn_command_critical = TRUE;
             }
@@ -766,7 +802,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
                         syslog (LOG_CRIT, "Cannot spawn critical battery level command: %s", error->message);
                         g_error_free (error); error = NULL;
 
-                        notify_message (&notification, "Cannot spawn critical battery level command!", configuration.command_critical_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+                        NOTIFY_MESSAGE (&notification, "Cannot spawn critical battery level command!", configuration.command_critical_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
                     }
                 }
             }
@@ -774,6 +810,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
     }
 }
 
+<<<<<<< HEAD
 static void tray_icon_on_click (GtkStatusIcon *status_icon, gpointer user_data)
 {
     GError *error = NULL;
@@ -789,6 +826,9 @@ static void tray_icon_on_click (GtkStatusIcon *status_icon, gpointer user_data)
     }
 }
 
+=======
+#ifndef WITHOUT_NOTIFY
+>>>>>>> aff4459... Make libnotify optional (default on)
 static void notify_message (NotifyNotification **notification, gchar *summary, gchar *body, gint timeout, NotifyUrgency urgency)
 {
     g_return_if_fail (notification != NULL);
@@ -813,6 +853,8 @@ static void notify_message (NotifyNotification **notification, gchar *summary, g
 
     notify_notification_show (*notification, NULL);
 }
+#endif
+
 
 static gchar* get_tooltip_string (gchar *battery, gchar *time)
 {
@@ -968,11 +1010,13 @@ int main (int argc, char **argv)
         return -1;
     }
 
+#ifndef WITHOUT_NOTIFY
     if (configuration.hide_notification == FALSE) {
         if (notify_init ("cbatticon") == FALSE) {
             return -1;
         }
     }
+#endif
 
     if (get_power_supply (argc > 1 ? argv[1] : NULL, FALSE) == FALSE) {
         return -1;

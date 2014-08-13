@@ -1,7 +1,11 @@
 
 A lightweight and fast battery icon that sits in your system tray.
 
+<<<<<<< HEAD
 Requires libnotify and gtk2 (version 2.16) or gtk3 to build.
+=======
+Requires libnotify (optional, disable via "make WITH_NOTIFY=0") and gtk2 (version 2.16) to build.
+>>>>>>> aff4459... Make libnotify optional (default on)
 Based on code from xbattbar-acpi.
 
 Usage:
