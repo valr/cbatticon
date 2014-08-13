@@ -857,23 +857,23 @@ static gchar* get_battery_string (gint state, gint percentage)
             break;
 
         case DISCHARGING:
-            g_snprintf (battery_string, STR_LTH, "Battery is discharging (%i\% remaining)", percentage);
+            g_snprintf (battery_string, STR_LTH, "Battery is discharging (%i% remaining)", percentage);
             break;
 
         case NOT_CHARGING:
-            g_snprintf (battery_string, STR_LTH, "Battery is not charging (%i\% remaining)", percentage);
+            g_snprintf (battery_string, STR_LTH, "Battery is not charging (%i% remaining)", percentage);
             break;
 
         case LOW_LEVEL:
-            g_snprintf (battery_string, STR_LTH, "Battery level is low! (%i\% remaining)", percentage);
+            g_snprintf (battery_string, STR_LTH, "Battery level is low! (%i% remaining)", percentage);
             break;
 
         case CRITICAL_LEVEL:
-            g_snprintf (battery_string, STR_LTH, "Battery level is critical! (%i\% remaining)", percentage);
+            g_snprintf (battery_string, STR_LTH, "Battery level is critical! (%i% remaining)", percentage);
             break;
 
         case CHARGING:
-            g_snprintf (battery_string, STR_LTH, "Battery is charging (%i\%)", percentage);
+            g_snprintf (battery_string, STR_LTH, "Battery is charging (%i%)", percentage);
             break;
 
         default:
