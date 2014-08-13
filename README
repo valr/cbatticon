@@ -1,7 +1,7 @@
 
 A lightweight and fast battery icon that sits in your system tray.
 
-Requires libnotify and gtk2 (version 2.16) to build.
+Requires libnotify (optional, disable via "make WITH_NOTIFY=0") and gtk2 (version 2.16) or gtk3 to build.
 Based on code from xbattbar-acpi.
 
 Usage:
@@ -15,6 +15,7 @@ Options:
   -l, --low-level                  Set low battery level (in percent)
   -r, --critical-level             Set critical battery level (in percent)
   -c, --command-critical-level     Command to execute when critical battery level is reached
+  -x, --command-left-click         Command to execute when left clicking on tray icon
   -n, --hide-notification          Hide the notification popups
   -t, --list-icon-types            List available icon types
   -b, --list-batteries             List available batteries
