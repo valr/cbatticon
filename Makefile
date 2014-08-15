@@ -1,7 +1,7 @@
 ##
 ## to set by the user
 ##
-# verbosity (default off)
+# verbosity, 0 for off, 1 for on (default off)
 V = 0
 
 ifeq ($(V),0)
