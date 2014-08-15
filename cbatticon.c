@@ -33,7 +33,7 @@
 #include <syslog.h>
 
 static gboolean get_options (int argc, char **argv);
-static gboolean get_battery (gchar *battery_suffix, gboolean list_battery);
+static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_supply);
 
 static gboolean get_sysattr_string (gchar *path, gchar *attribute, gchar **value);
 static gboolean get_sysattr_double (gchar *path, gchar *attribute, gdouble *value);
@@ -127,10 +127,10 @@ static gboolean get_options (int argc, char **argv)
     GOptionContext *option_context;
     GError *error = NULL;
 
-    gchar *icon_type_string  = NULL;
-    gboolean display_version = FALSE;
-    gboolean list_icon_type  = FALSE;
-    gboolean list_battery    = FALSE;
+    gchar *icon_type_string    = NULL;
+    gboolean display_version   = FALSE;
+    gboolean list_icon_type    = FALSE;
+    gboolean list_power_supply = FALSE;
     GOptionEntry option_entries[] = {
         { "version"               , 'v', 0, G_OPTION_ARG_NONE  , &display_version                     , "Display the version of cbatticon"                         , NULL },
         { "debug"                 , 'd', 0, G_OPTION_ARG_NONE  , &configuration.debug_output          , "Display debug information"                                , NULL },
@@ -141,7 +141,7 @@ static gboolean get_options (int argc, char **argv)
         { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &configuration.command_critical_level, "Command to execute when critical battery level is reached", NULL },
         { "hide-notification"     , 'n', 0, G_OPTION_ARG_NONE  , &configuration.hide_notification     , "Hide the notification popups"                             , NULL },
         { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &list_icon_type                      , "List available icon types"                                , NULL },
-        { "list-batteries"        , 'b', 0, G_OPTION_ARG_NONE  , &list_battery                        , "List available batteries"                                 , NULL },
+        { "list-power-supplies"   , 'p', 0, G_OPTION_ARG_NONE  , &list_power_supply                   , "List available power supplies (battery and AC)"           , NULL },
         { NULL }
     };
 
@@ -167,11 +167,11 @@ static gboolean get_options (int argc, char **argv)
         return FALSE;
     }
 
-    /* option : list available batteries */
+    /* option : list available power supplies (battery and AC) */
 
-    if (list_battery == TRUE) {
-        g_print ("List of available batteries:\n");
-        get_battery (NULL, TRUE);
+    if (list_power_supply == TRUE) {
+        g_print ("List of available power supplies:\n");
+        get_power_supply (NULL, TRUE);
 
         return FALSE;
     }
@@ -247,11 +247,11 @@ static gboolean get_options (int argc, char **argv)
  * sysfs functions
  */
 
-static gboolean get_battery (gchar *battery_suffix, gboolean list_battery)
+static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_supply)
 {
     GDir *directory;
     GError *error = NULL;
-    const gchar *file; 
+    const gchar *file;
     gchar *path;
     gchar *sysattr_value;
     gboolean sysattr_status;
@@ -266,10 +266,10 @@ static gboolean get_battery (gchar *battery_suffix, gboolean list_battery)
             if (sysattr_status == TRUE) {
                 /* process battery */
                 if (g_str_has_prefix (sysattr_value, "Battery") == TRUE) {
-                    if (list_battery == TRUE) {
-                        gchar *battery_id = g_path_get_basename (path);
-                        g_print ("id: %s\tpath: %s\n", battery_id, path);
-                        g_free (battery_id);
+                    if (list_power_supply == TRUE) {
+                        gchar *power_supply_id = g_path_get_basename (path);
+                        g_print ("type: %-*.*s\tid: %-*.*s\tpath: %s\n", 7, 7, "Battery", 10, 10, power_supply_id, path);
+                        g_free (power_supply_id);
                     }
 
                     if (battery_path == NULL) {
@@ -292,8 +292,14 @@ static gboolean get_battery (gchar *battery_suffix, gboolean list_battery)
                     }
                 }
 
-                /* process main power supply (AC) */
+                /* process AC */
                 if (g_str_has_prefix (sysattr_value, "Mains") == TRUE) {
+                    if (list_power_supply == TRUE) {
+                        gchar *power_supply_id = g_path_get_basename (path);
+                        g_print ("type: %-*.*s\tid: %-*.*s\tpath: %s\n", 7, 7, "AC", 10, 10, power_supply_id, path);
+                        g_free (power_supply_id);
+                    }
+
                     if (ac_path == NULL) {
                         ac_path = g_strdup (path);
 
@@ -317,9 +323,16 @@ static gboolean get_battery (gchar *battery_suffix, gboolean list_battery)
         return FALSE;
     }
 
-    if (list_battery == FALSE && battery_path == NULL) {
-        g_printerr ("No battery device found!\n");
-        return FALSE;
+    if (list_power_supply == FALSE && battery_path == NULL) {
+        if (battery_suffix != NULL) {
+            g_printerr ("No battery with suffix %s found!\n", battery_suffix);
+            return FALSE;
+        }
+
+        if (ac_path == NULL) {
+            g_printerr ("No battery nor AC power supply found!\n");
+            return FALSE;
+        }
     }
 
     return TRUE;
@@ -598,7 +611,7 @@ static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
 static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 {
     gboolean battery_present = FALSE;
-    gboolean battery_online  = FALSE;
+    gboolean ac_online       = FALSE;
 
     gint battery_status            = -1;
     static gint old_battery_status = -1;
@@ -613,8 +626,23 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
     GError *error = NULL;
 
     g_return_if_fail (tray_icon != NULL);
-    g_return_if_fail (battery_path != NULL);
 
+    /* update tray icon for AC only */
+    if (battery_path == NULL) {
+        static gboolean ac_notified = FALSE;
+
+        if (ac_notified == FALSE) {
+            ac_notified = TRUE;
+            notify_message (&notification, "AC only, no battery!", NULL, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
+        }
+
+        gtk_status_icon_set_tooltip_text (tray_icon, "AC only, no battery!");
+        gtk_status_icon_set_from_icon_name (tray_icon, "ac-adapter");
+
+        return;
+    }
+
+    /* update tray icon for battery */
     if (get_battery_present (&battery_present) == FALSE) {
         return;
     }
@@ -628,8 +656,8 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 
         /* workaround for limited/bugged batteries/drivers */
         /* that unduly return unknown status               */
-        if (battery_status == UNKNOWN && get_ac_online (&battery_online) == TRUE) {
-            if (battery_online == TRUE) {
+        if (battery_status == UNKNOWN && get_ac_online (&ac_online) == TRUE) {
+            if (ac_online == TRUE) {
                 battery_status = CHARGING;
 
                 if (get_battery_charge (FALSE, &percentage, NULL) == TRUE && percentage >= 99) {
@@ -926,7 +954,7 @@ int main (int argc, char **argv)
         }
     }
 
-    if (get_battery (argc > 1 ? argv[1] : NULL, FALSE) == FALSE) {
+    if (get_power_supply (argc > 1 ? argv[1] : NULL, FALSE) == FALSE) {
         return -1;
     }
 
