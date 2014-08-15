@@ -22,7 +22,7 @@ INSTALL_DATA = $(INSTALL) -m644
 
 # flags and libs
 CFLAGS ?= -O2
-CFLAGS += -Wall -Wno-format
+CFLAGS += -Wall -Wno-format -std=c99
 ifeq ($(WITH_GTK3), 0)
 PKG_DEPS = gtk+-2.0
 else
