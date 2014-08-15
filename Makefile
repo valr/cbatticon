@@ -3,6 +3,8 @@
 ##
 # verbosity, 0 for off, 1 for on (default off)
 V = 0
+# whether to link against gtk+3 or gtk+2 (default gtk+2)
+WITH_GTK3 = 0
 
 ifeq ($(V),0)
 VERBOSE=@
@@ -21,7 +23,12 @@ INSTALL_DATA = $(INSTALL) -m644
 # flags and libs
 CFLAGS ?= -O2
 CFLAGS += -Wall -Wno-format
-PKG_DEPS = gtk+-2.0 libnotify
+ifeq ($(WITH_GTK3), 0)
+PKG_DEPS = gtk+-2.0
+else
+PKG_DEPS = gtk+-3.0
+endif
+PKG_DEPS += libnotify
 LIBS += $(shell $(PKG_CONFIG) --libs $(PKG_DEPS)) -lm
 CFLAGS += $(shell $(PKG_CONFIG) --cflags $(PKG_DEPS))
 
