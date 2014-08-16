@@ -21,8 +21,8 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define CBATTICON_VERSION_NUMBER 1.3.2
-#define CBATTICON_VERSION_STRING "1.3.2"
+#define CBATTICON_VERSION_NUMBER 1.4.0
+#define CBATTICON_VERSION_STRING "1.4.0"
 
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
@@ -178,7 +178,7 @@ static gboolean get_options (int argc, char **argv)
     /* option : display the version */
 
     if (display_version == TRUE) {
-        g_print ("cbatticon: a lightweight and fast battery icon that sits in your system tray.\n");
+        g_print ("cbatticon: a lightweight and fast battery icon that sits in your system tray\n");
         g_print ("version %s\n", CBATTICON_VERSION_STRING);
 
         return FALSE;
