@@ -43,3 +43,17 @@ Examples:
   cbatticon -t
   cbatticon -p
   cbatticon -u 20 -i notification -c "systemctl poweroff" -l 15 -r 3
+
+Thanks to:
+
+  - hasufell <hasufell@gentoo.org> for the following improvements:
+  Allow AC only tray icon
+  Allow building with(out) libnotify support
+  Allow building with gtk2 or gtk3
+  Allow execution of command when left clicking on the tray icon
+  Many other improvements in Makefile, comments, whitespace cleaning, ...
+
+  - fluxer <xakepa10@gmail.com> to allow compilation with libnotify < 0.7.0
+
+  - slyos <rameshvraj@gmail.com> to allow calculation of estimated remaining
+  time for those batteries not providing the current (dis)charge rate.
