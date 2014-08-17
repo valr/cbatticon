@@ -1,0 +1,67 @@
+2014-08-17  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.4.0
+
+ * Allow building with(out) libnotify support (default: build with libnotify)
+
+ * Allow building with gtk2 or gtk3 (default: build with gtk2)
+
+ * Renamed option --list-batteries into --list-power-supplies to show battery and AC
+
+ * Allow AC only tray icon when there is no battery
+
+ * Allow execution of command when left clicking on the tray icon
+
+ * Added debug option
+
+ * Other improvements in Makefile, comments, whitespace cleaning, ...
+
+2013-07-23  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.3.2
+
+ * Fix compilation with libnotify version older than 0.7.0
+
+2013-05-10  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.3.1
+
+ * Fix version number
+
+2013-05-10  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.3.0
+
+ * Added option to hide notification at runtime
+
+ * Other improvements in Makefile, comments, whitespace cleaning, ...
+
+ * Code cleaning/rework.
+
+2013-045-19  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.2.0
+
+ * Removed dependency on libudev
+
+ * A message is sent to system logger before spawning command when critical level is reached
+
+ * Tooltip and notification messages have been reworked.
+
+ * Added version option
+
+ * Fixed bug triggering the switching from normal calculation to estimated calculation when not needed
+
+ * Lots of code cleaning/rework
+
+2013-04-08  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.1.0
+
+ * Try to determine status even when 'unknown' status is returned (some batteries do it when (dis)charging)
+
+ * Other improvements in Makefile, comments, whitespace cleaning, ...
+
+2013-03-10  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.0.0
