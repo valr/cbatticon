@@ -1,3 +1,9 @@
+2014-11-08  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.4.1
+
+ * Fix return codes when displaying version, listing power supplies and icon types
+
 2014-08-17  Valère Monseur  <valere.monseur@ymail.com>
 
  * Release 1.4.0
