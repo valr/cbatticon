@@ -21,8 +21,8 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define CBATTICON_VERSION_NUMBER 1.4.1
-#define CBATTICON_VERSION_STRING "1.4.1"
+#define CBATTICON_VERSION_NUMBER 1.4.2
+#define CBATTICON_VERSION_STRING "1.4.2"
 
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
@@ -300,6 +300,10 @@ static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_sup
                                 get_battery_current_rate (TRUE, NULL) == FALSE) {
                                 estimation_needed = TRUE;
                                 estimation_timer = g_timer_new ();
+
+                                if (configuration.debug_output == TRUE) {
+                                    g_printf ("workaround   : current rate is not available, estimating rate\n");
+                                }
                             }
 
                             if (configuration.debug_output == TRUE) {
@@ -384,10 +388,16 @@ static gboolean get_sysattr_double (gchar *path, gchar *attribute, gdouble *valu
     g_free (sysattr_filename);
 
     if (sysattr_status == TRUE) {
-        if (value != NULL) {
-            *value = g_ascii_strtod (sysattr_value, NULL);
-            if (errno != 0 || *value < 0.01) sysattr_status = FALSE;
+        gdouble double_value = g_ascii_strtod (sysattr_value, NULL);
+
+        if (errno != 0 || double_value < 0.01) {
+            sysattr_status = FALSE;
         }
+
+        if (value != NULL) {
+            *value = double_value;
+        }
+
         g_free (sysattr_value);
     }
 
