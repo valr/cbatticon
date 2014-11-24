@@ -1,3 +1,9 @@
+2014-11-24  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.4.2
+
+ * Fix #16 : current rate was not considered as unavailable when its value was 0
+
 2014-11-08  Valère Monseur  <valere.monseur@ymail.com>
 
  * Release 1.4.1
