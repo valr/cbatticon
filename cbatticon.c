@@ -34,6 +34,9 @@
 #include <math.h>
 #include <syslog.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+
 static gint get_options (int argc, char **argv);
 static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_supply);
 
@@ -167,7 +170,7 @@ static gint get_options (int argc, char **argv)
     g_option_context_add_group (option_context, gtk_get_option_group (TRUE));
 
     if (g_option_context_parse (option_context, &argc, &argv, &error) == FALSE) {
-        g_printerr ("Cannot parse command line arguments: %s\n", error->message);
+        g_printerr (_("Cannot parse command line arguments: %s\n"), error->message);
         g_error_free (error); error = NULL;
 
         return -1;
@@ -178,8 +181,8 @@ static gint get_options (int argc, char **argv)
     /* option : display the version */
 
     if (display_version == TRUE) {
-        g_print ("cbatticon: a lightweight and fast battery icon that sits in your system tray\n");
-        g_print ("version %s\n", CBATTICON_VERSION_STRING);
+        g_print (_("cbatticon: a lightweight and fast battery icon that sits in your system tray\n"));
+        g_print (_("version %s\n"), CBATTICON_VERSION_STRING);
 
         return 0;
     }
@@ -187,7 +190,7 @@ static gint get_options (int argc, char **argv)
     /* option : list available power supplies (battery and AC) */
 
     if (list_power_supply == TRUE) {
-        g_print ("List of available power supplies:\n");
+        g_print (_("List of available power supplies:\n"));
         get_power_supply (NULL, TRUE);
 
         return 0;
@@ -200,10 +203,10 @@ static gint get_options (int argc, char **argv)
     #define HAS_SYMBOLIC_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-full-symbolic")
 
     if (list_icon_type == TRUE) {
-        g_print ("List of available icon types:\n");
-        g_print ("standard\t%s\n"    , HAS_STANDARD_ICON_TYPE     == TRUE ? "available" : "unavailable");
-        g_print ("notification\t%s\n", HAS_NOTIFICATION_ICON_TYPE == TRUE ? "available" : "unavailable");
-        g_print ("symbolic\t%s\n"    , HAS_SYMBOLIC_ICON_TYPE     == TRUE ? "available" : "unavailable");
+        g_print (_("List of available icon types:\n"));
+        g_print ("standard\t%s\n"    , HAS_STANDARD_ICON_TYPE     == TRUE ? _("available") : _("unavailable"));
+        g_print ("notification\t%s\n", HAS_NOTIFICATION_ICON_TYPE == TRUE ? _("available") : _("unavailable"));
+        g_print ("symbolic\t%s\n"    , HAS_SYMBOLIC_ICON_TYPE     == TRUE ? _("available") : _("unavailable"));
 
         return 0;
     }
@@ -217,7 +220,7 @@ static gint get_options (int argc, char **argv)
             configuration.icon_type = BATTERY_ICON_NOTIFICATION;
         else if (g_strcmp0 (icon_type_string, "symbolic") == 0 && HAS_SYMBOLIC_ICON_TYPE == TRUE)
             configuration.icon_type = BATTERY_ICON_SYMBOLIC;
-        else g_printerr ("Unknown icon type: %s\n", icon_type_string);
+        else g_printerr (_("Unknown icon type: %s\n"), icon_type_string);
 
         g_free (icon_type_string);
     }
@@ -229,32 +232,32 @@ static gint get_options (int argc, char **argv)
             configuration.icon_type = BATTERY_ICON_NOTIFICATION;
         else if (HAS_SYMBOLIC_ICON_TYPE == TRUE)
             configuration.icon_type = BATTERY_ICON_SYMBOLIC;
-        else g_printerr ("No icon type found!\n");
+        else g_printerr (_("No icon type found!\n"));
     }
 
     /* option : update interval */
 
     if (configuration.update_interval <= 0) {
         configuration.update_interval = DEFAULT_UPDATE_INTERVAL;
-        g_printerr ("Invalid update interval! It has been reset to default (%d seconds)\n", DEFAULT_UPDATE_INTERVAL);
+        g_printerr (_("Invalid update interval! It has been reset to default (%d seconds)\n"), DEFAULT_UPDATE_INTERVAL);
     }
 
     /* option : low and critical levels */
 
     if (configuration.low_level < 0 || configuration.low_level > 100) {
         configuration.low_level = DEFAULT_LOW_LEVEL;
-        g_printerr ("Invalid low level! It has been reset to default (%d percent)\n", DEFAULT_LOW_LEVEL);
+        g_printerr (_("Invalid low level! It has been reset to default (%d percent)\n"), DEFAULT_LOW_LEVEL);
     }
 
     if (configuration.critical_level < 0 || configuration.critical_level > 100) {
         configuration.critical_level = DEFAULT_CRITICAL_LEVEL;
-        g_printerr ("Invalid critical level! It has been reset to default (%d percent)\n", DEFAULT_CRITICAL_LEVEL);
+        g_printerr (_("Invalid critical level! It has been reset to default (%d percent)\n"), DEFAULT_CRITICAL_LEVEL);
     }
 
     if (configuration.critical_level > configuration.low_level) {
         configuration.critical_level = DEFAULT_CRITICAL_LEVEL;
         configuration.low_level = DEFAULT_LOW_LEVEL;
-        g_printerr ("Critical level is higher than low level! They have been reset to default\n");
+        g_printerr (_("Critical level is higher than low level! They have been reset to default\n"));
     }
 
     return 1;
@@ -285,7 +288,7 @@ static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_sup
                 if (g_str_has_prefix (sysattr_value, "Battery") == TRUE) {
                     if (list_power_supply == TRUE) {
                         gchar *power_supply_id = g_path_get_basename (path);
-                        g_print ("type: %-*.*s\tid: %-*.*s\tpath: %s\n", 7, 7, "Battery", 10, 10, power_supply_id, path);
+                        g_print ("type: %-*.*s\tid: %-*.*s\tpath: %s\n", 7, 7, _("Battery"), 10, 10, power_supply_id, path);
                         g_free (power_supply_id);
                     }
 
@@ -302,12 +305,12 @@ static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_sup
                                 estimation_timer = g_timer_new ();
 
                                 if (configuration.debug_output == TRUE) {
-                                    g_printf ("workaround   : current rate is not available, estimating rate\n");
+                                    g_printf (_("workaround   : current rate is not available, estimating rate\n"));
                                 }
                             }
 
                             if (configuration.debug_output == TRUE) {
-                                g_printf ("batt path    : %s\n", battery_path);
+                                g_printf (_("batt path    : %s\n"), battery_path);
                             }
                         }
                     }
@@ -317,7 +320,7 @@ static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_sup
                 if (g_str_has_prefix (sysattr_value, "Mains") == TRUE) {
                     if (list_power_supply == TRUE) {
                         gchar *power_supply_id = g_path_get_basename (path);
-                        g_print ("type: %-*.*s\tid: %-*.*s\tpath: %s\n", 7, 7, "AC", 10, 10, power_supply_id, path);
+                        g_print ("type: %-*.*s\tid: %-*.*s\tpath: %s\n", 7, 7, _("AC"), 10, 10, power_supply_id, path);
                         g_free (power_supply_id);
                     }
 
@@ -325,7 +328,7 @@ static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_sup
                         ac_path = g_strdup (path);
 
                         if (configuration.debug_output == TRUE) {
-                            g_printf ("ac path      : %s\n", ac_path);
+                            g_printf (_("ac path      : %s\n"), ac_path);
                         }
                     }
                 }
@@ -339,19 +342,19 @@ static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_sup
 
         g_dir_close (directory);
     } else {
-        g_printerr ("Cannot open sysfs directory: %s (%s)\n", SYSFS_PATH, error->message);
+        g_printerr (_("Cannot open sysfs directory: %s (%s)\n"), SYSFS_PATH, error->message);
         g_error_free (error); error = NULL;
         return FALSE;
     }
 
     if (list_power_supply == FALSE && battery_path == NULL) {
         if (battery_suffix != NULL) {
-            g_printerr ("No battery with suffix %s found!\n", battery_suffix);
+            g_printerr (_("No battery with suffix %s found!\n"), battery_suffix);
             return FALSE;
         }
 
         if (ac_path == NULL) {
-            g_printerr ("No battery nor AC power supply found!\n");
+            g_printerr (_("No battery nor AC power supply found!\n"));
             return FALSE;
         }
     }
@@ -416,7 +419,7 @@ static gboolean get_battery_present (gboolean *present)
         *present = g_str_has_prefix (sysattr_value, "1") ? TRUE : FALSE;
 
         if (configuration.debug_output == TRUE) {
-            g_printf ("batt present : %s", sysattr_value);
+            g_printf (_("batt present : %s"), sysattr_value);
         }
 
         g_free (sysattr_value);
@@ -446,7 +449,7 @@ static gboolean get_battery_status (gint *status)
             *status = UNKNOWN;
 
         if (configuration.debug_output == TRUE) {
-            g_printf ("batt status  : %d - %s", *status, sysattr_value);
+            g_printf (_("batt status  : %d - %s"), *status, sysattr_value);
         }
 
         g_free (sysattr_value);
@@ -471,7 +474,7 @@ static gboolean get_ac_online (gboolean *online)
         *online = g_str_has_prefix (sysattr_value, "1") ? TRUE : FALSE;
 
         if (configuration.debug_output == TRUE) {
-            g_printf ("ac online    : %s", sysattr_value);
+            g_printf (_("ac online    : %s"), sysattr_value);
         }
 
         g_free (sysattr_value);
@@ -531,7 +534,7 @@ static gboolean get_battery_charge (gboolean remaining, gint *percentage, gint *
 
     if (get_battery_full_capacity (&use_charge, &full_capacity) == FALSE) {
         if (configuration.debug_output == TRUE) {
-            g_printf ("full capacity: %s\n", "unavailable");
+            g_printf (_("full capacity: %s\n"), _("unavailable"));
         }
 
         return FALSE;
@@ -539,7 +542,7 @@ static gboolean get_battery_charge (gboolean remaining, gint *percentage, gint *
 
     if (get_battery_remaining_capacity (use_charge, &remaining_capacity) == FALSE) {
         if (configuration.debug_output == TRUE) {
-            g_printf ("rem. capacity: %s\n", "unavailable");
+            g_printf (_("rem. capacity: %s\n"), _("unavailable"));
         }
 
         return FALSE;
@@ -561,7 +564,7 @@ static gboolean get_battery_charge (gboolean remaining, gint *percentage, gint *
 
     if (get_battery_current_rate (use_charge, &current_rate) == FALSE) {
         if (configuration.debug_output == TRUE) {
-            g_printf ("current rate : %s\n", "unavailable");
+            g_printf (_("current rate : %s\n"), _("unavailable"));
         }
 
         return FALSE;
@@ -663,10 +666,10 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 
         if (ac_notified == FALSE) {
             ac_notified = TRUE;
-            NOTIFY_MESSAGE (&notification, "AC only, no battery!", NULL, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
+            NOTIFY_MESSAGE (&notification, _("AC only, no battery!"), NULL, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
         }
 
-        gtk_status_icon_set_tooltip_text (tray_icon, "AC only, no battery!");
+        gtk_status_icon_set_tooltip_text (tray_icon, _("AC only, no battery!"));
         gtk_status_icon_set_from_icon_name (tray_icon, "ac-adapter");
 
         return;
@@ -791,7 +794,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
                         syslog (LOG_CRIT, "Cannot spawn critical battery level command: %s", error->message);
                         g_error_free (error); error = NULL;
 
-                        NOTIFY_MESSAGE (&notification, "Cannot spawn critical battery level command!", configuration.command_critical_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+                        NOTIFY_MESSAGE (&notification, _("Cannot spawn critical battery level command!"), configuration.command_critical_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
                     }
                 }
             }
@@ -811,7 +814,7 @@ static void tray_icon_on_click (GtkStatusIcon *status_icon, gpointer user_data)
             syslog (LOG_ERR, "Cannot spawn left click command: %s", error->message);
             g_error_free (error); error = NULL;
 
-            NOTIFY_MESSAGE (&notification, "Cannot spawn left click command!", configuration.command_left_click, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+            NOTIFY_MESSAGE (&notification, _("Cannot spawn left click command!"), configuration.command_left_click, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
         }
     }
 }
@@ -854,7 +857,7 @@ static gchar* get_tooltip_string (gchar *battery, gchar *time)
     g_strlcpy (tooltip_string, battery, STR_LTH);
 
     if (configuration.debug_output == TRUE) {
-        g_printf ("tooltip      : %s\n", battery);
+        g_printf (_("tooltip      : %s\n"), battery);
     }
 
     if (time != NULL) {
@@ -862,7 +865,7 @@ static gchar* get_tooltip_string (gchar *battery, gchar *time)
         g_strlcat (tooltip_string, time, STR_LTH);
 
         if (configuration.debug_output == TRUE) {
-            g_printf ("tooltip      : %s\n", time);
+            g_printf (_("tooltip      : %s\n"), time);
         }
     }
 
@@ -875,35 +878,35 @@ static gchar* get_battery_string (gint state, gint percentage)
 
     switch (state) {
         case MISSING:
-            g_strlcpy (battery_string, "Battery is missing!", STR_LTH);
+            g_strlcpy (battery_string, _("Battery is missing!"), STR_LTH);
             break;
 
         case UNKNOWN:
-            g_strlcpy (battery_string, "Battery status is unknown!", STR_LTH);
+            g_strlcpy (battery_string, _("Battery status is unknown!"), STR_LTH);
             break;
 
         case CHARGED:
-            g_strlcpy (battery_string, "Battery is charged!", STR_LTH);
+            g_strlcpy (battery_string, _("Battery is charged!"), STR_LTH);
             break;
 
         case DISCHARGING:
-            g_snprintf (battery_string, STR_LTH, "Battery is discharging (%i% remaining)", percentage);
+            g_snprintf (battery_string, STR_LTH, _("Battery is discharging (%i% remaining)"), percentage);
             break;
 
         case NOT_CHARGING:
-            g_snprintf (battery_string, STR_LTH, "Battery is not charging (%i% remaining)", percentage);
+            g_snprintf (battery_string, STR_LTH, _("Battery is not charging (%i% remaining)"), percentage);
             break;
 
         case LOW_LEVEL:
-            g_snprintf (battery_string, STR_LTH, "Battery level is low! (%i% remaining)", percentage);
+            g_snprintf (battery_string, STR_LTH, _("Battery level is low! (%i% remaining)"), percentage);
             break;
 
         case CRITICAL_LEVEL:
-            g_snprintf (battery_string, STR_LTH, "Battery level is critical! (%i% remaining)", percentage);
+            g_snprintf (battery_string, STR_LTH, _("Battery level is critical! (%i% remaining)"), percentage);
             break;
 
         case CHARGING:
-            g_snprintf (battery_string, STR_LTH, "Battery is charging (%i%)", percentage);
+            g_snprintf (battery_string, STR_LTH, _("Battery is charging (%i%)"), percentage);
             break;
 
         default:
@@ -912,7 +915,7 @@ static gchar* get_battery_string (gint state, gint percentage)
     }
 
     if (configuration.debug_output == TRUE) {
-        g_printf ("battery      : %s\n", battery_string);
+        g_printf (_("battery      : %s\n"), battery_string);
     }
 
     return battery_string;
@@ -931,13 +934,13 @@ static gchar* get_time_string (gint minutes)
     minutes = minutes % 60;
 
     if (hours > 0) {
-        g_sprintf (time_string, "%2d hours, %2d minutes remaining", hours, minutes);
+        g_sprintf (time_string, _("%2d hours, %2d minutes remaining"), hours, minutes);
     } else {
-        g_sprintf (time_string, "%2d minutes remaining", minutes);
+        g_sprintf (time_string, _("%2d minutes remaining"), minutes);
     }
 
     if (configuration.debug_output == TRUE) {
-        g_printf ("time         : %s\n", time_string);
+        g_printf (_("time         : %s\n"), time_string);
     }
 
     return time_string;
@@ -985,7 +988,7 @@ static gchar* get_icon_name (gint state, gint percentage)
     }
 
     if (configuration.debug_output == TRUE) {
-        g_printf ("icon         : %s\n", icon_name);
+        g_printf (_("icon         : %s\n"), icon_name);
     }
 
     return icon_name;
@@ -993,6 +996,9 @@ static gchar* get_icon_name (gint state, gint percentage)
 
 int main (int argc, char **argv)
 {
+    setlocale(LC_ALL,"");
+    bindtextdomain("cbatticon","/usr/share/locale");
+    textdomain("cbatticon");
     gint ret;
 
     ret = get_options (argc, argv);
