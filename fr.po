@@ -1,0 +1,217 @@
+# French translation for cbatticon.
+# Copyright (C) 2015 Valère Monseur
+# This file is distributed under the same license as the cbatticon package.
+# Valère Monseur <valere.monseur@ymail.com>, 2015.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: cbatticon 1.5.0\n"
+"Report-Msgid-Bugs-To: valere.monseur@ymail.com\n"
+"POT-Creation-Date: 2015-06-26 09:16+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Valère Monseur <valere.monseur@ymail.com>\n"
+"Language-Team: N/A\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: cbatticon.c:173
+#, c-format
+msgid "Cannot parse command line arguments: %s\n"
+msgstr "Impossible d'analyser les paramètres de la ligne de commande: %s\n"
+
+#: cbatticon.c:184
+msgid ""
+"cbatticon: a lightweight and fast battery icon that sits in your system "
+"tray\n"
+msgstr "cbatticon: une icone d'affichage de la batterie, légère et rapide, "
+"visible dans la barre d'état systême\n"
+
+#: cbatticon.c:185
+#, c-format
+msgid "version %s\n"
+msgstr "version %s\n"
+
+#: cbatticon.c:193
+msgid "List of available power supplies:\n"
+msgstr "Liste des alimentations disponibles:\n"
+
+#: cbatticon.c:206
+msgid "List of available icon types:\n"
+msgstr "Liste des types d'icones disponibles:\n"
+
+#: cbatticon.c:207 cbatticon.c:208 cbatticon.c:209
+msgid "available"
+msgstr "disponible"
+
+#: cbatticon.c:207 cbatticon.c:208 cbatticon.c:209 cbatticon.c:537
+#: cbatticon.c:545 cbatticon.c:567
+msgid "unavailable"
+msgstr "non disponible"
+
+#: cbatticon.c:223
+#, c-format
+msgid "Unknown icon type: %s\n"
+msgstr "type d'icone inconnu: %s\n"
+
+#: cbatticon.c:235
+msgid "No icon type found!\n"
+msgstr "Aucun type d'icone trouvé!\n"
+
+#: cbatticon.c:242
+#, c-format
+msgid "Invalid update interval! It has been reset to default (%d seconds)\n"
+msgstr "L'intervalle de rafraichissement est invalide! Il a été réinitialisé à "
+"la valeur par défaut (%d secondes)\n"
+
+#: cbatticon.c:249
+#, c-format
+msgid "Invalid low level! It has been reset to default (%d percent)\n"
+msgstr "Le niveau de charge basse est invalide! Il a été réinitialisé à "
+"la valeur par défaut (%d pourcents)\n"
+
+#: cbatticon.c:254
+#, c-format
+msgid "Invalid critical level! It has been reset to default (%d percent)\n"
+msgstr "Le niveau de charge critique est invalide! Il a été réinitialisé à "
+"la valeur par défaut (%d pourcents)\n"
+
+#: cbatticon.c:260
+msgid ""
+"Critical level is higher than low level! They have been reset to default\n"
+msgstr "Le niveau de charge critique est plus grand que le niveau de charge "
+"basse! Ils ont été réinitialisés à leurs valeurs par défaut\n"
+
+#: cbatticon.c:308
+msgid "workaround   : current rate is not available, estimating rate\n"
+msgstr ""
+
+#: cbatticon.c:313
+#, c-format
+msgid "batt path    : %s\n"
+msgstr ""
+
+#: cbatticon.c:331
+#, c-format
+msgid "ac path      : %s\n"
+msgstr ""
+
+#: cbatticon.c:345
+#, c-format
+msgid "Cannot open sysfs directory: %s (%s)\n"
+msgstr "Impossible d'ouvrir le répertoire sysfs: %s (%s)\n"
+
+#: cbatticon.c:352
+#, c-format
+msgid "No battery with suffix %s found!\n"
+msgstr "Aucune batterie avec le suffixe %s trouvée!\n"
+
+#: cbatticon.c:357
+msgid "No battery nor AC power supply found!\n"
+msgstr "Aucune alimentation (secteur ou batterie) trouvée!\n"
+
+#: cbatticon.c:422
+#, c-format
+msgid "batt present : %s"
+msgstr ""
+
+#: cbatticon.c:452
+#, c-format
+msgid "batt status  : %d - %s"
+msgstr ""
+
+#: cbatticon.c:477
+#, c-format
+msgid "ac online    : %s"
+msgstr ""
+
+#: cbatticon.c:537
+#, c-format
+msgid "full capacity: %s\n"
+msgstr ""
+
+#: cbatticon.c:545
+#, c-format
+msgid "rem. capacity: %s\n"
+msgstr ""
+
+#: cbatticon.c:567
+#, c-format
+msgid "current rate : %s\n"
+msgstr ""
+
+#: cbatticon.c:669 cbatticon.c:672
+msgid "AC only, no battery!"
+msgstr "Sur secteur, pas de batterie!"
+
+#: cbatticon.c:797
+msgid "Cannot spawn critical battery level command!"
+msgstr "Impossible d'exécuter la commande de niveau critique de la batterie!"
+
+#: cbatticon.c:817
+msgid "Cannot spawn left click command!"
+msgstr "Impossible d'exécuter la commande de clic gauche!"
+
+#: cbatticon.c:860 cbatticon.c:868
+#, c-format
+msgid "tooltip      : %s\n"
+msgstr "infobulle    : %s\n"
+
+#: cbatticon.c:881
+msgid "Battery is missing!"
+msgstr "Aucune batterie n'a été trouvée!"
+
+#: cbatticon.c:885
+msgid "Battery status is unknown!"
+msgstr "Le niveau de la batterie est inconnu!"
+
+#: cbatticon.c:889
+msgid "Battery is charged!"
+msgstr "La batterie est chargée!"
+
+#: cbatticon.c:893
+msgid "Battery is discharging (%i% remaining)"
+msgstr "La batterie se décharge (%i% restant)"
+
+#: cbatticon.c:897
+msgid "Battery is not charging (%i% remaining)"
+msgstr "La batterie ne se charge pas (%i% restant)"
+
+#: cbatticon.c:901
+msgid "Battery level is low! (%i% remaining)"
+msgstr "Le niveau de la batterie est bas! (%i% restant)"
+
+#: cbatticon.c:905
+msgid "Battery level is critical! (%i% remaining)"
+msgstr "Le niveau de la batterie est critique! (%i% restant)"
+
+#: cbatticon.c:909
+msgid "Battery is charging (%i%)"
+msgstr "La batterie se charge (%i%)"
+
+#: cbatticon.c:918
+#, c-format
+msgid "battery      : %s\n"
+msgstr "batterie     : %s\n"
+
+#: cbatticon.c:937
+#, c-format
+msgid "%2d hours, %2d minutes remaining"
+msgstr "%2d heures, %2d minutes restantes"
+
+#: cbatticon.c:939
+#, c-format
+msgid "%2d minutes remaining"
+msgstr "%2d minutes restantes"
+
+#: cbatticon.c:943
+#, c-format
+msgid "time         : %s\n"
+msgstr ""
+
+#: cbatticon.c:991
+#, c-format
+msgid "icon         : %s\n"
+msgstr "icone        : %s\n"

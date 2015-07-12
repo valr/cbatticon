@@ -1,8 +1,11 @@
 # target
 cbatticon
 
-# Object files
+# object files
 *.o
+
+# messages catalog
+*.mo
 
 # vim files
 *.swp

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011-2013 Colin Jones
- * Copyright (C) 2014-2014 Valère Monseur
+ * Copyright (C) 2014-2015 Valère Monseur
  *
  * Based on code by Matteo Marchesotti
  * Copyright (C) 2007 Matteo Marchesotti <matteo.marchesotti@fsfe.org>
@@ -14,16 +14,18 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along
- * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define CBATTICON_VERSION_NUMBER 1.4.2
-#define CBATTICON_VERSION_STRING "1.4.2"
+#define CBATTICON_VERSION_NUMBER 1.5.0
+#define CBATTICON_VERSION_STRING "1.5.0"
 
+#include <glib.h>
+#include <glib/gi18n.h>
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
 #ifdef WITH_NOTIFY
@@ -31,11 +33,10 @@
 #endif
 
 #include <errno.h>
+#include <libintl.h>
+#include <locale.h>
 #include <math.h>
 #include <syslog.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
 
 static gint get_options (int argc, char **argv);
 static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_supply);
@@ -144,28 +145,28 @@ static gint get_options (int argc, char **argv)
     GOptionContext *option_context;
     GError *error = NULL;
 
-    gchar *icon_type_string    = NULL;
-    gboolean display_version   = FALSE;
-    gboolean list_icon_type    = FALSE;
-    gboolean list_power_supply = FALSE;
+    gchar *icon_type_string       = NULL;
+    gboolean display_version      = FALSE;
+    gboolean list_icon_type       = FALSE;
+    gboolean list_power_supply    = FALSE;
     GOptionEntry option_entries[] = {
-        { "version"               , 'v', 0, G_OPTION_ARG_NONE  , &display_version                     , "Display the version of cbatticon"                         , NULL },
-        { "debug"                 , 'd', 0, G_OPTION_ARG_NONE  , &configuration.debug_output          , "Display debug information"                                , NULL },
-        { "update-interval"       , 'u', 0, G_OPTION_ARG_INT   , &configuration.update_interval       , "Set update interval (in seconds)"                         , NULL },
-        { "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string                    , "Set icon type ('standard', 'notification' or 'symbolic')" , NULL },
-        { "low-level"             , 'l', 0, G_OPTION_ARG_INT   , &configuration.low_level             , "Set low battery level (in percent)"                       , NULL },
-        { "critical-level"        , 'r', 0, G_OPTION_ARG_INT   , &configuration.critical_level        , "Set critical battery level (in percent)"                  , NULL },
-        { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &configuration.command_critical_level, "Command to execute when critical battery level is reached", NULL },
-        { "command-left-click"    , 'x', 0, G_OPTION_ARG_STRING, &configuration.command_left_click    , "Command to execute when left clicking on tray icon"       , NULL },
+        { "version"               , 'v', 0, G_OPTION_ARG_NONE  , &display_version                     , "Display the version of cbatticon"                         , NULL }, /*TODO*/
+        { "debug"                 , 'd', 0, G_OPTION_ARG_NONE  , &configuration.debug_output          , "Display debug information"                                , NULL }, /*TODO*/
+        { "update-interval"       , 'u', 0, G_OPTION_ARG_INT   , &configuration.update_interval       , "Set update interval (in seconds)"                         , NULL }, /*TODO*/
+        { "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string                    , "Set icon type ('standard', 'notification' or 'symbolic')" , NULL }, /*TODO*/
+        { "low-level"             , 'l', 0, G_OPTION_ARG_INT   , &configuration.low_level             , "Set low battery level (in percent)"                       , NULL }, /*TODO*/
+        { "critical-level"        , 'r', 0, G_OPTION_ARG_INT   , &configuration.critical_level        , "Set critical battery level (in percent)"                  , NULL }, /*TODO*/
+        { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &configuration.command_critical_level, "Command to execute when critical battery level is reached", NULL }, /*TODO*/
+        { "command-left-click"    , 'x', 0, G_OPTION_ARG_STRING, &configuration.command_left_click    , "Command to execute when left clicking on tray icon"       , NULL }, /*TODO*/
 #ifdef WITH_NOTIFY
-        { "hide-notification"     , 'n', 0, G_OPTION_ARG_NONE  , &configuration.hide_notification     , "Hide the notification popups"                             , NULL },
+        { "hide-notification"     , 'n', 0, G_OPTION_ARG_NONE  , &configuration.hide_notification     , "Hide the notification popups"                             , NULL }, /*TODO*/
 #endif
-        { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &list_icon_type                      , "List available icon types"                                , NULL },
-        { "list-power-supplies"   , 'p', 0, G_OPTION_ARG_NONE  , &list_power_supply                   , "List available power supplies (battery and AC)"           , NULL },
+        { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &list_icon_type                      , "List available icon types"                                , NULL }, /*TODO*/
+        { "list-power-supplies"   , 'p', 0, G_OPTION_ARG_NONE  , &list_power_supply                   , "List available power supplies (battery and AC)"           , NULL }, /*TODO*/
         { NULL }
     };
 
-    option_context = g_option_context_new ("[BATTERY ID]");
+    option_context = g_option_context_new ("[BATTERY ID]"); /*TODO*/
     g_option_context_add_main_entries (option_context, option_entries, NULL);
     g_option_context_add_group (option_context, gtk_get_option_group (TRUE));
 
@@ -204,9 +205,9 @@ static gint get_options (int argc, char **argv)
 
     if (list_icon_type == TRUE) {
         g_print (_("List of available icon types:\n"));
-        g_print ("standard\t%s\n"    , HAS_STANDARD_ICON_TYPE     == TRUE ? _("available") : _("unavailable"));
-        g_print ("notification\t%s\n", HAS_NOTIFICATION_ICON_TYPE == TRUE ? _("available") : _("unavailable"));
-        g_print ("symbolic\t%s\n"    , HAS_SYMBOLIC_ICON_TYPE     == TRUE ? _("available") : _("unavailable"));
+        g_print ("standard\t%s\n"    , HAS_STANDARD_ICON_TYPE     == TRUE ? _("available") : _("unavailable")); /*TODO*/
+        g_print ("notification\t%s\n", HAS_NOTIFICATION_ICON_TYPE == TRUE ? _("available") : _("unavailable")); /*TODO*/
+        g_print ("symbolic\t%s\n"    , HAS_SYMBOLIC_ICON_TYPE     == TRUE ? _("available") : _("unavailable")); /*TODO*/
 
         return 0;
     }
@@ -214,11 +215,11 @@ static gint get_options (int argc, char **argv)
     /* option : set icon type */
 
     if (icon_type_string != NULL) {
-        if (g_strcmp0 (icon_type_string, "standard") == 0 && HAS_STANDARD_ICON_TYPE == TRUE)
+        if (g_strcmp0 (icon_type_string, "standard") == 0 && HAS_STANDARD_ICON_TYPE == TRUE) /*TODO*/
             configuration.icon_type = BATTERY_ICON;
-        else if (g_strcmp0 (icon_type_string, "notification") == 0 && HAS_NOTIFICATION_ICON_TYPE == TRUE)
+        else if (g_strcmp0 (icon_type_string, "notification") == 0 && HAS_NOTIFICATION_ICON_TYPE == TRUE) /*TODO*/
             configuration.icon_type = BATTERY_ICON_NOTIFICATION;
-        else if (g_strcmp0 (icon_type_string, "symbolic") == 0 && HAS_SYMBOLIC_ICON_TYPE == TRUE)
+        else if (g_strcmp0 (icon_type_string, "symbolic") == 0 && HAS_SYMBOLIC_ICON_TYPE == TRUE) /*TODO*/
             configuration.icon_type = BATTERY_ICON_SYMBOLIC;
         else g_printerr (_("Unknown icon type: %s\n"), icon_type_string);
 
@@ -288,7 +289,7 @@ static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_sup
                 if (g_str_has_prefix (sysattr_value, "Battery") == TRUE) {
                     if (list_power_supply == TRUE) {
                         gchar *power_supply_id = g_path_get_basename (path);
-                        g_print ("type: %-*.*s\tid: %-*.*s\tpath: %s\n", 7, 7, "Battery", 10, 10, power_supply_id, path);
+                        g_print ("type: %-*.*s\tid: %-*.*s\tpath: %s\n", 7, 7, "Battery", 10, 10, power_supply_id, path); /*TODO*/
                         g_free (power_supply_id);
                     }
 
@@ -320,7 +321,7 @@ static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_sup
                 if (g_str_has_prefix (sysattr_value, "Mains") == TRUE) {
                     if (list_power_supply == TRUE) {
                         gchar *power_supply_id = g_path_get_basename (path);
-                        g_print ("type: %-*.*s\tid: %-*.*s\tpath: %s\n", 7, 7, "AC", 10, 10, power_supply_id, path);
+                        g_print ("type: %-*.*s\tid: %-*.*s\tpath: %s\n", 7, 7, "AC", 10, 10, power_supply_id, path); /*TODO*/
                         g_free (power_supply_id);
                     }
 
@@ -622,7 +623,7 @@ static void create_tray_icon (void)
 {
     GtkStatusIcon *tray_icon = gtk_status_icon_new ();
 
-    gtk_status_icon_set_tooltip_text (tray_icon, "cbatticon");
+    gtk_status_icon_set_tooltip_text (tray_icon, "cbatticon"); /*TODO*/
     gtk_status_icon_set_visible (tray_icon, TRUE);
 
     update_tray_icon (tray_icon);
@@ -787,11 +788,11 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
                 spawn_command_critical = FALSE;
 
                 if (configuration.command_critical_level != NULL) {
-                    syslog (LOG_CRIT, "Spawning critical battery level command in 30 seconds: %s", configuration.command_critical_level);
+                    syslog (LOG_CRIT, "Spawning critical battery level command in 30 seconds: %s", configuration.command_critical_level); /*TODO*/
                     g_usleep (G_USEC_PER_SEC * 30);
 
                     if (g_spawn_command_line_async (configuration.command_critical_level, &error) == FALSE) {
-                        syslog (LOG_CRIT, "Cannot spawn critical battery level command: %s", error->message);
+                        syslog (LOG_CRIT, "Cannot spawn critical battery level command: %s", error->message); /*TODO*/
                         g_error_free (error); error = NULL;
 
                         NOTIFY_MESSAGE (&notification, _("Cannot spawn critical battery level command!"), configuration.command_critical_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
@@ -811,7 +812,7 @@ static void tray_icon_on_click (GtkStatusIcon *status_icon, gpointer user_data)
 
     if (configuration.command_left_click != NULL) {
         if (g_spawn_command_line_async (configuration.command_left_click, &error) == FALSE) {
-            syslog (LOG_ERR, "Cannot spawn left click command: %s", error->message);
+            syslog (LOG_ERR, "Cannot spawn left click command: %s", error->message); /*TODO*/
             g_error_free (error); error = NULL;
 
             NOTIFY_MESSAGE (&notification, _("Cannot spawn left click command!"), configuration.command_left_click, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
@@ -996,10 +997,12 @@ static gchar* get_icon_name (gint state, gint percentage)
 
 int main (int argc, char **argv)
 {
-    setlocale(LC_ALL,"");
-    bindtextdomain("cbatticon","/usr/share/locale");
-    textdomain("cbatticon");
     gint ret;
+
+    setlocale (LC_ALL, "");
+    bindtextdomain ("cbatticon", NLSDIR);
+    bind_textdomain_codeset ("cbatticon", "UTF-8");
+    textdomain ("cbatticon");
 
     ret = get_options (argc, argv);
     if (ret <= 0)

@@ -3,11 +3,11 @@ A lightweight and fast battery icon that sits in your system tray.
 Based on code from xbattbar-acpi.
 
 Make options:
-  WITH_GTK3=0 to build against gtk+2 (version 2.16), it is the default option
-  WITH_GTK3=1 to build against gtk+3
+  WITH_GTK3=1 to build against gtk3, it is the default option
+  WITH_GTK3=0 to build against gtk2 (version 2.16)
 
-  WITH_NOTIFY=0 to build without libnotify support
   WITH_NOTIFY=1 to build with libnotify support, it is the default option
+  WITH_NOTIFY=0 to build without libnotify support
 
 Usage:
   cbatticon [OPTION...] [BATTERY ID]
@@ -42,7 +42,7 @@ Examples:
   cbatticon
   cbatticon -t
   cbatticon -p
-  cbatticon -u 20 -i notification -c "systemctl poweroff" -l 15 -r 3
+  cbatticon -u 20 -i notification -c "poweroff" -l 15 -r 3
 
 Thanks to:
 
@@ -57,5 +57,7 @@ Thanks to:
 
   - slyos <rameshvraj@gmail.com> to allow calculation of estimated remaining
   time for those batteries not providing the current (dis)charge rate.
+
+  - Alexandr (Pro-pra) Proklov <ssaa@rambler.ru> for the initial translation support
 
   - All other contributors reporting bugs, sending feature requests, ...
