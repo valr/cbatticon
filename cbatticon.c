@@ -289,7 +289,7 @@ static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_sup
                 if (g_str_has_prefix (sysattr_value, "Battery") == TRUE) {
                     if (list_power_supply == TRUE) {
                         gchar *power_supply_id = g_path_get_basename (path);
-                        g_print (_("type: %-*.*s\tid: %-*.*s\tpath: %s\n"), 7, 7, _("Battery"), 10, 10, power_supply_id, path);
+                        g_print (_("type: %-*.*s\tid: %-*.*s\tpath: %s\n"), 12, 12, _("Battery"), 12, 12, power_supply_id, path);
                         g_free (power_supply_id);
                     }
 
@@ -321,7 +321,7 @@ static gboolean get_power_supply (gchar *battery_suffix, gboolean list_power_sup
                 if (g_str_has_prefix (sysattr_value, "Mains") == TRUE) {
                     if (list_power_supply == TRUE) {
                         gchar *power_supply_id = g_path_get_basename (path);
-                        g_print (_("type: %-*.*s\tid: %-*.*s\tpath: %s\n"), 7, 7, _("AC"), 10, 10, power_supply_id, path);
+                        g_print (_("type: %-*.*s\tid: %-*.*s\tpath: %s\n"), 12, 12, _("AC"), 12, 12, power_supply_id, path);
                         g_free (power_supply_id);
                     }
 
