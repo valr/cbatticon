@@ -15,6 +15,7 @@ CC ?= gcc
 MSGFMT = msgfmt
 PKG_CONFIG ?= pkg-config
 RM = rm -f
+GETTEXT=xgettext
 INSTALL = install
 INSTALL_BIN = $(INSTALL) -m755
 INSTALL_DATA = $(INSTALL) -m644
@@ -104,6 +105,10 @@ uninstall:
 clean:
 	@echo -e '\033[0;33mCleaning up source directory\033[0m'
 	$(VERBOSE) $(RM) $(BIN) $(OBJECTS) $(TRANSLATIONS)
+
+translation-refresh-pot:
+	$(VERBOSE) $(GETTEXT) --default-domain=$(PACKAGE_NAME) --add-comments \
+		--keyword=_ --keyword=N_ $(SOURCEFILES) --output=$(PACKAGE_NAME).pot
 
 translation-status:
 	$(VERBOSE) for catalog in $(SOURCECATALOGS); \
