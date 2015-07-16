@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-16 22:45+0200\n"
+"POT-Creation-Date: 2015-07-16 23:30+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -220,7 +220,7 @@ msgstr ""
 
 #: cbatticon.c:919
 #, c-format
-msgid "battery: %s\n"
+msgid "battery string: %s\n"
 msgstr ""
 
 #: cbatticon.c:938
@@ -235,10 +235,10 @@ msgstr ""
 
 #: cbatticon.c:944
 #, c-format
-msgid "time: %s\n"
+msgid "time string: %s\n"
 msgstr ""
 
 #: cbatticon.c:992
 #, c-format
-msgid "icon: %s\n"
+msgid "icon name: %s\n"
 msgstr ""

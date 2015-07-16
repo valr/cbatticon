@@ -220,7 +220,7 @@ msgstr "Батарея заряжается (%i%)"
 
 #: cbatticon.c:919
 #, c-format
-msgid "battery: %s\n"
+msgid "battery string: %s\n"
 msgstr ""
 
 #: cbatticon.c:938
@@ -235,10 +235,10 @@ msgstr "%2d минут осталось"
 
 #: cbatticon.c:944
 #, c-format
-msgid "time: %s\n"
+msgid "time string: %s\n"
 msgstr ""
 
 #: cbatticon.c:992
 #, c-format
-msgid "icon: %s\n"
+msgid "icon name: %s\n"
 msgstr ""

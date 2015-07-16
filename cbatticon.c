@@ -916,7 +916,7 @@ static gchar* get_battery_string (gint state, gint percentage)
     }
 
     if (configuration.debug_output == TRUE) {
-        g_printf (_("battery: %s\n"), battery_string);
+        g_printf (_("battery string: %s\n"), battery_string);
     }
 
     return battery_string;
@@ -941,7 +941,7 @@ static gchar* get_time_string (gint minutes)
     }
 
     if (configuration.debug_output == TRUE) {
-        g_printf (_("time: %s\n"), time_string);
+        g_printf (_("time string: %s\n"), time_string);
     }
 
     return time_string;
@@ -989,7 +989,7 @@ static gchar* get_icon_name (gint state, gint percentage)
     }
 
     if (configuration.debug_output == TRUE) {
-        g_printf (_("icon: %s\n"), icon_name);
+        g_printf (_("icon name: %s\n"), icon_name);
     }
 
     return icon_name;
