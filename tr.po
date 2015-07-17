@@ -1,0 +1,214 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: cbatticon\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-06-26 09:16+0800\n"
+"PO-Revision-Date: 2015-07-16 21:51+0200\n"
+"Last-Translator: Behzat Erte <behzaterte@yandex.com>\n"
+"Language-Team: TR <behzaterte@yandex.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.5\n"
+"Language: Turkish\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: cbatticon.c:173
+#, c-format
+msgid "Cannot parse command line arguments: %s\n"
+msgstr "Komut satırı değişkenleri ayrıştırılamıyor: %s\n"
+
+#: cbatticon.c:184
+msgid ""
+"cbatticon: a lightweight and fast battery icon that sits in your system "
+"tray\n"
+msgstr "cbatticon: sistem çekmecesinde görünen küçük ve hızlı pil simgesi\n"
+
+#: cbatticon.c:185
+#, c-format
+msgid "version %s\n"
+msgstr "sürüm %s\n"
+
+#: cbatticon.c:193
+msgid "List of available power supplies:\n"
+msgstr "Uygun güç kaynaklarının listesi:\n"
+
+#: cbatticon.c:206
+msgid "List of available icon types:\n"
+msgstr "Uygun simge türlerinin listesi:\n"
+
+#: cbatticon.c:207 cbatticon.c:208 cbatticon.c:209
+msgid "available"
+msgstr "uygun"
+
+#: cbatticon.c:207 cbatticon.c:208 cbatticon.c:209 cbatticon.c:537
+#: cbatticon.c:545 cbatticon.c:567
+msgid "unavailable"
+msgstr "uygun değil"
+
+#: cbatticon.c:223
+#, c-format
+msgid "Unknown icon type: %s\n"
+msgstr "Bilinmeyen simge türü: %s\n"
+
+#: cbatticon.c:235
+msgid "No icon type found!\n"
+msgstr "Hiç simge türü bulunamadı!\n"
+
+#: cbatticon.c:242
+#, c-format
+msgid "Invalid update interval! It has been reset to default (%d seconds)\n"
+msgstr "Geçersiz güncelleme aralığı! Varsayılan ayarlara dönecek (%d saniye)\n"
+
+#: cbatticon.c:249
+#, c-format
+msgid "Invalid low level! It has been reset to default (%d percent)\n"
+msgstr "Geçersiz alt seviye! Varsayılan ayarlara dönecek (yüzde %d)\n"
+
+#: cbatticon.c:254
+#, c-format
+msgid "Invalid critical level! It has been reset to default (%d percent)\n"
+msgstr "Geçersiz kritik seviye! Varsayılan ayarlara dönecek (yüzde %d)\n"
+
+#: cbatticon.c:260
+msgid ""
+"Critical level is higher than low level! They have been reset to default\n"
+msgstr ""
+"Kritik seviye alt seviyeden yüksek! Varsayılan ayarlarına döndürülecekler\n"
+
+#: cbatticon.c:308
+msgid "workaround   : current rate is not available, estimating rate\n"
+msgstr "workaround   : güncel değer uygun değil, değer tahmin ediliyor\n"
+
+#: cbatticon.c:313
+#, c-format
+msgid "batt path    : %s\n"
+msgstr "pil yolu    : %s\n"
+
+#: cbatticon.c:331
+#, c-format
+msgid "ac path      : %s\n"
+msgstr "ac yolu      : %s\n"
+
+#: cbatticon.c:345
+#, c-format
+msgid "Cannot open sysfs directory: %s (%s)\n"
+msgstr "sysfs klasörü açılamıyor: %s (%s)\n"
+
+#: cbatticon.c:352
+#, c-format
+msgid "No battery with suffix %s found!\n"
+msgstr "Pil ile eki %s bulunamadı!\n"
+
+#: cbatticon.c:357
+msgid "No battery nor AC power supply found!\n"
+msgstr "Pil ya da AC güç ünitesi bulunamadı!\n"
+
+#: cbatticon.c:422
+#, c-format
+msgid "batt present : %s"
+msgstr "pil gösterimi : %s"
+
+#: cbatticon.c:452
+#, c-format
+msgid "batt status  : %d - %s"
+msgstr "pil durumu  : %d - %s"
+
+#: cbatticon.c:477
+#, c-format
+msgid "ac online    : %s"
+msgstr "ac çevrimiçi    : %s"
+
+#: cbatticon.c:537
+#, c-format
+msgid "full capacity: %s\n"
+msgstr "tam kapasite: %s\n"
+
+#: cbatticon.c:545
+#, c-format
+msgid "rem. capacity: %s\n"
+msgstr "rem. kapasitesi: %s\n"
+
+#: cbatticon.c:567
+#, c-format
+msgid "current rate : %s\n"
+msgstr "güncel değer : %s\n"
+
+#: cbatticon.c:669 cbatticon.c:672
+msgid "AC only, no battery!"
+msgstr "Sadece Adaptör, pil yok!"
+
+#: cbatticon.c:797
+msgid "Cannot spawn critical battery level command!"
+msgstr "Kritik pil seviyesi komutu oluşturulamıyor!"
+
+#: cbatticon.c:817
+msgid "Cannot spawn left click command!"
+msgstr "Sol tuş komutu oluşturulamıyor!"
+
+#: cbatticon.c:860 cbatticon.c:868
+#, c-format
+msgid "tooltip      : %s\n"
+msgstr "araç bilgisi      : %s\n"
+
+#: cbatticon.c:881
+msgid "Battery is missing!"
+msgstr "Pil kayıp!"
+
+#: cbatticon.c:885
+msgid "Battery status is unknown!"
+msgstr "Pil durumu bilinmiyor!"
+
+#: cbatticon.c:889
+msgid "Battery is charged!"
+msgstr "Pil dolduruldu!"
+
+#: cbatticon.c:893
+msgid "Battery is discharging (%i% remaining)"
+msgstr "Pil boşalıyor (%i% remaining)"
+
+#: cbatticon.c:897
+msgid "Battery is not charging (%i% remaining)"
+msgstr "Pil doldurulmuyor (%i% kalan)"
+
+#: cbatticon.c:901
+msgid "Battery level is low! (%i% remaining)"
+msgstr "Pil durumu düşük! (%i% kalan)"
+
+#: cbatticon.c:905
+msgid "Battery level is critical! (%i% remaining)"
+msgstr "Pil kritik seviyede! (%i% kalan)"
+
+#: cbatticon.c:909
+msgid "Battery is charging (%i%)"
+msgstr "Pil dolduruluyor (%i%)"
+
+#: cbatticon.c:918
+#, c-format
+msgid "battery      : %s\n"
+msgstr "pil      : %s\n"
+
+#: cbatticon.c:937
+#, c-format
+msgid "%2d hours, %2d minutes remaining"
+msgstr "%2d saat, %2d dakika kaldı"
+
+#: cbatticon.c:939
+#, c-format
+msgid "%2d minutes remaining"
+msgstr "%2d dakika kaldı"
+
+#: cbatticon.c:943
+#, c-format
+msgid "time         : %s\n"
+msgstr "zaman         : %s\n"
+
+#: cbatticon.c:991
+#, c-format
+msgid "icon         : %s\n"
+msgstr "simge         : %s\n"
