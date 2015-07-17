@@ -23,6 +23,7 @@
 
 #define CBATTICON_VERSION_NUMBER 1.5.0
 #define CBATTICON_VERSION_STRING "1.5.0"
+#define CBATTICON_TEXT_DOMAIN "cbatticon"
 
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -150,24 +151,24 @@ static gint get_options (int argc, char **argv)
     gboolean list_icon_type       = FALSE;
     gboolean list_power_supply    = FALSE;
     GOptionEntry option_entries[] = {
-        { "version"               , 'v', 0, G_OPTION_ARG_NONE  , &display_version                     , "Display the version of cbatticon"                         , NULL }, /*TODO*/
-        { "debug"                 , 'd', 0, G_OPTION_ARG_NONE  , &configuration.debug_output          , "Display debug information"                                , NULL }, /*TODO*/
-        { "update-interval"       , 'u', 0, G_OPTION_ARG_INT   , &configuration.update_interval       , "Set update interval (in seconds)"                         , NULL }, /*TODO*/
-        { "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string                    , "Set icon type ('standard', 'notification' or 'symbolic')" , NULL }, /*TODO*/
-        { "low-level"             , 'l', 0, G_OPTION_ARG_INT   , &configuration.low_level             , "Set low battery level (in percent)"                       , NULL }, /*TODO*/
-        { "critical-level"        , 'r', 0, G_OPTION_ARG_INT   , &configuration.critical_level        , "Set critical battery level (in percent)"                  , NULL }, /*TODO*/
-        { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &configuration.command_critical_level, "Command to execute when critical battery level is reached", NULL }, /*TODO*/
-        { "command-left-click"    , 'x', 0, G_OPTION_ARG_STRING, &configuration.command_left_click    , "Command to execute when left clicking on tray icon"       , NULL }, /*TODO*/
+        { "version"               , 'v', 0, G_OPTION_ARG_NONE  , &display_version                     , N_("Display the version")                                      , NULL },
+        { "debug"                 , 'd', 0, G_OPTION_ARG_NONE  , &configuration.debug_output          , N_("Display debug information")                                , NULL },
+        { "update-interval"       , 'u', 0, G_OPTION_ARG_INT   , &configuration.update_interval       , N_("Set update interval (in seconds)")                         , NULL },
+        { "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string                    , N_("Set icon type ('standard', 'notification' or 'symbolic')") , NULL },
+        { "low-level"             , 'l', 0, G_OPTION_ARG_INT   , &configuration.low_level             , N_("Set low battery level (in percent)")                       , NULL },
+        { "critical-level"        , 'r', 0, G_OPTION_ARG_INT   , &configuration.critical_level        , N_("Set critical battery level (in percent)")                  , NULL },
+        { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &configuration.command_critical_level, N_("Command to execute when critical battery level is reached"), NULL },
+        { "command-left-click"    , 'x', 0, G_OPTION_ARG_STRING, &configuration.command_left_click    , N_("Command to execute when left clicking on tray icon")       , NULL },
 #ifdef WITH_NOTIFY
-        { "hide-notification"     , 'n', 0, G_OPTION_ARG_NONE  , &configuration.hide_notification     , "Hide the notification popups"                             , NULL }, /*TODO*/
+        { "hide-notification"     , 'n', 0, G_OPTION_ARG_NONE  , &configuration.hide_notification     , N_("Hide the notification popups")                             , NULL },
 #endif
-        { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &list_icon_type                      , "List available icon types"                                , NULL }, /*TODO*/
-        { "list-power-supplies"   , 'p', 0, G_OPTION_ARG_NONE  , &list_power_supply                   , "List available power supplies (battery and AC)"           , NULL }, /*TODO*/
+        { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &list_icon_type                      , N_("List available icon types")                                , NULL },
+        { "list-power-supplies"   , 'p', 0, G_OPTION_ARG_NONE  , &list_power_supply                   , N_("List available power supplies (battery and AC)")           , NULL },
         { NULL }
     };
 
     option_context = g_option_context_new (_("[BATTERY ID]"));
-    g_option_context_add_main_entries (option_context, option_entries, NULL);
+    g_option_context_add_main_entries (option_context, option_entries, CBATTICON_TEXT_DOMAIN);
     g_option_context_add_group (option_context, gtk_get_option_group (TRUE));
 
     if (g_option_context_parse (option_context, &argc, &argv, &error) == FALSE) {
@@ -1000,9 +1001,9 @@ int main (int argc, char **argv)
     gint ret;
 
     setlocale (LC_ALL, "");
-    bindtextdomain ("cbatticon", NLSDIR);
-    bind_textdomain_codeset ("cbatticon", "UTF-8");
-    textdomain ("cbatticon");
+    bindtextdomain (CBATTICON_TEXT_DOMAIN, NLSDIR);
+    bind_textdomain_codeset (CBATTICON_TEXT_DOMAIN, "UTF-8");
+    textdomain (CBATTICON_TEXT_DOMAIN);
 
     ret = get_options (argc, argv);
     if (ret <= 0)
