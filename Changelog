@@ -6,6 +6,8 @@ xxxx-xx-xx  Valère Monseur  <valere.monseur@ymail.com>
 
  * build with deprecation warning disabled
 
+ * Fix #17 : cbatticon --version shouldn't need X display
+
  * Fix #20 : initial translation support
 
  * Fix #21 : add turkish translation

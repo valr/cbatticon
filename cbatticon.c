@@ -169,7 +169,6 @@ static gint get_options (int argc, char **argv)
 
     option_context = g_option_context_new (_("[BATTERY ID]"));
     g_option_context_add_main_entries (option_context, option_entries, CBATTICON_TEXT_DOMAIN);
-    g_option_context_add_group (option_context, gtk_get_option_group (TRUE));
 
     if (g_option_context_parse (option_context, &argc, &argv, &error) == FALSE) {
         g_printerr (_("Cannot parse command line arguments: %s\n"), error->message);
@@ -199,6 +198,8 @@ static gint get_options (int argc, char **argv)
     }
 
     /* option : list available icon types */
+
+    gtk_init (&argc, &argv); /* gtk is required as from this point */
 
     #define HAS_STANDARD_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-full")
     #define HAS_NOTIFICATION_ICON_TYPE gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "notification-battery-100")
