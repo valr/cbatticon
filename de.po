@@ -115,12 +115,12 @@ msgstr "Ungültiges Update-Intervall! Wird auf Voreinstellung zurückgesetzt (%d
 #: cbatticon.c:251
 #, c-format
 msgid "Invalid low level! It has been reset to default (%d percent)\n"
-msgstr "Ungültige Einstellung für niedrigen Batteriestand! Wird auf Voreinstellung zurückgesetzt (%d percent)\n"
+msgstr "Ungültige Einstellung für niedrigen Batteriestand! Wird auf Voreinstellung zurückgesetzt (%d Prozent)\n"
 
 #: cbatticon.c:256
 #, c-format
 msgid "Invalid critical level! It has been reset to default (%d percent)\n"
-msgstr "Ungültige Einstellung für kritischen Batteriestand! Wird auf Voreinstellung zurückgesetzt (%d percent)\n"
+msgstr "Ungültige Einstellung für kritischen Batteriestand! Wird auf Voreinstellung zurückgesetzt (%d Prozent)\n"
 
 #: cbatticon.c:262
 msgid ""
@@ -249,15 +249,15 @@ msgstr "Batterie entlädt (%i% verbleibend)"
 
 #: cbatticon.c:899
 msgid "Battery is not charging (%i% remaining)"
-msgstr "Batterie lädt nicht auf (%i% remaining)"
+msgstr "Batterie lädt nicht auf (%i% verbleibend)"
 
 #: cbatticon.c:903
 msgid "Battery level is low! (%i% remaining)"
-msgstr "Batteriezustand niedrig! (%i% remaining)"
+msgstr "Batteriezustand niedrig! (%i% verbleibend)"
 
 #: cbatticon.c:907
 msgid "Battery level is critical! (%i% remaining)"
-msgstr "Batteriezustand kritisch! (%i% remaining"
+msgstr "Batteriezustand kritisch! (%i% verbleibend)"
 
 #: cbatticon.c:911
 msgid "Battery is charging (%i%)"
