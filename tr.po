@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: cbatticon 1.5.0\n"
 "Report-Msgid-Bugs-To: valere.monseur@ymail.com\n"
 "POT-Creation-Date: 2015-07-17 20:38+0200\n"
-"PO-Revision-Date: 2015-07-19 13:30+0200\n"
+"PO-Revision-Date: 2015-07-19 14:11+0200\n"
 "Last-Translator: Behzat Erte <behzaterte@yandex.com>\n"
 "Language-Team: TR <behzaterte@yandex.com>\n"
 "MIME-Version: 1.0\n"
@@ -140,7 +140,7 @@ msgstr "Pil"
 
 #: cbatticon.c:310
 msgid "workaround: current rate is not available, estimating rate\n"
-msgstr "workaround: güncel değer uygun değil, değer tahmin ediliyor\n"
+msgstr "geçici çözüm: güncel değer uygun değil, değer tahmin ediliyor\n"
 
 #: cbatticon.c:315
 #, c-format
@@ -154,7 +154,7 @@ msgstr "Şebeke"
 #: cbatticon.c:333
 #, c-format
 msgid "ac path: %s\n"
-msgstr "ac yolu: %s\n"
+msgstr "şebeke yolu: %s\n"
 
 #: cbatticon.c:347
 #, c-format
@@ -168,7 +168,7 @@ msgstr "Pil ile eki %s bulunamadı!\n"
 
 #: cbatticon.c:359
 msgid "No battery nor AC power supply found!\n"
-msgstr "Pil ya da AC güç ünitesi bulunamadı!\n"
+msgstr "Pil ya da şebeke güç ünitesi bulunamadı!\n"
 
 #: cbatticon.c:424
 #, c-format
@@ -183,7 +183,7 @@ msgstr "pil durumu: %d - %s"
 #: cbatticon.c:479
 #, c-format
 msgid "ac online: %s"
-msgstr "ac çevrimiçi: %s"
+msgstr "şebeke çevrimiçi: %s"
 
 #: cbatticon.c:539
 #, c-format
@@ -193,7 +193,7 @@ msgstr "tam kapasite: %s\n"
 #: cbatticon.c:547
 #, c-format
 msgid "remaining capacity: %s\n"
-msgstr "rem. kapasitesi: %s\n"
+msgstr "kalan güç: %s\n"
 
 #: cbatticon.c:569
 #, c-format
@@ -202,12 +202,12 @@ msgstr "güncel değer: %s\n"
 
 #: cbatticon.c:671 cbatticon.c:674
 msgid "AC only, no battery!"
-msgstr "Sadece Adaptör, pil yok!"
+msgstr "Sadece şebeke, pil yok!"
 
 #: cbatticon.c:792
 #, c-format
 msgid "Spawning critical battery level command in 30 seconds: %s"
-msgstr "Kritik pil seviyesi komutu 30 saniye içerisined üretilecek: %s"
+msgstr "Kritik pil seviyesi komutu 30 saniye içerisinde üretilecek: %s"
 
 #: cbatticon.c:796
 #, c-format
@@ -246,7 +246,7 @@ msgstr "Pil dolduruldu!"
 
 #: cbatticon.c:895
 msgid "Battery is discharging (%i% remaining)"
-msgstr "Pil boşalıyor (%i% remaining)"
+msgstr "Pil boşalıyor (%i% kalan)"
 
 #: cbatticon.c:899
 msgid "Battery is not charging (%i% remaining)"
