@@ -8,9 +8,17 @@ xxxx-xx-xx  Valère Monseur  <valere.monseur@ymail.com>
 
  * Fix #20 : initial translation support
 
+ * Fix #21 : add turkish translation
+
+ * Fix #22 : update turkish translation
+
+ * Fix #23 : add german translation
+
  * Completed translation support
 
- * Added french translation (complete), russian and turkish (incomplete)
+ * Completed translation: german, french, turkish
+
+ * Partial translation: russian
 
 2014-11-24  Valère Monseur  <valere.monseur@ymail.com>
 
