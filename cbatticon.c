@@ -893,23 +893,23 @@ static gchar* get_battery_string (gint state, gint percentage)
             break;
 
         case DISCHARGING:
-            g_snprintf (battery_string, STR_LTH, _("Battery is discharging (%i% remaining)"), percentage);
+            g_snprintf (battery_string, STR_LTH, _("Battery is discharging (%i%% remaining)"), percentage);
             break;
 
         case NOT_CHARGING:
-            g_snprintf (battery_string, STR_LTH, _("Battery is not charging (%i% remaining)"), percentage);
+            g_snprintf (battery_string, STR_LTH, _("Battery is not charging (%i%% remaining)"), percentage);
             break;
 
         case LOW_LEVEL:
-            g_snprintf (battery_string, STR_LTH, _("Battery level is low! (%i% remaining)"), percentage);
+            g_snprintf (battery_string, STR_LTH, _("Battery level is low! (%i%% remaining)"), percentage);
             break;
 
         case CRITICAL_LEVEL:
-            g_snprintf (battery_string, STR_LTH, _("Battery level is critical! (%i% remaining)"), percentage);
+            g_snprintf (battery_string, STR_LTH, _("Battery level is critical! (%i%% remaining)"), percentage);
             break;
 
         case CHARGING:
-            g_snprintf (battery_string, STR_LTH, _("Battery is charging (%i%)"), percentage);
+            g_snprintf (battery_string, STR_LTH, _("Battery is charging (%i%%)"), percentage);
             break;
 
         default:
@@ -927,6 +927,7 @@ static gchar* get_battery_string (gint state, gint percentage)
 static gchar* get_time_string (gint minutes)
 {
     static gchar time_string[STR_LTH];
+    static gchar minutes_string[STR_LTH];
     gint hours;
 
     if (minutes < 0) {
@@ -937,9 +938,10 @@ static gchar* get_time_string (gint minutes)
     minutes = minutes % 60;
 
     if (hours > 0) {
-        g_sprintf (time_string, _("%2d hours, %2d minutes remaining"), hours, minutes);
+        g_sprintf (minutes_string, ngettext("%2d minute", "%2d minutes", minutes), minutes);
+        g_sprintf (time_string, ngettext("%2d hour, %s remaining", "%2d hours, %s remaining", hours), hours, minutes_string);
     } else {
-        g_sprintf (time_string, _("%2d minutes remaining"), minutes);
+        g_sprintf (time_string, ngettext("%2d minute remaining", "%2d minutes remaining", minutes), minutes);
     }
 
     if (configuration.debug_output == TRUE) {

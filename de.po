@@ -7,15 +7,16 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: cbatticon 1.5.0\n"
-"Report-Msgid-Bugs-To: \n"
+"Report-Msgid-Bugs-To: valere.monseur@ymail.com\n"
 "POT-Creation-Date: 2015-07-17 20:38+0200\n"
 "PO-Revision-Date: 2015-07-19 17:35+0200\n"
 "Last-Translator: Julian Ospald <hasufell@gentoo.org>\n"
-"Language-Team: N/A\\n"
+"Language-Team: N/A\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n!=1;\n"
 
 #: cbatticon.c:154
 msgid "Display the version"
@@ -65,225 +66,251 @@ msgstr "Verfügbare Stromversorgungsgeräte auflisten (Batterie und AC)"
 msgid "[BATTERY ID]"
 msgstr "[BATTERIE ID]"
 
-#: cbatticon.c:175
+#: cbatticon.c:174
 #, c-format
 msgid "Cannot parse command line arguments: %s\n"
 msgstr "Kann Kommandozeilen-Argumente nicht parsen: %s\n"
 
-#: cbatticon.c:186
+#: cbatticon.c:185
 msgid ""
 "cbatticon: a lightweight and fast battery icon that sits in your system "
 "tray\n"
-msgstr "cbatticon: ein leichtgewichtiges und schnelles Batteriesymbol, das in der System-Tray sitzt\n"
+msgstr ""
+"cbatticon: ein leichtgewichtiges und schnelles Batteriesymbol, das in der "
+"System-Tray sitzt\n"
 
-#: cbatticon.c:187
+#: cbatticon.c:186
 #, c-format
 msgid "version %s\n"
 msgstr "Version %s\n"
 
-#: cbatticon.c:195
+#: cbatticon.c:194
 msgid "List of available power supplies:\n"
 msgstr "Verfügbare Stromversorgungsgeräte auflisten:\n"
 
-#: cbatticon.c:208
+#: cbatticon.c:209
 msgid "List of available icon types:\n"
 msgstr "Verfügbare Symboltypen auflisten:\n"
 
-#: cbatticon.c:209 cbatticon.c:210 cbatticon.c:211
+#: cbatticon.c:210 cbatticon.c:211 cbatticon.c:212
 msgid "available"
 msgstr "verfügbar"
 
-#: cbatticon.c:209 cbatticon.c:210 cbatticon.c:211 cbatticon.c:539
-#: cbatticon.c:547 cbatticon.c:569
+#: cbatticon.c:210 cbatticon.c:211 cbatticon.c:212 cbatticon.c:540
+#: cbatticon.c:548 cbatticon.c:570
 msgid "unavailable"
 msgstr "nicht verfügbar"
 
-#: cbatticon.c:225
+#: cbatticon.c:226
 #, c-format
 msgid "Unknown icon type: %s\n"
 msgstr "Unbekannter Symboltyp: %s\n"
 
-#: cbatticon.c:237
+#: cbatticon.c:238
 msgid "No icon type found!\n"
 msgstr "Kein Symboltyp gefunden!\n"
 
-#: cbatticon.c:244
+#: cbatticon.c:245
 #, c-format
 msgid "Invalid update interval! It has been reset to default (%d seconds)\n"
-msgstr "Ungültiges Update-Intervall! Wird auf Voreinstellung zurückgesetzt (%d Sekunden)\n"
+msgstr ""
+"Ungültiges Update-Intervall! Wird auf Voreinstellung zurückgesetzt (%d "
+"Sekunden)\n"
 
-#: cbatticon.c:251
+#: cbatticon.c:252
 #, c-format
 msgid "Invalid low level! It has been reset to default (%d percent)\n"
-msgstr "Ungültige Einstellung für niedrigen Batteriestand! Wird auf Voreinstellung zurückgesetzt (%d Prozent)\n"
+msgstr ""
+"Ungültige Einstellung für niedrigen Batteriestand! Wird auf Voreinstellung "
+"zurückgesetzt (%d Prozent)\n"
 
-#: cbatticon.c:256
+#: cbatticon.c:257
 #, c-format
 msgid "Invalid critical level! It has been reset to default (%d percent)\n"
-msgstr "Ungültige Einstellung für kritischen Batteriestand! Wird auf Voreinstellung zurückgesetzt (%d Prozent)\n"
+msgstr ""
+"Ungültige Einstellung für kritischen Batteriestand! Wird auf Voreinstellung "
+"zurückgesetzt (%d Prozent)\n"
 
-#: cbatticon.c:262
+#: cbatticon.c:263
 msgid ""
 "Critical level is higher than low level! They have been reset to default\n"
 msgstr ""
-"Einstellung für kritischen Batteriestand ist höher als für niedrigen. Beide werden auf die Voreinstellungen zurückgesetzt\n"
+"Einstellung für kritischen Batteriestand ist höher als für niedrigen. Beide "
+"werden auf die Voreinstellungen zurückgesetzt\n"
 
-#: cbatticon.c:293 cbatticon.c:325
+#: cbatticon.c:294 cbatticon.c:326
 #, c-format
 msgid "type: %-*.*s\tid: %-*.*s\tpath: %s\n"
 msgstr "Typ: %-*.*s\tID: %-*.*s\tPfad: %s\n"
 
-#: cbatticon.c:293
+#: cbatticon.c:294
 msgid "Battery"
 msgstr "Batterie"
 
-#: cbatticon.c:310
+#: cbatticon.c:311
 msgid "workaround: current rate is not available, estimating rate\n"
 msgstr "Workaround: aktuelle Rate ist nicht verfügbar, Rate wird geschätzt\n"
 
-#: cbatticon.c:315
+#: cbatticon.c:316
 #, c-format
 msgid "battery path: %s\n"
 msgstr "Batterie-Pfad: %s\n"
 
-#: cbatticon.c:325
+#: cbatticon.c:326
 msgid "AC"
 msgstr "AC"
 
-#: cbatticon.c:333
+#: cbatticon.c:334
 #, c-format
 msgid "ac path: %s\n"
 msgstr "AC Pfad: %s\n"
 
-#: cbatticon.c:347
+#: cbatticon.c:348
 #, c-format
 msgid "Cannot open sysfs directory: %s (%s)\n"
 msgstr "Kann sysfs Ordner nicht öffnen: %s (%s)\n"
 
-#: cbatticon.c:354
+#: cbatticon.c:355
 #, c-format
 msgid "No battery with suffix %s found!\n"
 msgstr "Keine Batterie mit Suffix %s gefunden!\n"
 
-#: cbatticon.c:359
+#: cbatticon.c:360
 msgid "No battery nor AC power supply found!\n"
 msgstr "Keine Batterie oder AC Stromversorgung gefunden!\n"
 
-#: cbatticon.c:424
+#: cbatticon.c:425
 #, c-format
 msgid "battery present: %s"
 msgstr "Batterie vorhanden: %s"
 
-#: cbatticon.c:454
+#: cbatticon.c:455
 #, c-format
 msgid "battery status: %d - %s"
 msgstr "Batteriestatus: %d - %s"
 
-#: cbatticon.c:479
+#: cbatticon.c:480
 #, c-format
 msgid "ac online: %s"
 msgstr "AC angeschlossen: %s"
 
-#: cbatticon.c:539
+#: cbatticon.c:540
 #, c-format
 msgid "full capacity: %s\n"
 msgstr "volle Kapazität: %s\n"
 
-#: cbatticon.c:547
+#: cbatticon.c:548
 #, c-format
 msgid "remaining capacity: %s\n"
 msgstr "verbleibende Kapazität: %s\n"
 
-#: cbatticon.c:569
+#: cbatticon.c:570
 #, c-format
 msgid "current rate: %s\n"
 msgstr "aktuelle Rate: %s\n"
 
-#: cbatticon.c:671 cbatticon.c:674
+#: cbatticon.c:672 cbatticon.c:675
 msgid "AC only, no battery!"
 msgstr "Nur AC, keine Batterie!"
 
-#: cbatticon.c:792
+#: cbatticon.c:793
 #, c-format
 msgid "Spawning critical battery level command in 30 seconds: %s"
-msgstr "Befehl für kritischen Batteriezustand wird in 30 Sekunden aufgerufen: %s"
+msgstr ""
+"Befehl für kritischen Batteriezustand wird in 30 Sekunden aufgerufen: %s"
 
-#: cbatticon.c:796
+#: cbatticon.c:797
 #, c-format
 msgid "Cannot spawn critical battery level command: %s"
 msgstr "Kann Befehl für kritischen Batteriezustand nicht aufrufen: %s"
 
-#: cbatticon.c:799
+#: cbatticon.c:800
 msgid "Cannot spawn critical battery level command!"
 msgstr "Kann Befehl für kritischen Batteriezustand nicht aufrufen!"
 
-#: cbatticon.c:816
+#: cbatticon.c:817
 #, c-format
 msgid "Cannot spawn left click command: %s"
 msgstr "Kann Befehl für Linksklick nicht aufrufen: %s"
 
-#: cbatticon.c:819
+#: cbatticon.c:820
 msgid "Cannot spawn left click command!"
 msgstr "Kann Befehl für Linksklick nicht aufrufen!"
 
-#: cbatticon.c:862 cbatticon.c:870
+#: cbatticon.c:863 cbatticon.c:871
 #, c-format
 msgid "tooltip: %s\n"
 msgstr "Tooltip: %s\n"
 
-#: cbatticon.c:883
+#: cbatticon.c:884
 msgid "Battery is missing!"
 msgstr "Batterie fehlt!"
 
-#: cbatticon.c:887
+#: cbatticon.c:888
 msgid "Battery status is unknown!"
 msgstr "Batteriezustand unbekannt!"
 
-#: cbatticon.c:891
+#: cbatticon.c:892
 msgid "Battery is charged!"
 msgstr "Batterie ist vollständig aufgeladen!"
 
-#: cbatticon.c:895
-msgid "Battery is discharging (%i% remaining)"
-msgstr "Batterie entlädt (%i% verbleibend)"
+#: cbatticon.c:896
+#, fuzzy, c-format
+msgid "Battery is discharging (%i%% remaining)"
+msgstr "Batterie entlädt (%i%% verbleibend)"
 
-#: cbatticon.c:899
-msgid "Battery is not charging (%i% remaining)"
-msgstr "Batterie lädt nicht auf (%i% verbleibend)"
+#: cbatticon.c:900
+#, fuzzy, c-format
+msgid "Battery is not charging (%i%% remaining)"
+msgstr "Batterie lädt nicht auf (%i%% verbleibend)"
 
-#: cbatticon.c:903
-msgid "Battery level is low! (%i% remaining)"
-msgstr "Batteriezustand niedrig! (%i% verbleibend)"
+#: cbatticon.c:904
+#, fuzzy, c-format
+msgid "Battery level is low! (%i%% remaining)"
+msgstr "Batteriezustand niedrig! (%i%% verbleibend)"
 
-#: cbatticon.c:907
-msgid "Battery level is critical! (%i% remaining)"
-msgstr "Batteriezustand kritisch! (%i% verbleibend)"
+#: cbatticon.c:908
+#, fuzzy, c-format
+msgid "Battery level is critical! (%i%% remaining)"
+msgstr "Batteriezustand kritisch! (%i%% verbleibend)"
 
-#: cbatticon.c:911
-msgid "Battery is charging (%i%)"
-msgstr "Batterie lädt auf (%i%)"
+#: cbatticon.c:912
+#, fuzzy, c-format
+msgid "Battery is charging (%i%%)"
+msgstr "Batterie lädt auf (%i%%)"
 
-#: cbatticon.c:920
+#: cbatticon.c:921
 #, c-format
 msgid "battery string: %s\n"
 msgstr "Batteriemeldung: %s\n"
 
-#: cbatticon.c:939
-#, c-format
-msgid "%2d hours, %2d minutes remaining"
-msgstr "%2d Stunden, %2d Minuten verbleibend"
-
 #: cbatticon.c:941
-#, c-format
-msgid "%2d minutes remaining"
-msgstr "%2d Minuten verbleibend"
+#, fuzzy, c-format
+msgid "%2d minute"
+msgid_plural "%2d minutes"
+msgstr[0] "%2d Minute"
+msgstr[1] "%2d Minuten"
 
-#: cbatticon.c:945
+#: cbatticon.c:942
+#, fuzzy, c-format
+msgid "%2d hour, %s remaining"
+msgid_plural "%2d hours, %s remaining"
+msgstr[0] "%2d Stunde, %s verbleibend"
+msgstr[1] "%2d Stunden, %s verbleibend"
+
+#: cbatticon.c:944
+#, fuzzy, c-format
+msgid "%2d minute remaining"
+msgid_plural "%2d minutes remaining"
+msgstr[0] "%2d Minute verbleibend"
+msgstr[1] "%2d Minuten verbleibend"
+
+#: cbatticon.c:948
 #, c-format
 msgid "time string: %s\n"
 msgstr "Zeitmeldung: %s\n"
 
-#: cbatticon.c:993
+#: cbatticon.c:996
 #, c-format
 msgid "icon name: %s\n"
 msgstr "Symbolname: %s\n"
