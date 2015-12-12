@@ -1,4 +1,3 @@
-# SOME DESCRIPTIVE TITLE.
 # Copyright (C) 2015 Valère Monseur
 # This file is distributed under the same license as the cbatticon package.
 # Valère Monseur <valere.monseur@ymail.com>, 2015.
@@ -6,9 +5,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: cbatticon 1.5.0\n"
+"Project-Id-Version: cbatticon 1.5.1\n"
 "Report-Msgid-Bugs-To: valere.monseur@ymail.com\n"
-"POT-Creation-Date: 2015-07-17 20:38+0200\n"
+"POT-Creation-Date: 2015-12-12 23:53+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -275,22 +274,22 @@ msgstr ""
 
 #: cbatticon.c:941
 #, c-format
-msgid "%2d minute"
-msgid_plural "%2d minutes"
+msgid "%d minute"
+msgid_plural "%d minutes"
 msgstr[0] ""
 msgstr[1] ""
 
 #: cbatticon.c:942
 #, c-format
-msgid "%2d hour, %s remaining"
-msgid_plural "%2d hours, %s remaining"
+msgid "%d hour, %s remaining"
+msgid_plural "%d hours, %s remaining"
 msgstr[0] ""
 msgstr[1] ""
 
 #: cbatticon.c:944
 #, c-format
-msgid "%2d minute remaining"
-msgid_plural "%2d minutes remaining"
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -299,7 +298,7 @@ msgstr[1] ""
 msgid "time string: %s\n"
 msgstr ""
 
-#: cbatticon.c:996
+#: cbatticon.c:999
 #, c-format
 msgid "icon name: %s\n"
 msgstr ""

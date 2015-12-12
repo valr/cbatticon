@@ -248,27 +248,22 @@ msgid "Battery is charged!"
 msgstr "Батарея заряжена!"
 
 #: cbatticon.c:896
-#, fuzzy, c-format
 msgid "Battery is discharging (%i%% remaining)"
 msgstr "Батарея разряжается (%i%% осталось)"
 
 #: cbatticon.c:900
-#, fuzzy, c-format
 msgid "Battery is not charging (%i%% remaining)"
 msgstr "Батарея не заряжается (%i%% осталось)"
 
 #: cbatticon.c:904
-#, fuzzy, c-format
 msgid "Battery level is low! (%i%% remaining)"
 msgstr "Низкий уровень заряда батареи! (%i%% осталось)"
 
 #: cbatticon.c:908
-#, fuzzy, c-format
 msgid "Battery level is critical! (%i%% remaining)"
 msgstr "Критический уровень заряда батареи! (%i%% осталось)"
 
 #: cbatticon.c:912
-#, fuzzy, c-format
 msgid "Battery is charging (%i%%)"
 msgstr "Батарея заряжается (%i%%)"
 
@@ -278,28 +273,25 @@ msgid "battery string: %s\n"
 msgstr ""
 
 #: cbatticon.c:941
-#, fuzzy, c-format
-msgid "%2d minute"
-msgid_plural "%2d minutes"
-msgstr[0] "%2d минута"
-msgstr[1] "%2d минуты"
-msgstr[2] "%2d минут"
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d минута"
+msgstr[1] "%d минуты"
+msgstr[2] "%d минут"
 
 #: cbatticon.c:942
-#, fuzzy, c-format
-msgid "%2d hour, %s remaining"
-msgid_plural "%2d hours, %s remaining"
-msgstr[0] "%2d час, %s осталось"
-msgstr[1] "%2d часа, %s осталось"
-msgstr[2] "%2d часов, %s осталось"
+msgid "%d hour, %s remaining"
+msgid_plural "%d hours, %s remaining"
+msgstr[0] "%d час, %s осталось"
+msgstr[1] "%d часа, %s осталось"
+msgstr[2] "%d часов, %s осталось"
 
 #: cbatticon.c:944
-#, fuzzy, c-format
-msgid "%2d minute remaining"
-msgid_plural "%2d minutes remaining"
-msgstr[0] "%2d минута осталось"
-msgstr[1] "%2d минуты осталось"
-msgstr[2] "%2d минут осталось"
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] "%d минута осталось"
+msgstr[1] "%d минуты осталось"
+msgstr[2] "%d минут осталось"
 
 #: cbatticon.c:948
 #, c-format

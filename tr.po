@@ -246,27 +246,22 @@ msgid "Battery is charged!"
 msgstr "Pil dolduruldu!"
 
 #: cbatticon.c:896
-#, fuzzy, c-format
 msgid "Battery is discharging (%i%% remaining)"
 msgstr "Pil boşalıyor (%i%% kalan)"
 
 #: cbatticon.c:900
-#, fuzzy, c-format
 msgid "Battery is not charging (%i%% remaining)"
 msgstr "Pil doldurulmuyor (%i%% kalan)"
 
 #: cbatticon.c:904
-#, fuzzy, c-format
 msgid "Battery level is low! (%i%% remaining)"
 msgstr "Pil durumu düşük! (%i%% kalan)"
 
 #: cbatticon.c:908
-#, fuzzy, c-format
 msgid "Battery level is critical! (%i%% remaining)"
 msgstr "Pil kritik seviyede! (%i%% kalan)"
 
 #: cbatticon.c:912
-#, fuzzy, c-format
 msgid "Battery is charging (%i%%)"
 msgstr "Pil dolduruluyor (%i%%)"
 
@@ -276,25 +271,22 @@ msgid "battery string: %s\n"
 msgstr "pil metni: %s\n"
 
 #: cbatticon.c:941
-#, fuzzy, c-format
-msgid "%2d minute"
-msgid_plural "%2d minutes"
-msgstr[0] "%2d dakika kaldı"
-msgstr[1] "%2d dakikalar kaldı"
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d dakika"
+msgstr[1] "%d dakikalar"
 
 #: cbatticon.c:942
-#, fuzzy, c-format
-msgid "%2d hour, %s remaining"
-msgid_plural "%2d hours, %s remaining"
-msgstr[0] "%2d saat, %s kaldı"
-msgstr[1] "%2d saatler, %s kaldı"
+msgid "%d hour, %s remaining"
+msgid_plural "%d hours, %s remaining"
+msgstr[0] "%d saat, %s kaldı"
+msgstr[1] "%d saatler, %s kaldı"
 
 #: cbatticon.c:944
-#, fuzzy, c-format
-msgid "%2d minute remaining"
-msgid_plural "%2d minutes remaining"
-msgstr[0] "%2d dakika kaldı"
-msgstr[1] "%2d dakikalar kaldı"
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] "%d dakika kaldı"
+msgstr[1] "%d dakikalar kaldı"
 
 #: cbatticon.c:948
 #, c-format

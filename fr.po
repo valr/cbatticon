@@ -51,7 +51,7 @@ msgstr ""
 msgid "Command to execute when left clicking on tray icon"
 msgstr ""
 "Commande à exécuter lors d'un clic gauche sur l'icône de la barre d'état "
-"systême"
+"système"
 
 #: cbatticon.c:163
 msgid "Hide the notification popups"
@@ -80,7 +80,7 @@ msgid ""
 "tray\n"
 msgstr ""
 "cbatticon: une icône d'affichage de la batterie, légère et rapide, visible "
-"dans la barre d'état systême\n"
+"dans la barre d'état système\n"
 
 #: cbatticon.c:186
 #, c-format
@@ -262,27 +262,22 @@ msgid "Battery is charged!"
 msgstr "La batterie est chargée!"
 
 #: cbatticon.c:896
-#, fuzzy, c-format
 msgid "Battery is discharging (%i%% remaining)"
 msgstr "Batterie en décharge (%i%% restant)"
 
 #: cbatticon.c:900
-#, fuzzy, c-format
 msgid "Battery is not charging (%i%% remaining)"
 msgstr "La batterie ne se charge pas (%i%% restant)"
 
 #: cbatticon.c:904
-#, fuzzy, c-format
 msgid "Battery level is low! (%i%% remaining)"
 msgstr "Le niveau de la batterie est bas! (%i%% restant)"
 
 #: cbatticon.c:908
-#, fuzzy, c-format
 msgid "Battery level is critical! (%i%% remaining)"
 msgstr "Le niveau de la batterie est critique! (%i%% restant)"
 
 #: cbatticon.c:912
-#, fuzzy, c-format
 msgid "Battery is charging (%i%%)"
 msgstr "Batterie en charge (%i%%)"
 
@@ -292,25 +287,22 @@ msgid "battery string: %s\n"
 msgstr "message de la batterie: %s\n"
 
 #: cbatticon.c:941
-#, fuzzy, c-format
-msgid "%2d minute"
-msgid_plural "%2d minutes"
-msgstr[0] "%2d minute restante"
-msgstr[1] "%2d minutes restantes"
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minute"
+msgstr[1] "%d minutes"
 
 #: cbatticon.c:942
-#, fuzzy, c-format
-msgid "%2d hour, %s remaining"
-msgid_plural "%2d hours, %s remaining"
-msgstr[0] "%2d heure, %s restantes"
-msgstr[1] "%2d heures, %s restantes"
+msgid "%d hour, %s remaining"
+msgid_plural "%d hours, %s remaining"
+msgstr[0] "%d heure, %s restantes"
+msgstr[1] "%d heures, %s restantes"
 
 #: cbatticon.c:944
-#, fuzzy, c-format
-msgid "%2d minute remaining"
-msgid_plural "%2d minutes remaining"
-msgstr[0] "%2d minute restante"
-msgstr[1] "%2d minutes restantes"
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] "%d minute restante"
+msgstr[1] "%d minutes restantes"
 
 #: cbatticon.c:948
 #, c-format

@@ -255,27 +255,22 @@ msgid "Battery is charged!"
 msgstr "Batterie ist vollständig aufgeladen!"
 
 #: cbatticon.c:896
-#, fuzzy, c-format
 msgid "Battery is discharging (%i%% remaining)"
 msgstr "Batterie entlädt (%i%% verbleibend)"
 
 #: cbatticon.c:900
-#, fuzzy, c-format
 msgid "Battery is not charging (%i%% remaining)"
 msgstr "Batterie lädt nicht auf (%i%% verbleibend)"
 
 #: cbatticon.c:904
-#, fuzzy, c-format
 msgid "Battery level is low! (%i%% remaining)"
 msgstr "Batteriezustand niedrig! (%i%% verbleibend)"
 
 #: cbatticon.c:908
-#, fuzzy, c-format
 msgid "Battery level is critical! (%i%% remaining)"
 msgstr "Batteriezustand kritisch! (%i%% verbleibend)"
 
 #: cbatticon.c:912
-#, fuzzy, c-format
 msgid "Battery is charging (%i%%)"
 msgstr "Batterie lädt auf (%i%%)"
 
@@ -285,25 +280,22 @@ msgid "battery string: %s\n"
 msgstr "Batteriemeldung: %s\n"
 
 #: cbatticon.c:941
-#, fuzzy, c-format
-msgid "%2d minute"
-msgid_plural "%2d minutes"
-msgstr[0] "%2d Minute"
-msgstr[1] "%2d Minuten"
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d Minute"
+msgstr[1] "%d Minuten"
 
 #: cbatticon.c:942
-#, fuzzy, c-format
-msgid "%2d hour, %s remaining"
-msgid_plural "%2d hours, %s remaining"
-msgstr[0] "%2d Stunde, %s verbleibend"
-msgstr[1] "%2d Stunden, %s verbleibend"
+msgid "%d hour, %s remaining"
+msgid_plural "%d hours, %s remaining"
+msgstr[0] "%d Stunde, %s verbleibend"
+msgstr[1] "%d Stunden, %s verbleibend"
 
 #: cbatticon.c:944
-#, fuzzy, c-format
-msgid "%2d minute remaining"
-msgid_plural "%2d minutes remaining"
-msgstr[0] "%2d Minute verbleibend"
-msgstr[1] "%2d Minuten verbleibend"
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] "%d Minute verbleibend"
+msgstr[1] "%d Minuten verbleibend"
 
 #: cbatticon.c:948
 #, c-format

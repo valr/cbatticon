@@ -21,8 +21,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define CBATTICON_VERSION_NUMBER 1.5.0
-#define CBATTICON_VERSION_STRING "1.5.0"
+#define CBATTICON_VERSION_NUMBER 1.5.1
+#define CBATTICON_VERSION_STRING "1.5.1"
 #define CBATTICON_TEXT_DOMAIN "cbatticon"
 
 #include <glib.h>
@@ -938,10 +938,10 @@ static gchar* get_time_string (gint minutes)
     minutes = minutes % 60;
 
     if (hours > 0) {
-        g_sprintf (minutes_string, ngettext("%2d minute", "%2d minutes", minutes), minutes);
-        g_sprintf (time_string, ngettext("%2d hour, %s remaining", "%2d hours, %s remaining", hours), hours, minutes_string);
+        g_sprintf (minutes_string, g_dngettext (NULL, "%d minute", "%d minutes", minutes), minutes);
+        g_sprintf (time_string, g_dngettext (NULL, "%d hour, %s remaining", "%d hours, %s remaining", hours), hours, minutes_string);
     } else {
-        g_sprintf (time_string, ngettext("%2d minute remaining", "%2d minutes remaining", minutes), minutes);
+        g_sprintf (time_string, g_dngettext (NULL, "%d minute remaining", "%d minutes remaining", minutes), minutes);
     }
 
     if (configuration.debug_output == TRUE) {

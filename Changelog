@@ -1,3 +1,9 @@
+2015-12-13  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.5.1
+
+ * Fix #26 : 'hours, minutes remaining' use plural translations
+
 2015-07-21  Valère Monseur  <valere.monseur@ymail.com>
 
  * Release 1.5.0
