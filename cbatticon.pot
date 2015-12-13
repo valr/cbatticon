@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cbatticon 1.5.1\n"
 "Report-Msgid-Bugs-To: valere.monseur@ymail.com\n"
-"POT-Creation-Date: 2015-12-12 23:53+0100\n"
+"POT-Creation-Date: 2015-12-13 22:28+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n!=1;\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #: cbatticon.c:154
 msgid "Display the version"
@@ -298,7 +298,7 @@ msgstr[1] ""
 msgid "time string: %s\n"
 msgstr ""
 
-#: cbatticon.c:999
+#: cbatticon.c:996
 #, c-format
 msgid "icon name: %s\n"
 msgstr ""

@@ -108,7 +108,8 @@ clean:
 
 translation-refresh-pot:
 	$(VERBOSE) $(GETTEXT) --default-domain=$(PACKAGE_NAME) --add-comments \
-		--keyword=_ --keyword=N_ $(SOURCEFILES) --output=$(PACKAGE_NAME).pot
+		--keyword=_ --keyword=N_ --keyword=g_dngettext:2,3 $(SOURCEFILES) \
+		--output=$(PACKAGE_NAME).pot
 
 translation-status:
 	$(VERBOSE) for catalog in $(SOURCECATALOGS); \
