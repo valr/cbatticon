@@ -1,7 +1,7 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2015 ValÃ¨re Monseur
+# Greek translation for cbatticon.
+# Copyright (C) 2015-2016 Valère Monseur
 # This file is distributed under the same license as the cbatticon package.
-# ValÃ¨re Monseur <valere.monseur@ymail.com>, 2015.
+# Valère Monseur <valere.monseur@ymail.com>, 2016.
 #
 msgid ""
 msgstr ""
@@ -13,9 +13,9 @@ msgstr ""
 "Language-Team: N/A\n"
 "Language: Greek\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n!= 1);\n"
 
 #: cbatticon.c:154
 msgid "Display the version"
@@ -35,11 +35,11 @@ msgstr "Ορισμός του τύπου εικονιδίου ('standard', 'noti
 
 #: cbatticon.c:158
 msgid "Set low battery level (in percent)"
-msgstr "Ορισμός χαμηλού επιπέδου μπαταρίας (%)"
+msgstr "Ορισμός χαμηλού επιπέδου μπαταρίας (%%)"
 
 #: cbatticon.c:159
 msgid "Set critical battery level (in percent)"
-msgstr "Ορισμός κρίσιμου επιπέδου μπαταρίας (%)"
+msgstr "Ορισμός κρίσιμου επιπέδου μπαταρίας (%%)"
 
 #: cbatticon.c:160
 msgid "Command to execute when critical battery level is reached"
