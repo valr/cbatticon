@@ -1,8 +1,16 @@
-2015-12-13  Valère Monseur  <valere.monseur@ymail.com>
+2016-01-30  Valère Monseur  <valere.monseur@ymail.com>
 
- * Release 1.5.1
+ * Release 1.6.0
+
+ * Changing Copyright to 2016
 
  * Fix #26 : 'hours, minutes remaining' use plural translations
+
+ * Fix #27 : add greek translation
+
+ * Dynamic detection of power supplies (batteries and AC)
+
+ * Some code rework, cleaning
 
 2015-07-21  Valère Monseur  <valere.monseur@ymail.com>
 
