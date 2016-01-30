@@ -274,19 +274,19 @@ msgstr "pil metni: %s\n"
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d dakika"
-msgstr[1] "%d dakikalar"
+msgstr[1] "%d dakika"
 
 #: cbatticon.c:942
 msgid "%d hour, %s remaining"
 msgid_plural "%d hours, %s remaining"
 msgstr[0] "%d saat, %s kaldı"
-msgstr[1] "%d saatler, %s kaldı"
+msgstr[1] "%d saat, %s kaldı"
 
 #: cbatticon.c:944
 msgid "%d minute remaining"
 msgid_plural "%d minutes remaining"
 msgstr[0] "%d dakika kaldı"
-msgstr[1] "%d dakikalar kaldı"
+msgstr[1] "%d dakika kaldı"
 
 #: cbatticon.c:948
 #, c-format
