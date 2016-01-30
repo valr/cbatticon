@@ -21,8 +21,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define CBATTICON_VERSION_NUMBER 1.6.0
-#define CBATTICON_VERSION_STRING "1.6.0"
+#define CBATTICON_VERSION_NUMBER 1.6.1
+#define CBATTICON_VERSION_STRING "1.6.1"
 #define CBATTICON_STRING         "cbatticon"
 
 #include <glib.h>

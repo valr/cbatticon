@@ -1,5 +1,11 @@
 2016-01-30  Valère Monseur  <valere.monseur@ymail.com>
 
+ * Release 1.6.1
+
+ * Add missing translation in Makefile
+
+2016-01-30  Valère Monseur  <valere.monseur@ymail.com>
+
  * Release 1.6.0
 
  * Changing Copyright to 2016
