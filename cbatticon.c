@@ -21,8 +21,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define CBATTICON_VERSION_NUMBER 1.6.2
-#define CBATTICON_VERSION_STRING "1.6.2"
+#define CBATTICON_VERSION_NUMBER 1.6.3
+#define CBATTICON_VERSION_STRING "1.6.3"
 #define CBATTICON_STRING         "cbatticon"
 
 #include <glib.h>
@@ -41,6 +41,7 @@
 #include <syslog.h>
 
 static gint get_options (int argc, char **argv);
+static gboolean changed_power_supplies (void);
 static void get_power_supplies (void);
 
 static gboolean get_sysattr_string (gchar *path, gchar *attribute, gchar **value);
@@ -274,6 +275,34 @@ static gint get_options (int argc, char **argv)
 /*
  * sysfs functions
  */
+
+static gboolean changed_power_supplies (void)
+{
+    GDir *directory;
+    const gchar *file;
+    gint file_counter = 0, path_counter = 0;
+
+    directory = g_dir_open (SYSFS_PATH, 0, NULL);
+    if (directory != NULL) {
+        file = g_dir_read_name (directory);
+        while (file != NULL) {
+            if (ac_path != NULL && g_str_has_suffix (ac_path, file) == TRUE) {
+                path_counter++;
+            }
+
+            if (battery_path != NULL && g_str_has_suffix (battery_path, file) == TRUE) {
+                path_counter++;
+            }
+
+            file_counter++;
+            file = g_dir_read_name (directory);
+        }
+
+        g_dir_close (directory);
+    }
+
+    return file_counter && file_counter == path_counter ? FALSE : TRUE;
+}
 
 static void get_power_supplies (void)
 {
@@ -669,9 +698,6 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 {
     GError *error = NULL;
 
-    GStatBuf sysfs_stat            = {};
-    static GStatBuf old_sysfs_stat = {};
-
     gboolean battery_present    = FALSE;
     gboolean ac_online          = FALSE;
     static gboolean ac_notified = FALSE;
@@ -692,20 +718,17 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 
     /* update power supplies */
 
-    if (g_stat (SYSFS_PATH, &sysfs_stat) == 0) {
-        if (old_sysfs_stat.st_mtime != sysfs_stat.st_mtime) {
-            old_sysfs_stat.st_mtime = sysfs_stat.st_mtime;
+    if (changed_power_supplies () == TRUE)
+    {
+        ac_notified = FALSE;
 
-            ac_notified = FALSE;
+        old_battery_status = -1;
 
-            old_battery_status = -1;
+        battery_low            = FALSE;
+        battery_critical       = FALSE;
+        spawn_command_critical = FALSE;
 
-            battery_low            = FALSE;
-            battery_critical       = FALSE;
-            spawn_command_critical = FALSE;
-
-            get_power_supplies ();
-        }
+        get_power_supplies ();
     }
 
     /* update tray icon for AC only */

@@ -1,3 +1,9 @@
+2016-02-08  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.6.3
+
+ * Fix #28 : dynamic (runtime) detection of power supplies doesn't work
+
 2016-01-30  Valère Monseur  <valere.monseur@ymail.com>
 
  * Release 1.6.2
