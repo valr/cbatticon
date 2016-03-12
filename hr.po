@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: cbatticon 1.5.1\n"
 "Report-Msgid-Bugs-To: valere.monseur@ymail.com\n"
 "POT-Creation-Date: 2015-12-13 22:28+0100\n"
-"PO-Revision-Date: 2016-03-12 10:38+0200\n"
+"PO-Revision-Date: 2016-03-12 11:23+0200\n"
 "Last-Translator: Dino Duratović <dinomol@mail.com>\n"
 "Language-Team: N/A\n"
 "Language: hr\n"
@@ -286,9 +286,9 @@ msgstr[2] "%d minuta"
 #, c-format
 msgid "%d hour, %s remaining"
 msgid_plural "%d hours, %s remaining"
-msgstr[0] "%d sat, %s minuta preostala"
-msgstr[1] "%d sat, %s minute preostale"
-msgstr[2] "%d sat, %s minuta preostalo"
+msgstr[0] "%d sat, %s preostalo"
+msgstr[1] "%d sata, %s preostalo"
+msgstr[2] "%d sati, %s preostalo"
 
 #: cbatticon.c:944
 #, c-format
