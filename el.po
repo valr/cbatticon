@@ -144,25 +144,9 @@ msgstr "τύπος: %-*.*s\tid: %-*.*s\tδιαδρομή: %s\n"
 msgid "Battery"
 msgstr "Μπαταρία"
 
-#: cbatticon.c:311
-msgid "workaround: current rate is not available, estimating rate\n"
-msgstr ""
-"πρόχειρη διόρθωση: ο τρέχον ρυθμός δεν είναι διαθέσιμος, γίνεται υπολογισμός "
-"κατά προσέγγιση\n"
-
-#: cbatticon.c:316
-#, c-format
-msgid "battery path: %s\n"
-msgstr "διαδρομή μπαταρίας: %s\n"
-
 #: cbatticon.c:326
 msgid "AC"
 msgstr "Ρεύμα"
-
-#: cbatticon.c:334
-#, c-format
-msgid "ac path: %s\n"
-msgstr "διαδρομή ρεύματος: %s\n"
 
 #: cbatticon.c:348
 #, c-format
@@ -177,36 +161,6 @@ msgstr "Δεν υπάρχει μπαταρία το όνομα της οποία
 #: cbatticon.c:360
 msgid "No battery nor AC power supply found!\n"
 msgstr "Δεν βρέθηκα μπαταρία ή παροχή ρευματός!\n"
-
-#: cbatticon.c:425
-#, c-format
-msgid "battery present: %s"
-msgstr "παρούσα μπαταρία: %s"
-
-#: cbatticon.c:455
-#, c-format
-msgid "battery status: %d - %s"
-msgstr "κατάσταση μπαταρία: %d - %s"
-
-#: cbatticon.c:480
-#, c-format
-msgid "ac online: %s"
-msgstr "Ρεύμα στο δίκτυο: %s"
-
-#: cbatticon.c:540
-#, c-format
-msgid "full capacity: %s\n"
-msgstr "Πλήρες φορτίο: %s\n"
-
-#: cbatticon.c:548
-#, c-format
-msgid "remaining capacity: %s\n"
-msgstr "Υπολειπόμενο φορτίο: %s\n"
-
-#: cbatticon.c:570
-#, c-format
-msgid "current rate: %s\n"
-msgstr "τρέχουσα κατανάλωση: %s\n"
 
 #: cbatticon.c:672 cbatticon.c:675
 msgid "AC only, no battery!"
@@ -234,11 +188,6 @@ msgstr "Δεν ήταν δυνατή η εκτέλεση της εντολής �
 #: cbatticon.c:820
 msgid "Cannot spawn left click command!"
 msgstr "Δεν ήταν δυνατή η εκτέλεση της εντολής αριστερού κλίκ!"
-
-#: cbatticon.c:863 cbatticon.c:871
-#, c-format
-msgid "tooltip: %s\n"
-msgstr "αναδυόμενη περιγραφή: %s\n"
 
 #: cbatticon.c:884
 msgid "Battery is missing!"
@@ -277,11 +226,6 @@ msgstr "Η στάθμη της μπαταρίας είναι εξαιρετικ�
 msgid "Battery is charging (%i%%)"
 msgstr "Η μπαταρία φορτίζει (%i%%)"
 
-#: cbatticon.c:921
-#, c-format
-msgid "battery string: %s\n"
-msgstr "συμβολοσειρά μπαταρίας: %s\n"
-
 #: cbatticon.c:941
 #, c-format
 msgid "%d minute"
@@ -302,13 +246,3 @@ msgid "%d minute remaining"
 msgid_plural "%d minutes remaining"
 msgstr[0] "%d λεπτό απομένει"
 msgstr[1] "%d λεπτά απομένουν"
-
-#: cbatticon.c:948
-#, c-format
-msgid "time string: %s\n"
-msgstr "συμβολοσειρά χρόνου: %s\n"
-
-#: cbatticon.c:996
-#, c-format
-msgid "icon name: %s\n"
-msgstr "όνομα εικονιδίου: %s\n"

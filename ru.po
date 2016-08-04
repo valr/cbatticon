@@ -1,5 +1,5 @@
 # Russian translation for cbatticon.
-# Copyright (C) 2015 Valère Monseur
+# Copyright (C) 2015-2016 Valère Monseur
 # This file is distributed under the same license as the cbatticon package.
 # Alexandr Proklov <ssaa@rambler.ru>, 2015.
 #
@@ -141,22 +141,8 @@ msgstr ""
 msgid "Battery"
 msgstr ""
 
-#: cbatticon.c:311
-msgid "workaround: current rate is not available, estimating rate\n"
-msgstr ""
-
-#: cbatticon.c:316
-#, c-format
-msgid "battery path: %s\n"
-msgstr ""
-
 #: cbatticon.c:326
 msgid "AC"
-msgstr ""
-
-#: cbatticon.c:334
-#, c-format
-msgid "ac path: %s\n"
 msgstr ""
 
 #: cbatticon.c:348
@@ -171,36 +157,6 @@ msgstr "Батарея %s не найдена!\n"
 
 #: cbatticon.c:360
 msgid "No battery nor AC power supply found!\n"
-msgstr ""
-
-#: cbatticon.c:425
-#, c-format
-msgid "battery present: %s"
-msgstr ""
-
-#: cbatticon.c:455
-#, c-format
-msgid "battery status: %d - %s"
-msgstr ""
-
-#: cbatticon.c:480
-#, c-format
-msgid "ac online: %s"
-msgstr ""
-
-#: cbatticon.c:540
-#, c-format
-msgid "full capacity: %s\n"
-msgstr ""
-
-#: cbatticon.c:548
-#, c-format
-msgid "remaining capacity: %s\n"
-msgstr ""
-
-#: cbatticon.c:570
-#, c-format
-msgid "current rate: %s\n"
 msgstr ""
 
 #: cbatticon.c:672 cbatticon.c:675
@@ -229,11 +185,6 @@ msgstr ""
 #: cbatticon.c:820
 msgid "Cannot spawn left click command!"
 msgstr "Невозможно выполнить команду для левой кнопки мыши!"
-
-#: cbatticon.c:863 cbatticon.c:871
-#, c-format
-msgid "tooltip: %s\n"
-msgstr ""
 
 #: cbatticon.c:884
 msgid "Battery is missing!"
@@ -267,11 +218,6 @@ msgstr "Критический уровень заряда батареи! (%i%%
 msgid "Battery is charging (%i%%)"
 msgstr "Батарея заряжается (%i%%)"
 
-#: cbatticon.c:921
-#, c-format
-msgid "battery string: %s\n"
-msgstr ""
-
 #: cbatticon.c:941
 msgid "%d minute"
 msgid_plural "%d minutes"
@@ -292,13 +238,3 @@ msgid_plural "%d minutes remaining"
 msgstr[0] "%d минута осталось"
 msgstr[1] "%d минуты осталось"
 msgstr[2] "%d минут осталось"
-
-#: cbatticon.c:948
-#, c-format
-msgid "time string: %s\n"
-msgstr ""
-
-#: cbatticon.c:996
-#, c-format
-msgid "icon name: %s\n"
-msgstr ""

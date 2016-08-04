@@ -1,5 +1,5 @@
 # German translation for cbatticon.
-# Copyright (C) 2015 Valère Monseur
+# Copyright (C) 2015-2016 Valère Monseur
 # This file is distributed under the same license as the cbatticon package.
 # Julian Ospald <hasufell@gentoo.org>, 2015.
 #
@@ -147,23 +147,9 @@ msgstr "Typ: %-*.*s\tID: %-*.*s\tPfad: %s\n"
 msgid "Battery"
 msgstr "Batterie"
 
-#: cbatticon.c:311
-msgid "workaround: current rate is not available, estimating rate\n"
-msgstr "Workaround: aktuelle Rate ist nicht verfügbar, Rate wird geschätzt\n"
-
-#: cbatticon.c:316
-#, c-format
-msgid "battery path: %s\n"
-msgstr "Batterie-Pfad: %s\n"
-
 #: cbatticon.c:326
 msgid "AC"
 msgstr "AC"
-
-#: cbatticon.c:334
-#, c-format
-msgid "ac path: %s\n"
-msgstr "AC Pfad: %s\n"
 
 #: cbatticon.c:348
 #, c-format
@@ -178,36 +164,6 @@ msgstr "Keine Batterie mit Suffix %s gefunden!\n"
 #: cbatticon.c:360
 msgid "No battery nor AC power supply found!\n"
 msgstr "Keine Batterie oder AC Stromversorgung gefunden!\n"
-
-#: cbatticon.c:425
-#, c-format
-msgid "battery present: %s"
-msgstr "Batterie vorhanden: %s"
-
-#: cbatticon.c:455
-#, c-format
-msgid "battery status: %d - %s"
-msgstr "Batteriestatus: %d - %s"
-
-#: cbatticon.c:480
-#, c-format
-msgid "ac online: %s"
-msgstr "AC angeschlossen: %s"
-
-#: cbatticon.c:540
-#, c-format
-msgid "full capacity: %s\n"
-msgstr "volle Kapazität: %s\n"
-
-#: cbatticon.c:548
-#, c-format
-msgid "remaining capacity: %s\n"
-msgstr "verbleibende Kapazität: %s\n"
-
-#: cbatticon.c:570
-#, c-format
-msgid "current rate: %s\n"
-msgstr "aktuelle Rate: %s\n"
 
 #: cbatticon.c:672 cbatticon.c:675
 msgid "AC only, no battery!"
@@ -236,11 +192,6 @@ msgstr "Kann Befehl für Linksklick nicht aufrufen: %s"
 #: cbatticon.c:820
 msgid "Cannot spawn left click command!"
 msgstr "Kann Befehl für Linksklick nicht aufrufen!"
-
-#: cbatticon.c:863 cbatticon.c:871
-#, c-format
-msgid "tooltip: %s\n"
-msgstr "Tooltip: %s\n"
 
 #: cbatticon.c:884
 msgid "Battery is missing!"
@@ -274,11 +225,6 @@ msgstr "Batteriezustand kritisch! (%i%% verbleibend)"
 msgid "Battery is charging (%i%%)"
 msgstr "Batterie lädt auf (%i%%)"
 
-#: cbatticon.c:921
-#, c-format
-msgid "battery string: %s\n"
-msgstr "Batteriemeldung: %s\n"
-
 #: cbatticon.c:941
 msgid "%d minute"
 msgid_plural "%d minutes"
@@ -296,13 +242,3 @@ msgid "%d minute remaining"
 msgid_plural "%d minutes remaining"
 msgstr[0] "%d Minute verbleibend"
 msgstr[1] "%d Minuten verbleibend"
-
-#: cbatticon.c:948
-#, c-format
-msgid "time string: %s\n"
-msgstr "Zeitmeldung: %s\n"
-
-#: cbatticon.c:996
-#, c-format
-msgid "icon name: %s\n"
-msgstr "Symbolname: %s\n"

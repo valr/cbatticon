@@ -1,5 +1,5 @@
 # Turkish translation for cbatticon.
-# Copyright (C) 2015 Valère Monseur
+# Copyright (C) 2015-2016 Valère Monseur
 # This file is distributed under the same license as the cbatticon package.
 # Behzat Erte <behzaterte@yandex.com>, 2015.
 #
@@ -139,23 +139,9 @@ msgstr "tür: %-*.*s\tid: %-*.*s\tyol: %s\n"
 msgid "Battery"
 msgstr "Pil"
 
-#: cbatticon.c:311
-msgid "workaround: current rate is not available, estimating rate\n"
-msgstr "geçici çözüm: güncel değer uygun değil, değer tahmin ediliyor\n"
-
-#: cbatticon.c:316
-#, c-format
-msgid "battery path: %s\n"
-msgstr "pil yolu: %s\n"
-
 #: cbatticon.c:326
 msgid "AC"
 msgstr "Şebeke"
-
-#: cbatticon.c:334
-#, c-format
-msgid "ac path: %s\n"
-msgstr "şebeke yolu: %s\n"
 
 #: cbatticon.c:348
 #, c-format
@@ -170,36 +156,6 @@ msgstr "Pil ile eki %s bulunamadı!\n"
 #: cbatticon.c:360
 msgid "No battery nor AC power supply found!\n"
 msgstr "Pil ya da şebeke güç ünitesi bulunamadı!\n"
-
-#: cbatticon.c:425
-#, c-format
-msgid "battery present: %s"
-msgstr "pil gösterimi: %s"
-
-#: cbatticon.c:455
-#, c-format
-msgid "battery status: %d - %s"
-msgstr "pil durumu: %d - %s"
-
-#: cbatticon.c:480
-#, c-format
-msgid "ac online: %s"
-msgstr "şebeke çevrimiçi: %s"
-
-#: cbatticon.c:540
-#, c-format
-msgid "full capacity: %s\n"
-msgstr "tam kapasite: %s\n"
-
-#: cbatticon.c:548
-#, c-format
-msgid "remaining capacity: %s\n"
-msgstr "kalan güç: %s\n"
-
-#: cbatticon.c:570
-#, c-format
-msgid "current rate: %s\n"
-msgstr "güncel değer: %s\n"
 
 #: cbatticon.c:672 cbatticon.c:675
 msgid "AC only, no battery!"
@@ -227,11 +183,6 @@ msgstr "Sol tuş komutu üretilemiyor: %s"
 #: cbatticon.c:820
 msgid "Cannot spawn left click command!"
 msgstr "Sol tuş komutu oluşturulamıyor!"
-
-#: cbatticon.c:863 cbatticon.c:871
-#, c-format
-msgid "tooltip: %s\n"
-msgstr "araç bilgisi: %s\n"
 
 #: cbatticon.c:884
 msgid "Battery is missing!"
@@ -265,11 +216,6 @@ msgstr "Pil kritik seviyede! (%i%% kalan)"
 msgid "Battery is charging (%i%%)"
 msgstr "Pil dolduruluyor (%i%%)"
 
-#: cbatticon.c:921
-#, c-format
-msgid "battery string: %s\n"
-msgstr "pil metni: %s\n"
-
 #: cbatticon.c:941
 msgid "%d minute"
 msgid_plural "%d minutes"
@@ -287,13 +233,3 @@ msgid "%d minute remaining"
 msgid_plural "%d minutes remaining"
 msgstr[0] "%d dakika kaldı"
 msgstr[1] "%d dakika kaldı"
-
-#: cbatticon.c:948
-#, c-format
-msgid "time string: %s\n"
-msgstr "zaman metni: %s\n"
-
-#: cbatticon.c:996
-#, c-format
-msgid "icon name: %s\n"
-msgstr "simge adı: %s\n"

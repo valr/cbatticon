@@ -1,4 +1,5 @@
-# Copyright (C) 2015 Valère Monseur
+# Bosnian translation for cbatticon.
+# Copyright (C) 2015-2016 Valère Monseur
 # This file is distributed under the same license as the cbatticon package.
 # Valère Monseur <valere.monseur@ymail.com>, 2015.
 #
@@ -138,23 +139,9 @@ msgstr "tip: %-*.*s\tid: %-*.*s\tpath: %s\n"
 msgid "Battery"
 msgstr "Baterija"
 
-#: cbatticon.c:311
-msgid "workaround: current rate is not available, estimating rate\n"
-msgstr "rješenje: trenutna stopa nije dostupna, procijenjujem stopu\n"
-
-#: cbatticon.c:316
-#, c-format
-msgid "battery path: %s\n"
-msgstr "putanja baterije: %s\n"
-
 #: cbatticon.c:326
 msgid "AC"
 msgstr "Mrežno napajanje"
-
-#: cbatticon.c:334
-#, c-format
-msgid "ac path: %s\n"
-msgstr "putanja mrežnog napajanja: %s\n"
 
 #: cbatticon.c:348
 #, c-format
@@ -169,36 +156,6 @@ msgstr "Nije pronađena baterija sa sufiksom %s!\n"
 #: cbatticon.c:360
 msgid "No battery nor AC power supply found!\n"
 msgstr "Nije pronađena ni baterija ni mrežno napajanje!\n"
-
-#: cbatticon.c:425
-#, c-format
-msgid "battery present: %s"
-msgstr "baterija prisutna: %s"
-
-#: cbatticon.c:455
-#, c-format
-msgid "battery status: %d - %s"
-msgstr "status baterije: %d - %s"
-
-#: cbatticon.c:480
-#, c-format
-msgid "ac online: %s"
-msgstr "mrežno napajanje priključeno: %s"
-
-#: cbatticon.c:540
-#, c-format
-msgid "full capacity: %s\n"
-msgstr "pun kapacitet: %s\n"
-
-#: cbatticon.c:548
-#, c-format
-msgid "remaining capacity: %s\n"
-msgstr "preostali kapacitet: %s\n"
-
-#: cbatticon.c:570
-#, c-format
-msgid "current rate: %s\n"
-msgstr "trenutna stopa: %s\n"
 
 #: cbatticon.c:672 cbatticon.c:675
 msgid "AC only, no battery!"
@@ -226,11 +183,6 @@ msgstr "Ne mogu izvršiti komandu lijevog klika: %s"
 #: cbatticon.c:820
 msgid "Cannot spawn left click command!"
 msgstr "Ne mogu izvršiti komandu lijevog klika!"
-
-#: cbatticon.c:863 cbatticon.c:871
-#, c-format
-msgid "tooltip: %s\n"
-msgstr "opis alatke: %s\n"
 
 #: cbatticon.c:884
 msgid "Battery is missing!"
@@ -269,11 +221,6 @@ msgstr "Nivo baterije je kritičan! (preostalo %i%%)"
 msgid "Battery is charging (%i%%)"
 msgstr "Baterija se puni (%i%%)"
 
-#: cbatticon.c:921
-#, c-format
-msgid "battery string: %s\n"
-msgstr "niska baterije: %s\n"
-
 #: cbatticon.c:941
 #, c-format
 msgid "%d minute"
@@ -297,13 +244,3 @@ msgid_plural "%d minutes remaining"
 msgstr[0] "%d minuta preostala"
 msgstr[1] "%d minute preostale"
 msgstr[2] "%d minuta preostalo"
-
-#: cbatticon.c:948
-#, c-format
-msgid "time string: %s\n"
-msgstr "niska za vrijeme: %s\n"
-
-#: cbatticon.c:996
-#, c-format
-msgid "icon name: %s\n"
-msgstr "ime ikone: %s\n"
