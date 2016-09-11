@@ -27,7 +27,7 @@ VERSION = $(shell grep CBATTICON_VERSION_NUMBER cbatticon.c | awk '{print $$3}')
 PREFIX ?= /usr
 BINDIR = $(PREFIX)/bin
 DOCDIR = $(PREFIX)/share/doc/$(PACKAGE_NAME)-$(VERSION)
-MANDIR = $(PREFIX)/$(mandir)/man1
+MANDIR = $(PREFIX)/share/man/man1
 NLSDIR = $(PREFIX)/share/locale
 LANGUAGES = bs de el fr hr ja ru sr tr
 
@@ -88,6 +88,7 @@ install: $(BIN) $(TRANSLATIONS)
 	$(VERBOSE) $(INSTALL_BIN) $(BIN) "$(DESTDIR)$(BINDIR)"/
 	$(VERBOSE) $(INSTALL) -d "$(DESTDIR)$(DOCDIR)"
 	$(VERBOSE) $(INSTALL_DATA) README "$(DESTDIR)$(DOCDIR)"/
+	$(VERBOSE) $(INSTALL) -d "$(DESTDIR)$(MANDIR)"
 	$(VERBOSE) $(INSTALL_DATA) cbatticon.1 "$(DESTDIR)$(MANDIR)"/
 	$(VERBOSE) for language in $(LANGUAGES); \
 	do \
