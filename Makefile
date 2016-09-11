@@ -27,6 +27,7 @@ VERSION = $(shell grep CBATTICON_VERSION_NUMBER cbatticon.c | awk '{print $$3}')
 PREFIX ?= /usr
 BINDIR = $(PREFIX)/bin
 DOCDIR = $(PREFIX)/share/doc/$(PACKAGE_NAME)-$(VERSION)
+MANDIR = $(PREFIX)/$(mandir)/man1
 NLSDIR = $(PREFIX)/share/locale
 LANGUAGES = bs de el fr hr ja ru sr tr
 
@@ -87,6 +88,7 @@ install: $(BIN) $(TRANSLATIONS)
 	$(VERBOSE) $(INSTALL_BIN) $(BIN) "$(DESTDIR)$(BINDIR)"/
 	$(VERBOSE) $(INSTALL) -d "$(DESTDIR)$(DOCDIR)"
 	$(VERBOSE) $(INSTALL_DATA) README "$(DESTDIR)$(DOCDIR)"/
+	$(VERBOSE) $(INSTALL_DATA) cbatticon.1 "$(DESTDIR)$(MANDIR)"/
 	$(VERBOSE) for language in $(LANGUAGES); \
 	do \
 		$(INSTALL) -d "$(DESTDIR)$(NLSDIR)"/$$language/LC_MESSAGES; \
@@ -97,6 +99,7 @@ uninstall:
 	@echo -e '\033[0;33mUninstalling $(PACKAGE_NAME)\033[0m'
 	$(VERBOSE) $(RM) "$(DESTDIR)$(BINDIR)"/$(BIN)
 	$(VERBOSE) $(RM) "$(DESTDIR)$(DOCDIR)"/README
+	$(VERBOSE) $(RM) "$(DESTDIR)$(MANDIR)"/cbatticon.1
 	$(VERBOSE) for language in $(LANGUAGES); \
 	do \
 		$(VERBOSE) $(RM) "$(DESTDIR)$(NLSDIR)"/$$language/LC_MESSAGES/$(PACKAGE_NAME).mo; \
