@@ -28,7 +28,7 @@ PREFIX ?= /usr
 BINDIR = $(PREFIX)/bin
 DOCDIR = $(PREFIX)/share/doc/$(PACKAGE_NAME)-$(VERSION)
 NLSDIR = $(PREFIX)/share/locale
-LANGUAGES = de el fr ru tr bs hr sr
+LANGUAGES = bs de el fr hr ja ru sr tr
 
 BIN = $(PACKAGE_NAME)
 SOURCEFILES := $(wildcard *.c)
