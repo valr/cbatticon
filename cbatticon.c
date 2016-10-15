@@ -40,6 +40,10 @@
 #include <math.h>
 #include <syslog.h>
 
+#include <dirent.h>
+#include <strings.h>
+#include <malloc.h>
+
 static gint get_options (int argc, char **argv);
 static gboolean changed_power_supplies (void);
 static void get_power_supplies (void);
@@ -1071,6 +1075,54 @@ static gchar* get_icon_name (gint state, gint percentage)
     return icon_name;
 }
 
+int check_battery() {
+    DIR *dir;
+    int retval = -1;
+
+    static const char path[] = "/sys/class/power_supply";
+    static const char battery[] = "Battery";
+    static const char type[] = "type";
+    struct dirent *ent;
+    char temp[sizeof(battery)];
+    FILE *f = NULL;
+    if ((dir = opendir (path)) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+            int length = sizeof(path) + 2 /* path separator */ + strlen(ent->d_name) + 1 /* null terminator */ + sizeof(type);
+            char *name = malloc(length);
+            int offset = 0;
+
+            if ((strncmp(ent->d_name, "..", 2) == 0 && strlen(ent->d_name) == 2) ||
+                (strncmp(ent->d_name, ".", 1) == 0 && strlen(ent->d_name) == 1)) {
+                continue;
+            }
+
+            if (name == NULL) return -1;
+            bzero(name, length);
+
+            strncpy(name, path, sizeof(path));
+            name[sizeof(path)-1] = '/';
+            offset = sizeof(path) + strlen(ent->d_name);
+            strncpy(name + sizeof(path), ent->d_name, strlen(ent->d_name));
+            name[offset] = '/';
+            strncpy(name + offset + 1, type, sizeof(type));
+
+            f = fopen(name, "r");
+            if (f) {
+                bzero(temp, sizeof(battery));
+                fread(temp, 1, sizeof(battery) - 1, f);
+                fclose(f);
+                if (strncmp(temp, battery, sizeof(battery)) == 0) {
+                    retval = 0;
+                    break;
+                }
+            }
+            free(name);
+        }
+    }
+
+    return retval;
+}
+
 int main (int argc, char **argv)
 {
     gint ret;
@@ -1079,6 +1131,11 @@ int main (int argc, char **argv)
     bindtextdomain (CBATTICON_STRING, NLSDIR);
     bind_textdomain_codeset (CBATTICON_STRING, "UTF-8");
     textdomain (CBATTICON_STRING);
+
+    ret = check_battery();
+    if (ret < 0) {
+        return ret;
+    }
 
     ret = get_options (argc, argv);
     if (ret <= 0) {
