@@ -1,6 +1,8 @@
-xxxx-xx-xx  Valère Monseur  <valere.monseur@ymail.com>
+2016-12-27  Valère Monseur  <valere.monseur@ymail.com>
 
- * Release x.x.x
+ * Release 1.6.5
+
+ * Fix #30 : notification spam when there are multiple batteries
 
  * Fix #33 : added a man page
 
