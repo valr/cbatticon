@@ -278,30 +278,42 @@ static gint get_options (int argc, char **argv)
 
 static gboolean changed_power_supplies (void)
 {
+    static gint old_num_ps = 0;
+    static gint old_total_ps = 0;
+    gint num_ps = 0;
+    gint total_ps = 0;
+
     GDir *directory;
     const gchar *file;
-    gint file_counter = 0, path_counter = 0;
 
     directory = g_dir_open (SYSFS_PATH, 0, NULL);
     if (directory != NULL) {
         file = g_dir_read_name (directory);
         while (file != NULL) {
             if (ac_path != NULL && g_str_has_suffix (ac_path, file) == TRUE) {
-                path_counter++;
+                num_ps++;
             }
 
             if (battery_path != NULL && g_str_has_suffix (battery_path, file) == TRUE) {
-                path_counter++;
+                num_ps++;
             }
 
-            file_counter++;
+	    total_ps++;
+
             file = g_dir_read_name (directory);
         }
 
         g_dir_close (directory);
     }
+    gboolean power_supplies_changed = (num_ps != old_num_ps) || (total_ps != old_total_ps);
+    if (configuration.debug_output == TRUE && power_supplies_changed) {
+        g_printf ("Power supplies changed! Old total/num cfg: %d/%d, New total/num cfg: %d/%d\n",
+			old_total_ps, old_num_ps, total_ps, num_ps);
+    }
+    old_num_ps = num_ps;
+    old_total_ps = total_ps;
 
-    return file_counter && file_counter == path_counter ? FALSE : TRUE;
+    return power_supplies_changed;
 }
 
 static void get_power_supplies (void)
