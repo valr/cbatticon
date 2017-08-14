@@ -47,9 +47,10 @@ static void get_power_supplies (void);
 static gboolean get_sysattr_string (gchar *path, gchar *attribute, gchar **value);
 static gboolean get_sysattr_double (gchar *path, gchar *attribute, gdouble *value);
 
-static gboolean get_battery_present (gboolean *present);
+static gboolean get_ac_online (gchar *path, gboolean *online);
+static gboolean get_battery_present (gchar *path, gboolean *present);
+
 static gboolean get_battery_status (gint *status);
-static gboolean get_ac_online (gboolean *online);
 
 static gboolean get_battery_full_capacity (gboolean *use_charge, gdouble *capacity);
 static gboolean get_battery_remaining_capacity (gboolean use_charge, gdouble *capacity);
@@ -356,7 +357,8 @@ static void get_power_supplies (void)
 
                 /* process battery */
 
-                if (g_str_has_prefix (sysattr_value, "Battery") == TRUE) {
+                if (g_str_has_prefix (sysattr_value, "Battery") == TRUE &&
+                    get_battery_present (path, NULL) == TRUE) {
                     if (configuration.list_power_supplies == TRUE) {
                         gchar *power_supply_id = g_path_get_basename (path);
                         g_print (_("type: %-*.*s\tid: %-*.*s\tpath: %s\n"), 12, 12, _("Battery"), 12, 12, power_supply_id, path);
@@ -390,7 +392,8 @@ static void get_power_supplies (void)
 
                 /* process AC */
 
-                if (g_str_has_prefix (sysattr_value, "Mains") == TRUE) {
+                if (g_str_has_prefix (sysattr_value, "Mains") == TRUE &&
+                    get_ac_online (path, NULL) == TRUE) {
                     if (configuration.list_power_supplies == TRUE) {
                         gchar *power_supply_id = g_path_get_basename (path);
                         g_print (_("type: %-*.*s\tid: %-*.*s\tpath: %s\n"), 12, 12, _("AC"), 12, 12, power_supply_id, path);
@@ -478,16 +481,45 @@ static gboolean get_sysattr_double (gchar *path, gchar *attribute, gdouble *valu
     return sysattr_status;
 }
 
-static gboolean get_battery_present (gboolean *present)
+static gboolean get_ac_online (gchar *path, gboolean *online)
 {
     gchar *sysattr_value;
     gboolean sysattr_status;
 
-    g_return_val_if_fail (present != NULL, FALSE);
+    if (path == NULL) {
+        return FALSE;
+    }
 
-    sysattr_status = get_sysattr_string (battery_path, "present", &sysattr_value);
+    sysattr_status = get_sysattr_string (path, "online", &sysattr_value);
     if (sysattr_status == TRUE) {
-        *present = g_str_has_prefix (sysattr_value, "1") ? TRUE : FALSE;
+        if (online != NULL) {
+            *online = g_str_has_prefix (sysattr_value, "1") ? TRUE : FALSE;
+        }
+
+        if (configuration.debug_output == TRUE) {
+            g_printf ("ac online: %s", sysattr_value);
+        }
+
+        g_free (sysattr_value);
+    }
+
+    return sysattr_status;
+}
+
+static gboolean get_battery_present (gchar *path, gboolean *present)
+{
+    gchar *sysattr_value;
+    gboolean sysattr_status;
+
+    if (path == NULL) {
+        return FALSE;
+    }
+
+    sysattr_status = get_sysattr_string (path, "present", &sysattr_value);
+    if (sysattr_status == TRUE) {
+        if (present != NULL) {
+            *present = g_str_has_prefix (sysattr_value, "1") ? TRUE : FALSE;
+        }
 
         if (configuration.debug_output == TRUE) {
             g_printf ("battery present: %s", sysattr_value);
@@ -521,31 +553,6 @@ static gboolean get_battery_status (gint *status)
 
         if (configuration.debug_output == TRUE) {
             g_printf ("battery status: %d - %s", *status, sysattr_value);
-        }
-
-        g_free (sysattr_value);
-    }
-
-    return sysattr_status;
-}
-
-static gboolean get_ac_online (gboolean *online)
-{
-    gchar *sysattr_value;
-    gboolean sysattr_status;
-
-    g_return_val_if_fail (online != NULL, FALSE);
-
-    if (ac_path == NULL) {
-        return FALSE;
-    }
-
-    sysattr_status = get_sysattr_string (ac_path, "online", &sysattr_value);
-    if (sysattr_status == TRUE) {
-        *online = g_str_has_prefix (sysattr_value, "1") ? TRUE : FALSE;
-
-        if (configuration.debug_output == TRUE) {
-            g_printf ("ac online: %s", sysattr_value);
         }
 
         g_free (sysattr_value);
@@ -763,7 +770,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 
     /* update tray icon for battery */
 
-    if (get_battery_present (&battery_present) == FALSE) {
+    if (get_battery_present (battery_path, &battery_present) == FALSE) {
         return;
     }
 
@@ -777,7 +784,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
         /* workaround for limited/bugged batteries/drivers */
         /* that unduly return unknown status               */
 
-        if (battery_status == UNKNOWN && get_ac_online (&ac_online) == TRUE) {
+        if (battery_status == UNKNOWN && get_ac_online (ac_path, &ac_online) == TRUE) {
             if (ac_online == TRUE) {
                 battery_status = CHARGING;
 
