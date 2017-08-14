@@ -1113,6 +1113,7 @@ int main (int argc, char **argv)
         battery_suffix = argv[1];
     }
 
+    get_power_supplies();
     create_tray_icon ();
     gtk_main();
 
