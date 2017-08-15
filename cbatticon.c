@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011-2013 Colin Jones
- * Copyright (C) 2014-2016 Valère Monseur
+ * Copyright (C) 2014-2017 Valère Monseur
  *
  * Based on code by Matteo Marchesotti
  * Copyright (C) 2007 Matteo Marchesotti <matteo.marchesotti@fsfe.org>
@@ -21,8 +21,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define CBATTICON_VERSION_NUMBER 1.6.5
-#define CBATTICON_VERSION_STRING "1.6.5"
+#define CBATTICON_VERSION_NUMBER 1.6.6
+#define CBATTICON_VERSION_STRING "1.6.6"
 #define CBATTICON_STRING         "cbatticon"
 
 #include <glib.h>
