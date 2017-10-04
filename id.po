@@ -1,7 +1,7 @@
 # Indonesian Translation for cbatticon.
 # Copyright (C) 2015-2016 ValÃ¨re Monseur
 # This file is distributed under the same license as the cbatticon package.
-# Mahyuddin <yudial@gmail.com>, 2017.
+# Mahyuddin <yudi.al@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
