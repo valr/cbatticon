@@ -1,5 +1,5 @@
 # Indonesian Translation for cbatticon.
-# Copyright (C) 2015-2016 ValÃ¨re Monseur
+# Copyright (C) 2017 Valère Monseur
 # This file is distributed under the same license as the cbatticon package.
 # Mahyuddin <yudi.al@gmail.com>, 2017.
 #
@@ -205,46 +205,38 @@ msgid "Battery is charged!"
 msgstr "Baterai terisi!"
 
 #: cbatticon.c:896
-#, c-format
 msgid "Battery is discharging (%i%% remaining)"
 msgstr "Baterai habis (%i%% tersisa)"
 
 #: cbatticon.c:900
-#, c-format
 msgid "Battery is not charging (%i%% remaining)"
 msgstr "Baterai tidak mengisi daya (%i%% tersisa)"
 
 #: cbatticon.c:904
-#, c-format
 msgid "Battery level is low! (%i%% remaining)"
 msgstr "Tingkat baterai rendah! (%i%% tersisa)"
 
 #: cbatticon.c:908
-#, c-format
 msgid "Battery level is critical! (%i%% remaining)"
 msgstr "Tingkat baterai kritis! (%i%% tersisa)"
 
 #: cbatticon.c:912
-#, c-format
 msgid "Battery is charging (%i%%)"
 msgstr "Baterai sedang diisi (%i%%)"
 
 #: cbatticon.c:941
-#, c-format
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d menit"
 msgstr[1] "%d menit"
 
 #: cbatticon.c:942
-#, c-format
 msgid "%d hour, %s remaining"
 msgid_plural "%d hours, %s remaining"
 msgstr[0] "%d jam, sisa %s"
 msgstr[1] "%d jam, sisa %s"
 
 #: cbatticon.c:944
-#, c-format
 msgid "%d minute remaining"
 msgid_plural "%d minutes remaining"
 msgstr[0] "%d menit sisa"
