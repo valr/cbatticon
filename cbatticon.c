@@ -63,7 +63,7 @@ static void reset_battery_time_estimation (void);
 static void create_tray_icon (void);
 static gboolean update_tray_icon (GtkStatusIcon *tray_icon);
 static void update_tray_icon_status (GtkStatusIcon *tray_icon);
-static void on_tray_icon_click (GtkStatusIcon *status_icon, gpointer user_data);
+static void on_tray_icon_click (GtkStatusIcon *tray_icon, gpointer user_data);
 
 #ifdef WITH_NOTIFY
 static void notify_message (NotifyNotification **notification, gchar *summary, gchar *body, gint timeout, NotifyUrgency urgency);
@@ -721,13 +721,18 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 {
     GError *error = NULL;
 
-    gboolean battery_present    = FALSE;
-    gboolean ac_online          = FALSE;
-    static gboolean ac_notified = FALSE;
+    gboolean battery_present = FALSE;
+    gboolean ac_online       = FALSE;
 
     gint battery_status            = -1;
     static gint old_battery_status = -1;
 
+    /* battery statuses:                                      */
+    /* not present => ac_only, battery_missing                */
+    /* present     => charging, charged, discharging, unknown */
+    /* (present and not present are exclusive)                */
+
+    static gboolean ac_only                = FALSE;
     static gboolean battery_low            = FALSE;
     static gboolean battery_critical       = FALSE;
     static gboolean spawn_command_critical = FALSE;
@@ -736,34 +741,34 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
     gchar *battery_string, *time_string;
 
 #ifdef WITH_NOTIFY
-    NotifyNotification *notification = NULL;
+    static NotifyNotification *notification = NULL;
 #endif
 
     /* update power supplies */
 
     if (changed_power_supplies () == TRUE)
     {
-        ac_notified = FALSE;
+        get_power_supplies ();
 
         old_battery_status = -1;
 
+        ac_only                = FALSE;
         battery_low            = FALSE;
         battery_critical       = FALSE;
         spawn_command_critical = FALSE;
-
-        get_power_supplies ();
     }
 
     /* update tray icon for AC only */
 
     if (battery_path == NULL) {
-        if (ac_notified == FALSE) {
-            ac_notified = TRUE;
-            NOTIFY_MESSAGE (&notification, _("AC only, no battery!"), NULL, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
-        }
+        if (ac_only == FALSE) {
+            ac_only = TRUE;
 
-        gtk_status_icon_set_tooltip_text (tray_icon, _("AC only, no battery!"));
-        gtk_status_icon_set_from_icon_name (tray_icon, "ac-adapter");
+            NOTIFY_MESSAGE (&notification, _("AC only, no battery!"), NULL, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
+
+            gtk_status_icon_set_tooltip_text (tray_icon, _("AC only, no battery!"));
+            gtk_status_icon_set_from_icon_name (tray_icon, "ac-adapter");
+        }
 
         return;
     }
@@ -887,10 +892,14 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 
                     if (g_spawn_command_line_async (configuration.command_critical_level, &error) == FALSE) {
                         syslog (LOG_CRIT, _("Cannot spawn critical battery level command: %s"), error->message);
+
                         g_printerr (_("Cannot spawn critical battery level command: %s"), error->message);
                         g_error_free (error); error = NULL;
 
-                        NOTIFY_MESSAGE (&notification, _("Cannot spawn critical battery level command!"), configuration.command_critical_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+#ifdef WITH_NOTIFY
+                        static NotifyNotification *spawn_notification = NULL;
+                        NOTIFY_MESSAGE (&spawn_notification, _("Cannot spawn critical battery level command!"), configuration.command_critical_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+#endif
                     }
                 }
             }
@@ -898,21 +907,21 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
     }
 }
 
-static void on_tray_icon_click (GtkStatusIcon *status_icon, gpointer user_data)
+static void on_tray_icon_click (GtkStatusIcon *tray_icon, gpointer user_data)
 {
     GError *error = NULL;
-
-#ifdef WITH_NOTIFY
-    NotifyNotification *notification = NULL;
-#endif
 
     if (configuration.command_left_click != NULL) {
         if (g_spawn_command_line_async (configuration.command_left_click, &error) == FALSE) {
             syslog (LOG_ERR, _("Cannot spawn left click command: %s"), error->message);
+
             g_printerr (_("Cannot spawn left click command: %s"), error->message);
             g_error_free (error); error = NULL;
 
-            NOTIFY_MESSAGE (&notification, _("Cannot spawn left click command!"), configuration.command_left_click, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+#ifdef WITH_NOTIFY
+            static NotifyNotification *spawn_notification = NULL;
+            NOTIFY_MESSAGE (&spawn_notification, _("Cannot spawn left click command!"), configuration.command_left_click, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_CRITICAL);
+#endif
         }
     }
 }
@@ -939,7 +948,6 @@ static void notify_message (NotifyNotification **notification, gchar *summary, g
 
     notify_notification_set_timeout (*notification, timeout);
     notify_notification_set_urgency (*notification, urgency);
-
     notify_notification_show (*notification, NULL);
 }
 #endif
