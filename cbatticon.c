@@ -891,9 +891,9 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
                     g_usleep (G_USEC_PER_SEC * 30);
 
                     if (g_spawn_command_line_async (configuration.command_critical_level, &error) == FALSE) {
-                        syslog (LOG_CRIT, _("Cannot spawn critical battery level command: %s"), error->message);
+                        syslog (LOG_CRIT, _("Cannot spawn critical battery level command: %s\n"), error->message);
 
-                        g_printerr (_("Cannot spawn critical battery level command: %s"), error->message);
+                        g_printerr (_("Cannot spawn critical battery level command: %s\n"), error->message);
                         g_error_free (error); error = NULL;
 
 #ifdef WITH_NOTIFY
@@ -913,9 +913,9 @@ static void on_tray_icon_click (GtkStatusIcon *tray_icon, gpointer user_data)
 
     if (configuration.command_left_click != NULL) {
         if (g_spawn_command_line_async (configuration.command_left_click, &error) == FALSE) {
-            syslog (LOG_ERR, _("Cannot spawn left click command: %s"), error->message);
+            syslog (LOG_ERR, _("Cannot spawn left click command: %s\n"), error->message);
 
-            g_printerr (_("Cannot spawn left click command: %s"), error->message);
+            g_printerr (_("Cannot spawn left click command: %s\n"), error->message);
             g_error_free (error); error = NULL;
 
 #ifdef WITH_NOTIFY

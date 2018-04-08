@@ -1,14 +1,14 @@
 # Greek translation for cbatticon.
-# Copyright (C) 2015-2016 Valère Monseur
+# Copyright (C) 2015-2018 Valère Monseur
 # This file is distributed under the same license as the cbatticon package.
 # Valère Monseur <valere.monseur@ymail.com>, 2016.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cbatticon 1.5.0\n"
+"Project-Id-Version: cbatticon 1.6.7\n"
 "Report-Msgid-Bugs-To: valere.monseur@ymail.com\n"
 "POT-Creation-Date: 2015-12-13 22:28+0100\n"
-"PO-Revision-Date: 2016-01-07 02:17+0200\n"
+"PO-Revision-Date: 2018-04-08 23:41+0100\n"
 "Last-Translator: George Vlahavas <vlahavas~at~gmail~dot~com>\n"
 "Language-Team: N/A\n"
 "Language: Greek\n"
@@ -173,8 +173,8 @@ msgstr "Εκτέλεση της εντολής κρίσιμης στάθμης �
 
 #: cbatticon.c:797
 #, c-format
-msgid "Cannot spawn critical battery level command: %s"
-msgstr "Δεν ήταν δυνατή η εκτέλεση της εντολής κρίσιμης στάθμης: %s"
+msgid "Cannot spawn critical battery level command: %s\n"
+msgstr "Δεν ήταν δυνατή η εκτέλεση της εντολής κρίσιμης στάθμης: %s\n"
 
 #: cbatticon.c:800
 msgid "Cannot spawn critical battery level command!"
@@ -182,8 +182,8 @@ msgstr "Δεν ήταν δυνατή η εκτέλεση της εντολής �
 
 #: cbatticon.c:817
 #, c-format
-msgid "Cannot spawn left click command: %s"
-msgstr "Δεν ήταν δυνατή η εκτέλεση της εντολής αριστερού κλίκ: %s"
+msgid "Cannot spawn left click command: %s\n"
+msgstr "Δεν ήταν δυνατή η εκτέλεση της εντολής αριστερού κλίκ: %s\n"
 
 #: cbatticon.c:820
 msgid "Cannot spawn left click command!"

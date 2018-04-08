@@ -1,14 +1,14 @@
 # Indonesian Translation for cbatticon.
-# Copyright (C) 2017 Valère Monseur
+# Copyright (C) 2017-2018 Valère Monseur
 # This file is distributed under the same license as the cbatticon package.
 # Mahyuddin <yudi.al@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cbatticon 1.5.1\n"
+"Project-Id-Version: cbatticon 1.6.7\n"
 "Report-Msgid-Bugs-To: valere.monseur@ymail.com\n"
 "POT-Creation-Date: 2017-10-04 16:16+0700\n"
-"PO-Revision-Date: 2017-10-04 16:44+0700\n"
+"PO-Revision-Date: 2018-04-08 23:35+0100\n"
 "Language-Team: Indonesian <yudi.al@gmail.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -176,8 +176,8 @@ msgstr "Spawning perintah tingkat kritis baterai dalam 30 detik: %s"
 
 #: cbatticon.c:797
 #, c-format
-msgid "Cannot spawn critical battery level command: %s"
-msgstr "Tidak dapat spawn perintah level baterai kritis: %s"
+msgid "Cannot spawn critical battery level command: %s\n"
+msgstr "Tidak dapat spawn perintah level baterai kritis: %s\n"
 
 #: cbatticon.c:800
 msgid "Cannot spawn critical battery level command!"
@@ -185,8 +185,8 @@ msgstr "Tidak dapat spawn perintah level baterai kritis!"
 
 #: cbatticon.c:817
 #, c-format
-msgid "Cannot spawn left click command: %s"
-msgstr "Tidak bisa spawn perintah klik kiri: %s"
+msgid "Cannot spawn left click command: %s\n"
+msgstr "Tidak bisa spawn perintah klik kiri: %s\n"
 
 #: cbatticon.c:820
 msgid "Cannot spawn left click command!"

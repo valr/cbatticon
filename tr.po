@@ -1,14 +1,14 @@
 # Turkish translation for cbatticon.
-# Copyright (C) 2015-2016 Valère Monseur
+# Copyright (C) 2015-2018 Valère Monseur
 # This file is distributed under the same license as the cbatticon package.
 # Behzat Erte <behzaterte@yandex.com>, 2015.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cbatticon 1.5.0\n"
+"Project-Id-Version: cbatticon 1.6.7\n"
 "Report-Msgid-Bugs-To: valere.monseur@ymail.com\n"
 "POT-Creation-Date: 2015-07-17 20:38+0200\n"
-"PO-Revision-Date: 2015-07-19 14:11+0200\n"
+"PO-Revision-Date: 2018-04-08 23:30+0100\n"
 "Last-Translator: Behzat Erte <behzaterte@yandex.com>\n"
 "Language-Team: TR <behzaterte@yandex.com>\n"
 "Language: Turkish\n"
@@ -168,8 +168,8 @@ msgstr "Kritik pil seviyesi komutu 30 saniye içerisinde üretilecek: %s"
 
 #: cbatticon.c:797
 #, c-format
-msgid "Cannot spawn critical battery level command: %s"
-msgstr "Kritik seviye komutu üretilemiyor: %s"
+msgid "Cannot spawn critical battery level command: %s\n"
+msgstr "Kritik seviye komutu üretilemiyor: %s\n"
 
 #: cbatticon.c:800
 msgid "Cannot spawn critical battery level command!"
@@ -177,8 +177,8 @@ msgstr "Kritik pil seviyesi komutu oluşturulamıyor!"
 
 #: cbatticon.c:817
 #, c-format
-msgid "Cannot spawn left click command: %s"
-msgstr "Sol tuş komutu üretilemiyor: %s"
+msgid "Cannot spawn left click command: %s\n"
+msgstr "Sol tuş komutu üretilemiyor: %s\n"
 
 #: cbatticon.c:820
 msgid "Cannot spawn left click command!"

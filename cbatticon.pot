@@ -1,11 +1,11 @@
-# Copyright (C) 2015-2016 Valère Monseur
+# Copyright (C) 2015-2018 Valère Monseur
 # This file is distributed under the same license as the cbatticon package.
 # Valère Monseur <valere.monseur@ymail.com>, 2015.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: cbatticon 1.5.1\n"
+"Project-Id-Version: cbatticon 1.6.7\n"
 "Report-Msgid-Bugs-To: valere.monseur@ymail.com\n"
 "POT-Creation-Date: 2015-12-13 22:28+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -165,7 +165,7 @@ msgstr ""
 
 #: cbatticon.c:797
 #, c-format
-msgid "Cannot spawn critical battery level command: %s"
+msgid "Cannot spawn critical battery level command: %s\n"
 msgstr ""
 
 #: cbatticon.c:800
@@ -174,7 +174,7 @@ msgstr ""
 
 #: cbatticon.c:817
 #, c-format
-msgid "Cannot spawn left click command: %s"
+msgid "Cannot spawn left click command: %s\n"
 msgstr ""
 
 #: cbatticon.c:820

@@ -1,15 +1,15 @@
 # Serbian translation for cbatticon.
-# Copyright (C) 2015-2016 Valère Monseur
+# Copyright (C) 2015-2018 Valère Monseur
 # This file is distributed under the same license as the cbatticon package.
 # Valère Monseur <valere.monseur@ymail.com>, 2015.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: cbatticon 1.5.1\n"
+"Project-Id-Version: cbatticon 1.6.7\n"
 "Report-Msgid-Bugs-To: valere.monseur@ymail.com\n"
 "POT-Creation-Date: 2015-12-13 22:28+0100\n"
-"PO-Revision-Date: 2016-03-12 11:23+0200\n"
+"PO-Revision-Date: 2018-04-08 23:31+0100\n"
 "Last-Translator: Dino Duratović <dinomol@mail.com>\n"
 "Language-Team: N/A\n"
 "Language: sr\n"
@@ -168,8 +168,8 @@ msgstr "Извршујем команду критичног нивоа бате
 
 #: cbatticon.c:797
 #, c-format
-msgid "Cannot spawn critical battery level command: %s"
-msgstr "Не могу извршити команду критичног нивоа батерије: %s"
+msgid "Cannot spawn critical battery level command: %s\n"
+msgstr "Не могу извршити команду критичног нивоа батерије: %s\n"
 
 #: cbatticon.c:800
 msgid "Cannot spawn critical battery level command!"
@@ -177,8 +177,8 @@ msgstr "Не могу извршити команду критичног нив�
 
 #: cbatticon.c:817
 #, c-format
-msgid "Cannot spawn left click command: %s"
-msgstr "Не могу извршити команду левог клика: %s"
+msgid "Cannot spawn left click command: %s\n"
+msgstr "Не могу извршити команду левог клика: %s\n"
 
 #: cbatticon.c:820
 msgid "Cannot spawn left click command!"
