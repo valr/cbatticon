@@ -1,3 +1,13 @@
+2018-04-08  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.6.8
+
+ * Fix #43 : added traditional Chinese translation
+
+ * Fix #44 : update existing notifications instead of creating new ones
+
+ * Add missing end of line
+
 2017-10-05  Valère Monseur  <valere.monseur@ymail.com>
 
  * Release 1.6.7
@@ -66,9 +76,9 @@
 
  * Release 1.5.0
 
- * build with gtk3 by default (instead of gtk2)
+ * Build with gtk3 by default (instead of gtk2)
 
- * build with deprecation warning disabled
+ * Build with deprecation warning disabled
 
  * Fix #17 : cbatticon --version shouldn't need X display
 
