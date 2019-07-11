@@ -893,6 +893,12 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
                     syslog (LOG_CRIT, _("Spawning critical battery level command in 30 seconds: %s"), configuration.command_critical_level);
                     g_usleep (G_USEC_PER_SEC * 30);
 
+                    if (configuration.last_chance && get_battery_status (&battery_status) == TRUE) {
+                        if (battery_status != DISCHARGING && battery_status != NOT_CHARGING) {
+                            syslog (LOG_NOTICE, _("Skipping critical battery level command, no longer discharging."));
+                            return;
+                        }
+                    }
                     if (g_spawn_command_line_async (configuration.command_critical_level, &error) == FALSE) {
                         syslog (LOG_CRIT, _("Cannot spawn critical battery level command: %s\n"), error->message);
 
