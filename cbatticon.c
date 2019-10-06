@@ -110,7 +110,6 @@ struct configuration {
     gint     icon_type;
     gint     low_level;
     gint     critical_level;
-    gboolean last_chance;
     gchar   *command_critical_level;
     gchar   *command_left_click;
 #ifdef WITH_NOTIFY
@@ -125,7 +124,6 @@ struct configuration {
     UNKNOWN_ICON,
     DEFAULT_LOW_LEVEL,
     DEFAULT_CRITICAL_LEVEL,
-    FALSE,
     NULL,
     NULL,
 #ifdef WITH_NOTIFY
@@ -166,7 +164,6 @@ static gint get_options (int argc, char **argv)
         { "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string                    , N_("Set icon type ('standard', 'notification' or 'symbolic')") , NULL },
         { "low-level"             , 'l', 0, G_OPTION_ARG_INT   , &configuration.low_level             , N_("Set low battery level (in percent)")                       , NULL },
         { "critical-level"        , 'r', 0, G_OPTION_ARG_INT   , &configuration.critical_level        , N_("Set critical battery level (in percent)")                  , NULL },
-        { "last-chance"           ,   0, 0, G_OPTION_ARG_NONE  , &configuration.last_chance           , N_("Check 30 seconds after critical if battery is charging")   , NULL },
         { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &configuration.command_critical_level, N_("Command to execute when critical battery level is reached"), NULL },
         { "command-left-click"    , 'x', 0, G_OPTION_ARG_STRING, &configuration.command_left_click    , N_("Command to execute when left clicking on tray icon")       , NULL },
 #ifdef WITH_NOTIFY
@@ -893,12 +890,13 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
                     syslog (LOG_CRIT, _("Spawning critical battery level command in 30 seconds: %s"), configuration.command_critical_level);
                     g_usleep (G_USEC_PER_SEC * 30);
 
-                    if (configuration.last_chance && get_battery_status (&battery_status) == TRUE) {
+                    if (get_battery_status (&battery_status) == TRUE) {
                         if (battery_status != DISCHARGING && battery_status != NOT_CHARGING) {
-                            syslog (LOG_NOTICE, _("Skipping critical battery level command, no longer discharging."));
+                            syslog (LOG_NOTICE, _("Skipping critical battery level command, no longer discharging"));
                             return;
                         }
                     }
+
                     if (g_spawn_command_line_async (configuration.command_critical_level, &error) == FALSE) {
                         syslog (LOG_CRIT, _("Cannot spawn critical battery level command: %s\n"), error->message);
 
