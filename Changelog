@@ -1,3 +1,11 @@
+2019-10-06  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.6.10
+
+ * Fix #53 : if last_chance option true, check one last time if charging before running critical
+
+ * make the last_chance option the default
+
 2019-06-11  Valère Monseur  <valere.monseur@ymail.com>
 
  * Release 1.6.9
