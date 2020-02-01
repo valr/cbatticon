@@ -696,6 +696,16 @@ static void reset_battery_time_estimation (void)
  * tray icon functions
  */
 
+static void set_icon(GtkStatusIcon *tray_icon, const gchar* name) {
+    GdkPixbuf *pix = gtk_icon_theme_load_icon(gtk_icon_theme_get_default(),
+                                              name,
+                                              32,
+                                              GTK_ICON_LOOKUP_USE_BUILTIN,
+                                              NULL);
+    gtk_status_icon_set_from_pixbuf(tray_icon, pix);
+}
+
+
 static void create_tray_icon (void)
 {
     GtkStatusIcon *tray_icon = gtk_status_icon_new ();
@@ -767,7 +777,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
             NOTIFY_MESSAGE (&notification, _("AC only, no battery!"), NULL, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
 
             gtk_status_icon_set_tooltip_text (tray_icon, _("AC only, no battery!"));
-            gtk_status_icon_set_from_icon_name (tray_icon, "ac-adapter");
+            set_icon (tray_icon, "ac-adapter");
         }
 
         return;
@@ -815,7 +825,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
             }                                                                                               \
                                                                                                             \
             gtk_status_icon_set_tooltip_text (tray_icon, get_tooltip_string (battery_string, time_string)); \
-            gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (battery_status, percentage));
+            set_icon (tray_icon, get_icon_name (battery_status, percentage));
 
     switch (battery_status) {
         case MISSING:
@@ -881,7 +891,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
             }
 
             gtk_status_icon_set_tooltip_text (tray_icon, get_tooltip_string (battery_string, time_string));
-            gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (battery_status, percentage));
+            set_icon (tray_icon, get_icon_name (battery_status, percentage));
 
             if (spawn_command_critical == TRUE) {
                 spawn_command_critical = FALSE;
