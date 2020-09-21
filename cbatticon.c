@@ -54,6 +54,7 @@ static gboolean get_battery_status (gint *status);
 
 static gboolean get_battery_full_capacity (gboolean *use_charge, gdouble *capacity);
 static gboolean get_battery_remaining_capacity (gboolean use_charge, gdouble *capacity);
+static gboolean get_battery_capacity_percentage (gboolean use_charge, gdouble *capacity);
 static gboolean get_battery_current_rate (gboolean use_charge, gdouble *rate);
 
 static gboolean get_battery_charge (gboolean remaining, gint *percentage, gint *time);
@@ -590,6 +591,12 @@ static gboolean get_battery_remaining_capacity (gboolean use_charge, gdouble *ca
     }
 }
 
+static gboolean get_battery_capacity_percentage (gboolean use_charge, gdouble *capacity)
+{
+    g_return_val_if_fail (capacity != NULL, FALSE);
+    return get_sysattr_double (battery_path, "capacity", capacity);
+}
+
 static gboolean get_battery_current_rate (gboolean use_charge, gdouble *rate)
 {
     if (use_charge == FALSE) {
@@ -619,11 +626,14 @@ static gboolean get_battery_charge (gboolean remaining, gint *percentage, gint *
     }
 
     if (get_battery_remaining_capacity (use_charge, &remaining_capacity) == FALSE) {
-        if (configuration.debug_output == TRUE) {
-            g_printf ("remaining capacity: %s\n", "unavailable");
+        if (get_battery_capacity_percentage (use_charge, &remaining_capacity) == FALSE) {
+            if (configuration.debug_output == TRUE) {
+                g_printf ("remaining capacity: %s\n", "unavailable");
+            }
+            return FALSE;
         }
-
-        return FALSE;
+        // Remaining capacity is percentage, extract the actual remaining capacity
+        remaining_capacity = remaining_capacity * (full_capacity/100.0);
     }
 
     *percentage = (gint)fmin (floor (remaining_capacity / full_capacity * 100.0), 100.0);
