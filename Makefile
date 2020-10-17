@@ -6,12 +6,16 @@ V = 0
 ### whether to link against gtk3 or gtk2 (default: gtk3)
 WITH_GTK3 = 1
 
+### whether to link against qt5 instead (default: off)
+WITH_QT5 = 0
+
 ### libnotify support: 0 for off, 1 for on (default: on)
 WITH_NOTIFY = 1
 
 # programs
 
 CC ?= gcc
+CXX ?= g++
 MSGFMT = msgfmt
 PKG_CONFIG ?= pkg-config
 RM = rm -f
@@ -50,11 +54,21 @@ CPPFLAGS += -DWITH_NOTIFY
 endif
 CPPFLAGS += -DNLSDIR=\"$(NLSDIR)\"
 
+ifeq ($(WITH_QT5),1)
+CC = $(CXX)
+CPPFLAGS += -DWITH_QT5
+LANG_CFLAGS = -x c++ -std=c++11 -fPIC
+else
+LANG_CFLAGS = -std=c99
+endif
+
 CFLAGS ?= -O2
-CFLAGS += -Wall -Wno-format -Wno-deprecated-declarations -std=c99
+CFLAGS += -Wall -Wno-format -Wno-deprecated-declarations
 CFLAGS += $(shell $(PKG_CONFIG) --cflags $(PKG_DEPS))
 
-ifeq ($(WITH_GTK3), 0)
+ifeq ($(WITH_QT5),1)
+PKG_DEPS = Qt5Widgets
+else ifeq ($(WITH_GTK3), 0)
 PKG_DEPS = gtk+-2.0
 else
 PKG_DEPS = gtk+-3.0
@@ -76,7 +90,7 @@ $(BIN): $(OBJECTS)
 
 $(OBJECTS): $(SOURCEFILES)
 	@echo -e '\033[0;32mBuilding object $@\033[0m'
-	$(VERBOSE) $(CC) -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
+	$(VERBOSE) $(CC) -c $(LANG_CFLAGS) $(CFLAGS) $(CPPFLAGS) -o $@ $<
 
 $(TRANSLATIONS): %.mo: %.po
 	@echo -e '\033[0;36mCompiling messages catalog $@\033[0m'

@@ -29,9 +29,16 @@
 #include <glib/gi18n.h>
 #include <glib/gprintf.h>
 #include <glib/gstdio.h>
-#include <gtk/gtk.h>
+
 #ifdef WITH_NOTIFY
 #include <libnotify/notify.h>
+#endif
+
+#ifdef WITH_QT5
+#include <QApplication>
+#include <QSystemTrayIcon>
+#else
+#include <gtk/gtk.h>
 #endif
 
 #include <errno.h>
@@ -40,15 +47,35 @@
 #include <math.h>
 #include <syslog.h>
 
-static gint get_options (int argc, char **argv);
+#ifdef WITH_QT5
+
+#define TrayIcon                        QSystemTrayIcon
+#define TRAY_ICON_NEW                   new QSystemTrayIcon
+#define TRAY_ICON_HAS_ICON(name)        QIcon::hasThemeIcon (name)
+#define TRAY_ICON_SET_ICON(icon, name)  icon->setIcon (QIcon::fromTheme (name))
+#define TRAY_ICON_SET_TEXT(icon, text)  icon->setToolTip (text)
+#define TRAY_ICON_SHOW(icon)            icon->show ()
+
+#else /* GTK */
+
+#define TrayIcon                        GtkStatusIcon
+#define TRAY_ICON_NEW                   gtk_status_icon_new ()
+#define TRAY_ICON_HAS_ICON(name)        gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), name)
+#define TRAY_ICON_SET_ICON(icon, name)  gtk_status_icon_set_from_icon_name (icon, name);
+#define TRAY_ICON_SET_TEXT(icon, text)  gtk_status_icon_set_tooltip_text (icon, text)
+#define TRAY_ICON_SHOW(icon)            gtk_status_icon_set_visible (icon, TRUE)
+
+#endif
+
+static gint get_options (int *argc, char ***argv);
 static gboolean changed_power_supplies (void);
 static void get_power_supplies (void);
 
-static gboolean get_sysattr_string (gchar *path, gchar *attribute, gchar **value);
-static gboolean get_sysattr_double (gchar *path, gchar *attribute, gdouble *value);
+static gboolean get_sysattr_string (const gchar *path, const gchar *attribute, gchar **value);
+static gboolean get_sysattr_double (const gchar *path, const gchar *attribute, gdouble *value);
 
-static gboolean get_ac_online (gchar *path, gboolean *online);
-static gboolean get_battery_present (gchar *path, gboolean *present);
+static gboolean get_ac_online (const gchar *path, gboolean *online);
+static gboolean get_battery_present (const gchar *path, gboolean *present);
 
 static gboolean get_battery_status (gint *status);
 
@@ -61,9 +88,9 @@ static gboolean get_battery_time_estimation (gdouble remaining_capacity, gdouble
 static void reset_battery_time_estimation (void);
 
 static void create_tray_icon (void);
-static gboolean update_tray_icon (GtkStatusIcon *tray_icon);
-static void update_tray_icon_status (GtkStatusIcon *tray_icon);
-static void on_tray_icon_click (GtkStatusIcon *tray_icon, gpointer user_data);
+static gboolean update_tray_icon (TrayIcon *tray_icon);
+static void update_tray_icon_status (TrayIcon *tray_icon);
+static void on_tray_icon_click (TrayIcon *tray_icon, gpointer user_data);
 
 #ifdef WITH_NOTIFY
 static void notify_message (NotifyNotification **notification, gchar *summary, gchar *body, gint timeout, NotifyUrgency urgency);
@@ -151,7 +178,7 @@ static GTimer  *estimation_timer              = NULL;
  * command line options function
  */
 
-static gint get_options (int argc, char **argv)
+static gint get_options (int *argc, char ***argv)
 {
     GError *error = NULL;
 
@@ -177,7 +204,7 @@ static gint get_options (int argc, char **argv)
     option_context = g_option_context_new (_("[BATTERY ID]"));
     g_option_context_add_main_entries (option_context, option_entries, CBATTICON_STRING);
 
-    if (g_option_context_parse (option_context, &argc, &argv, &error) == FALSE) {
+    if (g_option_context_parse (option_context, argc, argv, &error) == FALSE) {
         g_printerr (_("Cannot parse command line arguments: %s\n"), error->message);
         g_error_free (error); error = NULL;
 
@@ -206,11 +233,15 @@ static gint get_options (int argc, char **argv)
 
     /* option : list available icon types */
 
-    gtk_init (&argc, &argv); /* gtk is required as from this point */
+#ifdef WITH_QT5
+    new QApplication (*argc, *argv);
+#else
+    gtk_init (argc, argv); /* gtk is required as from this point */
+#endif
 
-    #define HAS_STANDARD_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-full")
-    #define HAS_NOTIFICATION_ICON_TYPE gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "notification-battery-100")
-    #define HAS_SYMBOLIC_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-full-symbolic")
+    #define HAS_STANDARD_ICON_TYPE     TRAY_ICON_HAS_ICON ("battery-full")
+    #define HAS_NOTIFICATION_ICON_TYPE TRAY_ICON_HAS_ICON ("notification-battery-100")
+    #define HAS_SYMBOLIC_ICON_TYPE     TRAY_ICON_HAS_ICON ("battery-full-symbolic")
 
     if (configuration.list_icon_types == TRUE) {
         g_print (_("List of available icon types:\n"));
@@ -436,7 +467,7 @@ static void get_power_supplies (void)
     }
 }
 
-static gboolean get_sysattr_string (gchar *path, gchar *attribute, gchar **value)
+static gboolean get_sysattr_string (const gchar *path, const gchar *attribute, gchar **value)
 {
     gchar *sysattr_filename;
     gboolean sysattr_status;
@@ -452,7 +483,7 @@ static gboolean get_sysattr_string (gchar *path, gchar *attribute, gchar **value
     return sysattr_status;
 }
 
-static gboolean get_sysattr_double (gchar *path, gchar *attribute, gdouble *value)
+static gboolean get_sysattr_double (const gchar *path, const gchar *attribute, gdouble *value)
 {
     gchar *sysattr_filename, *sysattr_value;
     gboolean sysattr_status;
@@ -481,7 +512,7 @@ static gboolean get_sysattr_double (gchar *path, gchar *attribute, gdouble *valu
     return sysattr_status;
 }
 
-static gboolean get_ac_online (gchar *path, gboolean *online)
+static gboolean get_ac_online (const gchar *path, gboolean *online)
 {
     gchar *sysattr_value;
     gboolean sysattr_status;
@@ -506,7 +537,7 @@ static gboolean get_ac_online (gchar *path, gboolean *online)
     return sysattr_status;
 }
 
-static gboolean get_battery_present (gchar *path, gboolean *present)
+static gboolean get_battery_present (const gchar *path, gboolean *present)
 {
     gchar *sysattr_value;
     gboolean sysattr_status;
@@ -698,17 +729,24 @@ static void reset_battery_time_estimation (void)
 
 static void create_tray_icon (void)
 {
-    GtkStatusIcon *tray_icon = gtk_status_icon_new ();
+    TrayIcon *tray_icon = TRAY_ICON_NEW;
 
-    gtk_status_icon_set_tooltip_text (tray_icon, CBATTICON_STRING);
-    gtk_status_icon_set_visible (tray_icon, TRUE);
-
+    TRAY_ICON_SET_TEXT (tray_icon, CBATTICON_STRING);
     update_tray_icon (tray_icon);
+    TRAY_ICON_SHOW (tray_icon);
+
     g_timeout_add_seconds (configuration.update_interval, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
+
+#ifdef WITH_QT5
+    QObject::connect (tray_icon, &QSystemTrayIcon::activated, [tray_icon] {
+        on_tray_icon_click (tray_icon, NULL);
+    });
+#else
     g_signal_connect (G_OBJECT (tray_icon), "activate", G_CALLBACK (on_tray_icon_click), NULL);
+#endif
 }
 
-static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
+static gboolean update_tray_icon (TrayIcon *tray_icon)
 {
     g_return_val_if_fail (tray_icon != NULL, FALSE);
 
@@ -717,7 +755,7 @@ static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
     return TRUE;
 }
 
-static void update_tray_icon_status (GtkStatusIcon *tray_icon)
+static void update_tray_icon_status (TrayIcon *tray_icon)
 {
     GError *error = NULL;
 
@@ -766,8 +804,8 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 
             NOTIFY_MESSAGE (&notification, _("AC only, no battery!"), NULL, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
 
-            gtk_status_icon_set_tooltip_text (tray_icon, _("AC only, no battery!"));
-            gtk_status_icon_set_from_icon_name (tray_icon, "ac-adapter");
+            TRAY_ICON_SET_TEXT (tray_icon, _("AC only, no battery!"));
+            TRAY_ICON_SET_ICON (tray_icon, "ac-adapter");
         }
 
         return;
@@ -814,8 +852,8 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
                 NOTIFY_MESSAGE (&notification, battery_string, time_string, EXP, URG);                      \
             }                                                                                               \
                                                                                                             \
-            gtk_status_icon_set_tooltip_text (tray_icon, get_tooltip_string (battery_string, time_string)); \
-            gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (battery_status, percentage));
+            TRAY_ICON_SET_TEXT (tray_icon, get_tooltip_string (battery_string, time_string));               \
+            TRAY_ICON_SET_ICON (tray_icon, get_icon_name (battery_status, percentage));
 
     switch (battery_status) {
         case MISSING:
@@ -880,8 +918,8 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
                 spawn_command_critical = TRUE;
             }
 
-            gtk_status_icon_set_tooltip_text (tray_icon, get_tooltip_string (battery_string, time_string));
-            gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (battery_status, percentage));
+            TRAY_ICON_SET_TEXT (tray_icon, get_tooltip_string (battery_string, time_string));
+            TRAY_ICON_SET_ICON (tray_icon, get_icon_name (battery_status, percentage));
 
             if (spawn_command_critical == TRUE) {
                 spawn_command_critical = FALSE;
@@ -914,7 +952,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
     }
 }
 
-static void on_tray_icon_click (GtkStatusIcon *tray_icon, gpointer user_data)
+static void on_tray_icon_click (TrayIcon *tray_icon, gpointer user_data)
 {
     GError *error = NULL;
 
@@ -1118,7 +1156,7 @@ int main (int argc, char **argv)
     bind_textdomain_codeset (CBATTICON_STRING, "UTF-8");
     textdomain (CBATTICON_STRING);
 
-    ret = get_options (argc, argv);
+    ret = get_options (&argc, &argv);
     if (ret <= 0) {
         return ret;
     }
@@ -1137,7 +1175,12 @@ int main (int argc, char **argv)
 
     get_power_supplies();
     create_tray_icon ();
+
+#ifdef WITH_QT5
+    qApp->exec();
+#else
     gtk_main();
+#endif
 
     return 0;
 }
