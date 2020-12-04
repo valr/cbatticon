@@ -48,7 +48,7 @@ Examples:
   cbatticon -p
   cbatticon -u 20 -i notification -c "poweroff" -l 15 -r 3
   # if xbacklight is installed
-  cbatticon -u 20 -i notification -r 3 -c "poweroff" -l 15 -r "xbacklight=5"
+  cbatticon -u 20 -i notification -r 3 -c "poweroff" -l 15 -r "xbacklight = 5"
 
 Thanks to:
 
