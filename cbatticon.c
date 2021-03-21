@@ -117,6 +117,7 @@ struct configuration {
 #endif
     gboolean list_icon_types;
     gboolean list_power_supplies;
+    gboolean disable_startup_notify;
 } configuration = {
     FALSE,
     FALSE,
@@ -129,6 +130,7 @@ struct configuration {
 #ifdef WITH_NOTIFY
     FALSE,
 #endif
+    FALSE,
     FALSE,
     FALSE
 };
@@ -171,6 +173,7 @@ static gint get_options (int argc, char **argv)
 #endif
         { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &configuration.list_icon_types       , N_("List available icon types")                                , NULL },
         { "list-power-supplies"   , 'p', 0, G_OPTION_ARG_NONE  , &configuration.list_power_supplies   , N_("List available power supplies (battery and AC)")           , NULL },
+	{ "disable-startup-notify", 's', 0, G_OPTION_ARG_NONE  , &configuration.disable_startup_notify, N_("Suppress the startup notification")                        , NULL },
         { NULL }
     };
 
@@ -810,8 +813,9 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
             time_string    = get_time_string (TIM);                                                         \
                                                                                                             \
             if (old_battery_status != battery_status) {                                                     \
+                if (old_battery_status != -1 || configuration.disable_startup_notify == FALSE)              \
+                    NOTIFY_MESSAGE (&notification, battery_string, time_string, EXP, URG);                  \
                 old_battery_status  = battery_status;                                                       \
-                NOTIFY_MESSAGE (&notification, battery_string, time_string, EXP, URG);                      \
             }                                                                                               \
                                                                                                             \
             gtk_status_icon_set_tooltip_text (tray_icon, get_tooltip_string (battery_string, time_string)); \
@@ -856,8 +860,9 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
             time_string    = get_time_string (time);
 
             if (old_battery_status != DISCHARGING) {
+		if (old_battery_status != -1 || configuration.disable_startup_notify == FALSE)
+		    NOTIFY_MESSAGE (&notification, battery_string, time_string, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL);
                 old_battery_status  = DISCHARGING;
-                NOTIFY_MESSAGE (&notification, battery_string, time_string, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL);
 
                 battery_low            = FALSE;
                 battery_critical       = FALSE;
