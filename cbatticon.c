@@ -208,7 +208,7 @@ static gint get_options (int argc, char **argv)
 
     gtk_init (&argc, &argv); /* gtk is required as from this point */
 
-    #define HAS_STANDARD_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-full")
+    #define HAS_STANDARD_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-100")
     #define HAS_NOTIFICATION_ICON_TYPE gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "notification-battery-100")
     #define HAS_SYMBOLIC_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-full-symbolic")
 
@@ -1078,7 +1078,21 @@ static gchar* get_icon_name (gint state, gint percentage)
             g_strlcat (icon_name, "-missing", STR_LTH);
         }
     } else {
-        if (configuration.icon_type == BATTERY_ICON_NOTIFICATION) {
+        if (configuration.icon_type == BATTERY_ICON) {
+                         if (percentage <=  5)  g_strlcat (icon_name, "-000", STR_LTH);
+                    else if (percentage <= 10)  g_strlcat (icon_name, "-010", STR_LTH);
+                    else if (percentage <= 20)  g_strlcat (icon_name, "-020", STR_LTH);
+                    else if (percentage <= 30)  g_strlcat (icon_name, "-030", STR_LTH);
+                    else if (percentage <= 40)  g_strlcat (icon_name, "-040", STR_LTH);
+                    else if (percentage <= 50)  g_strlcat (icon_name, "-050", STR_LTH);
+                    else if (percentage <= 60)  g_strlcat (icon_name, "-060", STR_LTH);
+                    else if (percentage <= 70)  g_strlcat (icon_name, "-070", STR_LTH);
+                    else if (percentage <= 80)  g_strlcat (icon_name, "-080", STR_LTH);
+                    else if (percentage <= 90)  g_strlcat (icon_name, "-090", STR_LTH);
+                    else                        g_strlcat (icon_name, "-100", STR_LTH);        
+                         if (state == CHARGING) g_strlcat (icon_name, "-charging", STR_LTH);
+                    else if (state == CHARGED)  g_strlcat (icon_name, "-charged", STR_LTH);
+        } else if (configuration.icon_type == BATTERY_ICON_NOTIFICATION) {
                  if (percentage <= 20)  g_strlcat (icon_name, "-020", STR_LTH);
             else if (percentage <= 40)  g_strlcat (icon_name, "-040", STR_LTH);
             else if (percentage <= 60)  g_strlcat (icon_name, "-060", STR_LTH);
