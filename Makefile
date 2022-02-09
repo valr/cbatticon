@@ -51,7 +51,7 @@ endif
 CPPFLAGS += -DNLSDIR=\"$(NLSDIR)\"
 
 CFLAGS ?= -O2
-CFLAGS += -Wall -Wno-format -Wno-deprecated-declarations -std=c99
+CFLAGS += -Wall -Wno-deprecated-declarations -std=c99
 CFLAGS += $(shell $(PKG_CONFIG) --cflags $(PKG_DEPS))
 
 ifeq ($(WITH_GTK3), 0)
