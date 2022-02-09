@@ -29,7 +29,7 @@ BINDIR = $(PREFIX)/bin
 DOCDIR = $(PREFIX)/share/doc/$(PACKAGE_NAME)-$(VERSION)
 MANDIR = $(PREFIX)/share/man/man1
 NLSDIR = $(PREFIX)/share/locale
-LANGUAGES = bs de el fr he hr id ja pt_BR ru sk sr tr zh_TW
+LANGUAGES = bs de el es fr he hr id ja pt_BR ru sk sr tr zh_TW
 
 BIN = $(PACKAGE_NAME)
 SOURCEFILES := $(wildcard *.c)
