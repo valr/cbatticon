@@ -1,3 +1,17 @@
+2022-02-09  Valère Monseur  <archlinux@vale.re>
+
+ * Release 1.6.12
+
+ * Fix Makefile for error: '-Wformat-security' ignored without '-Wformat'
+
+2022-02-09  Valère Monseur  <valere.monseur@ymail.com>
+
+ * Release 1.6.11
+
+ * Fix #57 : wrong version number
+
+ * Fix #68 : added Spanish translation
+
 2019-10-06  Valère Monseur  <valere.monseur@ymail.com>
 
  * Release 1.6.10
