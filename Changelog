@@ -2,6 +2,8 @@
 
  * Release 1.6.13
 
+ * Fix #58 : added support for batteries with only percentage capacity
+
  * Fix #61 : added a command for low battery level
 
 2022-02-09  Valère Monseur  <archlinux@vale.re>
