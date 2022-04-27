@@ -29,7 +29,7 @@ BINDIR = $(PREFIX)/bin
 DOCDIR = $(PREFIX)/share/doc/$(PACKAGE_NAME)-$(VERSION)
 MANDIR = $(PREFIX)/share/man/man1
 NLSDIR = $(PREFIX)/share/locale
-LANGUAGES = bs de el fr he hr id ja pt_BR ru sr tr zh_TW
+LANGUAGES = bs de el es fr he hr id ja pt_BR ru sk sr tr zh_TW
 
 BIN = $(PACKAGE_NAME)
 SOURCEFILES := $(wildcard *.c)
@@ -51,7 +51,7 @@ endif
 CPPFLAGS += -DNLSDIR=\"$(NLSDIR)\"
 
 CFLAGS ?= -O2
-CFLAGS += -Wall -Wno-format -Wno-deprecated-declarations -std=c99
+CFLAGS += -Wall -Wno-deprecated-declarations -std=c99
 CFLAGS += $(shell $(PKG_CONFIG) --cflags $(PKG_DEPS))
 
 ifeq ($(WITH_GTK3), 0)
