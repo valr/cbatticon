@@ -22,7 +22,7 @@ Application Options:
   -i, --icon-type                  Set icon type ('standard', 'notification' or 'symbolic')
   -l, --low-level                  Set low battery level (in percent)
   -r, --critical-level             Set critical battery level (in percent)
-  -e, --command-low-level          Command to execute when low battery level is reached
+  -o, --command-low-level          Command to execute when low battery level is reached
   -c, --command-critical-level     Command to execute when critical battery level is reached
   -x, --command-left-click         Command to execute when left clicking on tray icon
   -n, --hide-notification          Hide the notification popups
@@ -47,8 +47,7 @@ Examples:
   cbatticon -t
   cbatticon -p
   cbatticon -u 20 -i notification -c "poweroff" -l 15 -r 3
-  # if xbacklight is installed
-  cbatticon -u 20 -i notification -r 3 -c "poweroff" -l 15 -r "xbacklight = 5"
+  cbatticon -u 20 -i notification -r 3 -c "poweroff" -l 15 -o "xbacklight = 5"
 
 Thanks to:
 
