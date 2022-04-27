@@ -51,6 +51,7 @@
 enum {
     UNKNOWN_ICON = 0,
     BATTERY_ICON_STANDARD,
+    BATTERY_ICON_LEVEL,
     BATTERY_ICON_SYMBOLIC,
     BATTERY_ICON_NOTIFICATION
 };
@@ -171,7 +172,7 @@ static gint get_options (int argc, char **argv)
         { "version"               , 'v', 0, G_OPTION_ARG_NONE  , &configuration.display_version       , N_("Display the version")                                      , NULL },
         { "debug"                 , 'd', 0, G_OPTION_ARG_NONE  , &configuration.debug_output          , N_("Display debug information")                                , NULL },
         { "update-interval"       , 'u', 0, G_OPTION_ARG_INT   , &configuration.update_interval       , N_("Set update interval (in seconds)")                         , NULL },
-        { "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string                    , N_("Set icon type ('standard', 'notification' or 'symbolic')") , NULL },
+        { "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string                   , N_("Set icon type ('standard', 'level', 'notification' or 'symbolic')")  , NULL },
         { "low-level"             , 'l', 0, G_OPTION_ARG_INT   , &configuration.low_level             , N_("Set low battery level (in percent)")                       , NULL },
         { "critical-level"        , 'r', 0, G_OPTION_ARG_INT   , &configuration.critical_level        , N_("Set critical battery level (in percent)")                  , NULL },
         { "command-low-level"     , 'o', 0, G_OPTION_ARG_STRING, &configuration.command_low_level     , N_("Command to execute when low battery level is reached")     , NULL },
@@ -220,12 +221,14 @@ static gint get_options (int argc, char **argv)
     gtk_init (&argc, &argv); /* gtk is required as from this point */
 
     #define HAS_STANDARD_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-full")
+    #define HAS_LEVEL_ICON_TYPE        gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-090")
     #define HAS_NOTIFICATION_ICON_TYPE gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "notification-battery-100")
     #define HAS_SYMBOLIC_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-full-symbolic")
 
     if (configuration.list_icon_types == TRUE) {
         g_print (_("List of available icon types:\n"));
         g_print ("standard\t%s\n"    , HAS_STANDARD_ICON_TYPE     == TRUE ? _("available") : _("unavailable"));
+        g_print ("level\t\t%s\n"     , HAS_LEVEL_ICON_TYPE        == TRUE ? _("available") : _("unavailable"));
         g_print ("notification\t%s\n", HAS_NOTIFICATION_ICON_TYPE == TRUE ? _("available") : _("unavailable"));
         g_print ("symbolic\t%s\n"    , HAS_SYMBOLIC_ICON_TYPE     == TRUE ? _("available") : _("unavailable"));
 
@@ -237,6 +240,8 @@ static gint get_options (int argc, char **argv)
     if (icon_type_string != NULL) {
         if (g_strcmp0 (icon_type_string, "standard") == 0 && HAS_STANDARD_ICON_TYPE == TRUE)
             configuration.icon_type = BATTERY_ICON_STANDARD;
+        else if (g_strcmp0 (icon_type_string, "level") == 0 && HAS_LEVEL_ICON_TYPE == TRUE)
+            configuration.icon_type = BATTERY_ICON_LEVEL;
         else if (g_strcmp0 (icon_type_string, "notification") == 0 && HAS_NOTIFICATION_ICON_TYPE == TRUE)
             configuration.icon_type = BATTERY_ICON_NOTIFICATION;
         else if (g_strcmp0 (icon_type_string, "symbolic") == 0 && HAS_SYMBOLIC_ICON_TYPE == TRUE)
@@ -249,6 +254,8 @@ static gint get_options (int argc, char **argv)
     if (configuration.icon_type == UNKNOWN_ICON) {
         if (HAS_STANDARD_ICON_TYPE == TRUE)
             configuration.icon_type = BATTERY_ICON_STANDARD;
+        else if (HAS_LEVEL_ICON_TYPE == TRUE)
+            configuration.icon_type = BATTERY_ICON_LEVEL;
         else if (HAS_NOTIFICATION_ICON_TYPE == TRUE)
             configuration.icon_type = BATTERY_ICON_NOTIFICATION;
         else if (HAS_SYMBOLIC_ICON_TYPE == TRUE)
@@ -1172,7 +1179,21 @@ static gchar* get_icon_name (gint state, gint percentage)
             g_strlcat (icon_name, "-missing", STR_LTH);
         }
     } else {
-        if (configuration.icon_type == BATTERY_ICON_NOTIFICATION) {
+        if (configuration.icon_type == BATTERY_ICON_LEVEL) {
+                 if (percentage <=  5)  g_strlcat (icon_name, "-000", STR_LTH);
+            else if (percentage <= 10)  g_strlcat (icon_name, "-010", STR_LTH);
+            else if (percentage <= 20)  g_strlcat (icon_name, "-020", STR_LTH);
+            else if (percentage <= 30)  g_strlcat (icon_name, "-030", STR_LTH);
+            else if (percentage <= 40)  g_strlcat (icon_name, "-040", STR_LTH);
+            else if (percentage <= 50)  g_strlcat (icon_name, "-050", STR_LTH);
+            else if (percentage <= 60)  g_strlcat (icon_name, "-060", STR_LTH);
+            else if (percentage <= 70)  g_strlcat (icon_name, "-070", STR_LTH);
+            else if (percentage <= 80)  g_strlcat (icon_name, "-080", STR_LTH);
+            else if (percentage <= 90)  g_strlcat (icon_name, "-090", STR_LTH);
+            else                        g_strlcat (icon_name, "-100", STR_LTH);        
+                 if (state == CHARGING) g_strlcat (icon_name, "-charging", STR_LTH);
+            else if (state == CHARGED)  g_strlcat (icon_name, "-charged", STR_LTH);
+        } else if (configuration.icon_type == BATTERY_ICON_NOTIFICATION) {
                  if (percentage <= 20)  g_strlcat (icon_name, "-020", STR_LTH);
             else if (percentage <= 40)  g_strlcat (icon_name, "-040", STR_LTH);
             else if (percentage <= 60)  g_strlcat (icon_name, "-060", STR_LTH);
