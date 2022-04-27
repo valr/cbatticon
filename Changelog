@@ -1,3 +1,9 @@
+2022-04-27  Valère Monseur  <archlinux@vale.re>
+
+ * Release 1.6.13
+
+ * Fix #61 : added a command for low battery level
+
 2022-02-09  Valère Monseur  <archlinux@vale.re>
 
  * Release 1.6.12

@@ -21,8 +21,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define CBATTICON_VERSION_NUMBER 1.6.12
-#define CBATTICON_VERSION_STRING "1.6.12"
+#define CBATTICON_VERSION_NUMBER 1.6.13
+#define CBATTICON_VERSION_STRING "1.6.13"
 #define CBATTICON_STRING         "cbatticon"
 
 #include <glib.h>
@@ -111,6 +111,7 @@ struct configuration {
     gint     icon_type;
     gint     low_level;
     gint     critical_level;
+    gchar   *command_low_level;
     gchar   *command_critical_level;
     gchar   *command_left_click;
 #ifdef WITH_NOTIFY
@@ -162,13 +163,14 @@ static gint get_options (int argc, char **argv)
         { "version"               , 'v', 0, G_OPTION_ARG_NONE  , &configuration.display_version       , N_("Display the version")                                      , NULL },
         { "debug"                 , 'd', 0, G_OPTION_ARG_NONE  , &configuration.debug_output          , N_("Display debug information")                                , NULL },
         { "update-interval"       , 'u', 0, G_OPTION_ARG_INT   , &configuration.update_interval       , N_("Set update interval (in seconds)")                         , NULL },
-        { "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string                    , N_("Set icon type ('standard', 'notification' or 'symbolic')") , NULL },
+        { "icon-type"             , 'i', 0, G_OPTION_ARG_STRING, &icon_type_string                   , N_("Set icon type ('standard', 'notification' or 'symbolic')")  , NULL },
         { "low-level"             , 'l', 0, G_OPTION_ARG_INT   , &configuration.low_level             , N_("Set low battery level (in percent)")                       , NULL },
         { "critical-level"        , 'r', 0, G_OPTION_ARG_INT   , &configuration.critical_level        , N_("Set critical battery level (in percent)")                  , NULL },
+        { "command-low-level"     , 'e', 0, G_OPTION_ARG_STRING, &configuration.command_low_level     , N_("Command to execute when low battery level is reached")     , NULL },
         { "command-critical-level", 'c', 0, G_OPTION_ARG_STRING, &configuration.command_critical_level, N_("Command to execute when critical battery level is reached"), NULL },
         { "command-left-click"    , 'x', 0, G_OPTION_ARG_STRING, &configuration.command_left_click    , N_("Command to execute when left clicking on tray icon")       , NULL },
 #ifdef WITH_NOTIFY
-        { "hide-notification"     , 'n', 0, G_OPTION_ARG_NONE  , &configuration.hide_notification     , N_("Hide the notification popups")                             , NULL },
+        { "hide-notification"      , 'n', 0, G_OPTION_ARG_NONE  , &configuration.hide_notification      , N_("Hide the notification popups")                              , NULL },
 #endif
         { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &configuration.list_icon_types       , N_("List available icon types")                                , NULL },
         { "list-power-supplies"   , 'p', 0, G_OPTION_ARG_NONE  , &configuration.list_power_supplies   , N_("List available power supplies (battery and AC)")           , NULL },
@@ -745,6 +747,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
     static gboolean ac_only                = FALSE;
     static gboolean battery_low            = FALSE;
     static gboolean battery_critical       = FALSE;
+    static gboolean spawn_command_low      = FALSE;
     static gboolean spawn_command_critical = FALSE;
 
     gint percentage, time;
@@ -765,6 +768,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
         ac_only                = FALSE;
         battery_low            = FALSE;
         battery_critical       = FALSE;
+        spawn_command_low      = FALSE;
         spawn_command_critical = FALSE;
     }
 
@@ -871,6 +875,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 
                 battery_low            = FALSE;
                 battery_critical       = FALSE;
+                spawn_command_low      = FALSE;
                 spawn_command_critical = FALSE;
             }
 
@@ -879,6 +884,8 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 
                 battery_string = get_battery_string (LOW_LEVEL, percentage);
                 NOTIFY_MESSAGE (&notification, battery_string, time_string, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
+
+                spawn_command_low = TRUE;
             }
 
             if (battery_critical == FALSE && percentage <= configuration.critical_level) {
@@ -892,6 +899,34 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 
             gtk_status_icon_set_tooltip_text (tray_icon, get_tooltip_string (battery_string, time_string));
             gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (battery_status, percentage));
+
+            if (spawn_command_low == TRUE) {
+                spawn_command_low = FALSE;
+
+                if (configuration.command_low_level != NULL) {
+                    syslog (LOG_CRIT, _("Spawning low battery level command in 5 seconds: %s"), configuration.command_low_level);
+                    g_usleep (G_USEC_PER_SEC * 5);
+
+                    if (get_battery_status (&battery_status) == TRUE) {
+                        if (battery_status != DISCHARGING && battery_status != NOT_CHARGING) {
+                            syslog (LOG_NOTICE, _("Skipping low battery level command, no longer discharging"));
+                            return;
+                        }
+                    }
+
+                    if (g_spawn_command_line_async (configuration.command_low_level, &error) == FALSE) {
+                        syslog (LOG_CRIT, _("Cannot spawn low battery level command: %s\n"), error->message);
+
+                        g_printerr (_("Cannot spawn low battery level command: %s\n"), error->message);
+                        g_error_free (error); error = NULL;
+
+#ifdef WITH_NOTIFY
+                        static NotifyNotification *spawn_notification = NULL;
+                        NOTIFY_MESSAGE (&spawn_notification, _("Cannot spawn low battery level command!"), configuration.command_low_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+#endif
+                    }
+                }
+            }
 
             if (spawn_command_critical == TRUE) {
                 spawn_command_critical = FALSE;
