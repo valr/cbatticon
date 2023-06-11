@@ -759,7 +759,7 @@ static void create_tray_icon (void)
     g_signal_connect (G_OBJECT (tray_icon->gtk_icon), "activate", G_CALLBACK (on_tray_icon_click), NULL);
 }
 
-static gboolean update_tray_icon (struct icon_data *tray_icon)
+static gboolean update_tray_icon (struct icon *tray_icon)
 {
     g_return_val_if_fail (tray_icon != NULL, FALSE);
 
@@ -768,7 +768,7 @@ static gboolean update_tray_icon (struct icon_data *tray_icon)
     return TRUE;
 }
 
-static void update_tray_icon_status (struct icon_data *tray_icon)
+static void update_tray_icon_status (struct icon *tray_icon)
 {
     GError *error = NULL;
 
@@ -998,7 +998,7 @@ static void update_tray_icon_status (struct icon_data *tray_icon)
     }
 }
 
-static void on_tray_icon_click (struct icon_data *tray_icon, gpointer user_data)
+static void on_tray_icon_click (struct icon *tray_icon, gpointer user_data)
 {
     GError *error = NULL;
 
