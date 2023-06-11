@@ -40,45 +40,6 @@
 #include <math.h>
 #include <syslog.h>
 
-static gint get_options (int argc, char **argv);
-static gboolean changed_power_supplies (void);
-static void get_power_supplies (void);
-
-static gboolean get_sysattr_string (gchar *path, gchar *attribute, gchar **value);
-static gboolean get_sysattr_double (gchar *path, gchar *attribute, gdouble *value);
-
-static gboolean get_ac_online (gchar *path, gboolean *online);
-static gboolean get_battery_present (gchar *path, gboolean *present);
-
-static gboolean get_battery_status (gint *status);
-
-static gboolean get_battery_full_capacity (gboolean *use_charge, gdouble *capacity);
-static gboolean get_battery_remaining_capacity (gboolean use_charge, gdouble *capacity);
-static gboolean get_battery_remaining_capacity_pct (gdouble *capacity);
-static gboolean get_battery_current_rate (gboolean use_charge, gdouble *rate);
-
-static gboolean get_battery_charge (gboolean remaining, gint *percentage, gint *time);
-static gboolean get_battery_time_estimation (gdouble remaining_capacity, gdouble y, gint *time);
-static void reset_battery_time_estimation (void);
-
-struct icon_data;
-static void create_tray_icon (void);
-static gboolean update_tray_icon (struct icon_data *tray_icon);
-static void update_tray_icon_status (struct icon_data *tray_icon);
-static void on_tray_icon_click (struct icon_data *tray_icon, gpointer user_data);
-
-#ifdef WITH_NOTIFY
-static void notify_message (NotifyNotification **notification, gchar *summary, gchar *body, gint timeout, NotifyUrgency urgency);
-#define NOTIFY_MESSAGE(...) notify_message(__VA_ARGS__)
-#else
-#define NOTIFY_MESSAGE(...)
-#endif
-
-static gchar* get_tooltip_string (gchar *battery, gchar *time);
-static gchar* get_battery_string (gint state, gint percentage);
-static gchar* get_time_string (gint minutes);
-static gchar* get_icon_name (gint state, gint percentage);
-
 #define SYSFS_PATH "/sys/class/power_supply"
 
 #define DEFAULT_UPDATE_INTERVAL 5
@@ -135,6 +96,52 @@ struct configuration {
     FALSE,
     FALSE
 };
+
+struct icon {
+    GtkStatusIcon *gtk_icon;
+    gchar *name;
+    gint size;
+};
+
+static gint get_options (int argc, char **argv);
+static gboolean changed_power_supplies (void);
+static void get_power_supplies (void);
+
+static gboolean get_sysattr_string (gchar *path, gchar *attribute, gchar **value);
+static gboolean get_sysattr_double (gchar *path, gchar *attribute, gdouble *value);
+
+static gboolean get_ac_online (gchar *path, gboolean *online);
+static gboolean get_battery_present (gchar *path, gboolean *present);
+
+static gboolean get_battery_status (gint *status);
+
+static gboolean get_battery_full_capacity (gboolean *use_charge, gdouble *capacity);
+static gboolean get_battery_remaining_capacity (gboolean use_charge, gdouble *capacity);
+static gboolean get_battery_remaining_capacity_pct (gdouble *capacity);
+static gboolean get_battery_current_rate (gboolean use_charge, gdouble *rate);
+
+static gboolean get_battery_charge (gboolean remaining, gint *percentage, gint *time);
+static gboolean get_battery_time_estimation (gdouble remaining_capacity, gdouble y, gint *time);
+static void reset_battery_time_estimation (void);
+
+static void create_tray_icon (void);
+static void set_tray_icon (struct icon *tray_icon, const gchar *name);
+static gboolean resize_tray_icon (GtkStatusIcon *gtk_icon, gint size, struct icon *tray_icon);
+static gboolean update_tray_icon (struct icon *tray_icon);
+static void update_tray_icon_status (struct icon *tray_icon);
+static void on_tray_icon_click (struct icon *tray_icon, gpointer user_data);
+
+#ifdef WITH_NOTIFY
+static void notify_message (NotifyNotification **notification, gchar *summary, gchar *body, gint timeout, NotifyUrgency urgency);
+#define NOTIFY_MESSAGE(...) notify_message(__VA_ARGS__)
+#else
+#define NOTIFY_MESSAGE(...)
+#endif
+
+static gchar* get_tooltip_string (gchar *battery, gchar *time);
+static gchar* get_battery_string (gint state, gint percentage);
+static gchar* get_time_string (gint minutes);
+static gchar* get_icon_name (gint state, gint percentage);
 
 static gchar *battery_suffix = NULL;
 static gchar *battery_path   = NULL;
