@@ -56,6 +56,7 @@ static gboolean get_battery_full_capacity (gboolean *use_charge, gdouble *capaci
 static gboolean get_battery_remaining_capacity (gboolean use_charge, gdouble *capacity);
 static gboolean get_battery_remaining_capacity_pct (gdouble *capacity);
 static gboolean get_battery_current_rate (gboolean use_charge, gdouble *rate);
+static void reset_battery_current_rate (void);
 
 static gboolean get_battery_charge (gboolean remaining, gint *percentage, gint *time);
 static gboolean get_battery_time_estimation (gdouble remaining_capacity, gdouble y, gint *time);
@@ -139,6 +140,34 @@ struct configuration {
 static gchar *battery_suffix = NULL;
 static gchar *battery_path   = NULL;
 static gchar *ac_path        = NULL;
+
+/*
+ * current/power filtering
+ */
+#define MAX_SAMPLES 60
+
+struct filter {
+    gdouble samples[MAX_SAMPLES];
+    gint num_samples, next_sample;
+};
+
+static gdouble run_filter (struct filter *f, gdouble value)
+{
+    gdouble sum = 0.0;
+
+    f->samples[f->next_sample] = value;
+    f->next_sample = (f->next_sample + 1) % MAX_SAMPLES;
+    f->num_samples = MAX (f->next_sample, f->num_samples);
+
+    for (gint i = 0; i < f->num_samples; i++) {
+        sum += f->samples[i];
+    }
+
+    return sum / (gdouble)f->num_samples;
+}
+
+static struct filter power_filter;
+static struct filter current_filter;
 
 /*
  * workaround for limited/bugged batteries/drivers that don't provide current rate
@@ -603,11 +632,39 @@ static gboolean get_battery_remaining_capacity_pct (gdouble *capacity)
 
 static gboolean get_battery_current_rate (gboolean use_charge, gdouble *rate)
 {
+    const gchar * attribute;
+    struct filter * f;
+    gdouble rate_now;
+
     if (use_charge == FALSE) {
-        return get_sysattr_double (battery_path, "power_now", rate);
+        attribute = "power_now";
+        f = &power_filter;
     } else {
-        return get_sysattr_double (battery_path, "current_now", rate);
+        attribute = "current_now";
+        f = &current_filter;
     }
+
+    if (get_sysattr_double (battery_path, attribute, &rate_now) == FALSE) {
+        return FALSE;
+    }
+
+    if (rate != NULL) {
+        *rate = run_filter (f, rate_now);
+
+        if (configuration.debug_output == TRUE) {
+            g_printf ("%s = %g, average = %g\n", attribute, rate_now, *rate);
+        }
+    }
+
+    return TRUE;
+}
+
+static void reset_battery_current_rate (void)
+{
+    power_filter.num_samples = 0;
+    power_filter.next_sample = 0;
+    current_filter.num_samples = 0;
+    current_filter.next_sample = 0;
 }
 
 /*
@@ -884,8 +941,11 @@ static void update_tray_icon_status (struct icon_data *tray_icon)
             break;
 
         case CHARGING:
-            if (old_battery_status != CHARGING && estimation_needed == TRUE) {
-                reset_battery_time_estimation ();
+            if (old_battery_status != CHARGING) {
+                reset_battery_current_rate ();
+                if (estimation_needed == TRUE) {
+                    reset_battery_time_estimation ();
+                }
             }
 
             if (get_battery_charge (FALSE, &percentage, &time) == FALSE) {
@@ -897,8 +957,11 @@ static void update_tray_icon_status (struct icon_data *tray_icon)
 
         case DISCHARGING:
         case NOT_CHARGING:
-            if (old_battery_status != DISCHARGING && estimation_needed == TRUE) {
-                reset_battery_time_estimation ();
+            if (old_battery_status != DISCHARGING) {
+                reset_battery_current_rate ();
+                if (estimation_needed == TRUE) {
+                    reset_battery_time_estimation ();
+                }
             }
 
             if (get_battery_charge (TRUE, &percentage, &time) == FALSE) {
