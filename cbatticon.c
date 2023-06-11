@@ -61,10 +61,11 @@ static gboolean get_battery_charge (gboolean remaining, gint *percentage, gint *
 static gboolean get_battery_time_estimation (gdouble remaining_capacity, gdouble y, gint *time);
 static void reset_battery_time_estimation (void);
 
+struct icon_data;
 static void create_tray_icon (void);
-static gboolean update_tray_icon (GtkStatusIcon *tray_icon);
-static void update_tray_icon_status (GtkStatusIcon *tray_icon);
-static void on_tray_icon_click (GtkStatusIcon *tray_icon, gpointer user_data);
+static gboolean update_tray_icon (struct icon_data *tray_icon);
+static void update_tray_icon_status (struct icon_data *tray_icon);
+static void on_tray_icon_click (struct icon_data *tray_icon, gpointer user_data);
 
 #ifdef WITH_NOTIFY
 static void notify_message (NotifyNotification **notification, gchar *summary, gchar *body, gint timeout, NotifyUrgency urgency);
@@ -711,19 +712,54 @@ static void reset_battery_time_estimation (void)
  * tray icon functions
  */
 
+struct icon_data {
+    GtkStatusIcon *gtk_icon;
+    gchar *name;
+    gint size;
+};
+
+static void set_tray_icon(struct icon_data *tray_icon, const gchar* name) {
+    gint size = gtk_status_icon_get_size(tray_icon->gtk_icon);
+    if (size == tray_icon->size && (!name || !strcmp(name, tray_icon->name)))
+    {
+        return;
+    }
+    tray_icon->size = size;
+    if (name)
+    {
+        g_free(tray_icon->name);
+        tray_icon->name = g_strdup(name);
+    }
+
+    GdkPixbuf *pix = gtk_icon_theme_load_icon(gtk_icon_theme_get_default(),
+                                              tray_icon->name,
+                                              tray_icon->size,
+                                              GTK_ICON_LOOKUP_USE_BUILTIN,
+                                              NULL);
+    gtk_status_icon_set_from_pixbuf(tray_icon->gtk_icon, pix);
+}
+
+static void resize_tray_icon(GtkStatusIcon *_, gint size, struct icon_data *tray_icon) {
+    set_tray_icon(tray_icon, NULL);
+}
+
 static void create_tray_icon (void)
 {
-    GtkStatusIcon *tray_icon = gtk_status_icon_new ();
+    struct icon_data* tray_icon = g_malloc (sizeof(*tray_icon));
+    tray_icon->gtk_icon = gtk_status_icon_new ();
+    tray_icon->name = g_strdup("");
+    tray_icon->size = 0;
 
-    gtk_status_icon_set_tooltip_text (tray_icon, CBATTICON_STRING);
-    gtk_status_icon_set_visible (tray_icon, TRUE);
+    gtk_status_icon_set_tooltip_text (tray_icon->gtk_icon, CBATTICON_STRING);
+    gtk_status_icon_set_visible (tray_icon->gtk_icon, TRUE);
 
     update_tray_icon (tray_icon);
     g_timeout_add_seconds (configuration.update_interval, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
-    g_signal_connect (G_OBJECT (tray_icon), "activate", G_CALLBACK (on_tray_icon_click), NULL);
+    g_signal_connect (G_OBJECT (tray_icon->gtk_icon), "size-changed", G_CALLBACK (resize_tray_icon), (gpointer) tray_icon);
+    g_signal_connect (G_OBJECT (tray_icon->gtk_icon), "activate", G_CALLBACK (on_tray_icon_click), NULL);
 }
 
-static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
+static gboolean update_tray_icon (struct icon_data *tray_icon)
 {
     g_return_val_if_fail (tray_icon != NULL, FALSE);
 
@@ -732,7 +768,7 @@ static gboolean update_tray_icon (GtkStatusIcon *tray_icon)
     return TRUE;
 }
 
-static void update_tray_icon_status (GtkStatusIcon *tray_icon)
+static void update_tray_icon_status (struct icon_data *tray_icon)
 {
     GError *error = NULL;
 
@@ -783,8 +819,8 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
 
             NOTIFY_MESSAGE (&notification, _("AC only, no battery!"), NULL, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
 
-            gtk_status_icon_set_tooltip_text (tray_icon, _("AC only, no battery!"));
-            gtk_status_icon_set_from_icon_name (tray_icon, "ac-adapter");
+            gtk_status_icon_set_tooltip_text (tray_icon->gtk_icon, _("AC only, no battery!"));
+            set_tray_icon (tray_icon, "ac-adapter");
         }
 
         return;
@@ -831,8 +867,8 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
                 NOTIFY_MESSAGE (&notification, battery_string, time_string, EXP, URG);                      \
             }                                                                                               \
                                                                                                             \
-            gtk_status_icon_set_tooltip_text (tray_icon, get_tooltip_string (battery_string, time_string)); \
-            gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (battery_status, percentage));
+            gtk_status_icon_set_tooltip_text (tray_icon->gtk_icon, get_tooltip_string (battery_string, time_string)); \
+            set_tray_icon (tray_icon, get_icon_name (battery_status, percentage));
 
     switch (battery_status) {
         case MISSING:
@@ -900,8 +936,8 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
                 spawn_command_critical = TRUE;
             }
 
-            gtk_status_icon_set_tooltip_text (tray_icon, get_tooltip_string (battery_string, time_string));
-            gtk_status_icon_set_from_icon_name (tray_icon, get_icon_name (battery_status, percentage));
+            gtk_status_icon_set_tooltip_text (tray_icon->gtk_icon, get_tooltip_string (battery_string, time_string));
+            set_tray_icon (tray_icon, get_icon_name (battery_status, percentage));
 
             if (spawn_command_low == TRUE) {
                 spawn_command_low = FALSE;
@@ -962,7 +998,7 @@ static void update_tray_icon_status (GtkStatusIcon *tray_icon)
     }
 }
 
-static void on_tray_icon_click (GtkStatusIcon *tray_icon, gpointer user_data)
+static void on_tray_icon_click (struct icon_data *tray_icon, gpointer user_data)
 {
     GError *error = NULL;
 
