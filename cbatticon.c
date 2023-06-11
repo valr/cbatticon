@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011-2013 Colin Jones
- * Copyright (C) 2014-2022 Valère Monseur
+ * Copyright (C) 2014-2023 Valère Monseur
  *
  * Based on code by Matteo Marchesotti
  * Copyright (C) 2007 Matteo Marchesotti <matteo.marchesotti@fsfe.org>
