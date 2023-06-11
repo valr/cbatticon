@@ -719,40 +719,9 @@ static void reset_battery_time_estimation (void)
  * tray icon functions
  */
 
-struct icon_data {
-    GtkStatusIcon *gtk_icon;
-    gchar *name;
-    gint size;
-};
-
-static void set_tray_icon(struct icon_data *tray_icon, const gchar* name) {
-    gint size = gtk_status_icon_get_size(tray_icon->gtk_icon);
-    if (size == tray_icon->size && (!name || !strcmp(name, tray_icon->name)))
-    {
-        return;
-    }
-    tray_icon->size = size;
-    if (name)
-    {
-        g_free(tray_icon->name);
-        tray_icon->name = g_strdup(name);
-    }
-
-    GdkPixbuf *pix = gtk_icon_theme_load_icon(gtk_icon_theme_get_default(),
-                                              tray_icon->name,
-                                              tray_icon->size,
-                                              GTK_ICON_LOOKUP_USE_BUILTIN,
-                                              NULL);
-    gtk_status_icon_set_from_pixbuf(tray_icon->gtk_icon, pix);
-}
-
-static void resize_tray_icon(GtkStatusIcon *_, gint size, struct icon_data *tray_icon) {
-    set_tray_icon(tray_icon, NULL);
-}
-
 static void create_tray_icon (void)
 {
-    struct icon_data* tray_icon = g_malloc (sizeof(*tray_icon));
+    struct icon* tray_icon = g_malloc (sizeof(*tray_icon));
     tray_icon->gtk_icon = gtk_status_icon_new ();
     tray_icon->name = g_strdup("");
     tray_icon->size = 0;
@@ -762,8 +731,41 @@ static void create_tray_icon (void)
 
     update_tray_icon (tray_icon);
     g_timeout_add_seconds (configuration.update_interval, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
-    g_signal_connect (G_OBJECT (tray_icon->gtk_icon), "size-changed", G_CALLBACK (resize_tray_icon), (gpointer) tray_icon);
+
     g_signal_connect (G_OBJECT (tray_icon->gtk_icon), "activate", G_CALLBACK (on_tray_icon_click), NULL);
+    g_signal_connect (G_OBJECT (tray_icon->gtk_icon), "size-changed", G_CALLBACK (resize_tray_icon), (gpointer)tray_icon);
+}
+
+static void set_tray_icon (struct icon *tray_icon, const gchar *name)
+{
+    gint size = gtk_status_icon_get_size (tray_icon->gtk_icon);
+
+    if (size == tray_icon->size && (name == NULL || g_strcmp0 (name, tray_icon->name) == 0)) {
+        return;
+    }
+
+    tray_icon->size = size;
+
+    if (name != NULL)
+    {
+        g_free (tray_icon->name);
+        tray_icon->name = g_strdup (name);
+    }
+
+    GdkPixbuf *pix = gtk_icon_theme_load_icon (gtk_icon_theme_get_default(),
+                                               tray_icon->name,
+                                               tray_icon->size,
+                                               0, NULL);
+    gtk_status_icon_set_from_pixbuf (tray_icon->gtk_icon, pix);
+}
+
+static gboolean resize_tray_icon (GtkStatusIcon *gtk_icon, gint size, struct icon *tray_icon)
+{
+    g_return_val_if_fail (tray_icon != NULL, FALSE);
+
+    set_tray_icon (tray_icon, NULL);
+
+    return TRUE;
 }
 
 static gboolean update_tray_icon (struct icon *tray_icon)
