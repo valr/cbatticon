@@ -50,7 +50,7 @@
 
 enum {
     UNKNOWN_ICON = 0,
-    BATTERY_ICON,
+    BATTERY_ICON_STANDARD,
     BATTERY_ICON_SYMBOLIC,
     BATTERY_ICON_NOTIFICATION
 };
@@ -236,7 +236,7 @@ static gint get_options (int argc, char **argv)
 
     if (icon_type_string != NULL) {
         if (g_strcmp0 (icon_type_string, "standard") == 0 && HAS_STANDARD_ICON_TYPE == TRUE)
-            configuration.icon_type = BATTERY_ICON;
+            configuration.icon_type = BATTERY_ICON_STANDARD;
         else if (g_strcmp0 (icon_type_string, "notification") == 0 && HAS_NOTIFICATION_ICON_TYPE == TRUE)
             configuration.icon_type = BATTERY_ICON_NOTIFICATION;
         else if (g_strcmp0 (icon_type_string, "symbolic") == 0 && HAS_SYMBOLIC_ICON_TYPE == TRUE)
@@ -248,7 +248,7 @@ static gint get_options (int argc, char **argv)
 
     if (configuration.icon_type == UNKNOWN_ICON) {
         if (HAS_STANDARD_ICON_TYPE == TRUE)
-            configuration.icon_type = BATTERY_ICON;
+            configuration.icon_type = BATTERY_ICON_STANDARD;
         else if (HAS_NOTIFICATION_ICON_TYPE == TRUE)
             configuration.icon_type = BATTERY_ICON_NOTIFICATION;
         else if (HAS_SYMBOLIC_ICON_TYPE == TRUE)
