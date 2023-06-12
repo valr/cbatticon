@@ -61,7 +61,7 @@ enum {
     CHARGED,
     CHARGING,
     DISCHARGING,
-    NOT_CHARGING,
+    NOTCHARGING,
     LOW_LEVEL,
     CRITICAL_LEVEL
 };
@@ -556,7 +556,7 @@ static gboolean get_battery_status (gint *status)
         else if (g_str_has_prefix (sysattr_value, "Discharging") == TRUE)
             *status = DISCHARGING;
         else if (g_str_has_prefix (sysattr_value, "Not charging") == TRUE)
-            *status = NOT_CHARGING;
+            *status = NOTCHARGING;
         else if (g_str_has_prefix (sysattr_value, "Full") == TRUE)
             *status = CHARGED;
         else
@@ -905,7 +905,7 @@ static void update_tray_icon_status (struct icon *tray_icon)
             break;
 
         case DISCHARGING:
-        case NOT_CHARGING:
+        case NOTCHARGING:
             if (old_battery_status != DISCHARGING && estimation_needed == TRUE) {
                 reset_battery_time_estimation ();
             }
@@ -956,7 +956,7 @@ static void update_tray_icon_status (struct icon *tray_icon)
                     g_usleep (G_USEC_PER_SEC * 5);
 
                     if (get_battery_status (&battery_status) == TRUE) {
-                        if (battery_status != DISCHARGING && battery_status != NOT_CHARGING) {
+                        if (battery_status != DISCHARGING && battery_status != NOTCHARGING) {
                             syslog (LOG_NOTICE, _("Skipping low battery level command, no longer discharging"));
                             return;
                         }
@@ -984,7 +984,7 @@ static void update_tray_icon_status (struct icon *tray_icon)
                     g_usleep (G_USEC_PER_SEC * 30);
 
                     if (get_battery_status (&battery_status) == TRUE) {
-                        if (battery_status != DISCHARGING && battery_status != NOT_CHARGING) {
+                        if (battery_status != DISCHARGING && battery_status != NOTCHARGING) {
                             syslog (LOG_NOTICE, _("Skipping critical battery level command, no longer discharging"));
                             return;
                         }
@@ -1099,7 +1099,7 @@ static gchar* get_battery_string (gint state, gint percentage)
             g_snprintf (battery_string, STR_LTH, _("Battery is discharging (%i%% remaining)"), percentage);
             break;
 
-        case NOT_CHARGING:
+        case NOTCHARGING:
             g_snprintf (battery_string, STR_LTH, _("Battery is not charging (%i%% remaining)"), percentage);
             break;
 
