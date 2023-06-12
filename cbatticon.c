@@ -755,7 +755,8 @@ static void set_tray_icon (struct icon *tray_icon, const gchar *name)
     GdkPixbuf *pix = gtk_icon_theme_load_icon (gtk_icon_theme_get_default(),
                                                tray_icon->name,
                                                tray_icon->size,
-                                               0, NULL);
+                                               GTK_ICON_LOOKUP_USE_BUILTIN,
+                                               NULL);
     gtk_status_icon_set_from_pixbuf (tray_icon->gtk_icon, pix);
 }
 
