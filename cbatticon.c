@@ -146,6 +146,7 @@ static gchar* get_icon_name (gint state, gint percentage);
 static gchar *battery_suffix = NULL;
 static gchar *battery_path   = NULL;
 static gchar *ac_path        = NULL;
+static gchar *usb_path       = NULL;
 
 /*
  * workaround for limited/bugged batteries/drivers that don't provide current rate
@@ -181,7 +182,7 @@ static gint get_options (int argc, char **argv)
         { "hide-notification"     , 'n', 0, G_OPTION_ARG_NONE  , &configuration.hide_notification     , N_("Hide the notification popups")                             , NULL },
 #endif
         { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &configuration.list_icon_types       , N_("List available icon types")                                , NULL },
-        { "list-power-supplies"   , 'p', 0, G_OPTION_ARG_NONE  , &configuration.list_power_supplies   , N_("List available power supplies (battery and AC)")           , NULL },
+        { "list-power-supplies"   , 'p', 0, G_OPTION_ARG_NONE  , &configuration.list_power_supplies   , N_("List available power supplies (battery, AC, and USB)")     , NULL },
         { NULL }
     };
 
@@ -307,6 +308,10 @@ static gboolean changed_power_supplies (void)
                 num_ps++;
             }
 
+            if (usb_path != NULL && g_str_has_suffix (usb_path, file) == TRUE) {
+                num_ps++;
+            }
+
             if (battery_path != NULL && g_str_has_suffix (battery_path, file) == TRUE) {
                 num_ps++;
             }
@@ -346,6 +351,7 @@ static void get_power_supplies (void)
 
     g_free (battery_path); battery_path = NULL;
     g_free (ac_path); ac_path = NULL;
+    g_free (usb_path); usb_path = NULL;
 
     estimation_needed             = FALSE;
     estimation_remaining_capacity = -1;
@@ -415,7 +421,26 @@ static void get_power_supplies (void)
                         ac_path = g_strdup (path);
 
                         if (configuration.debug_output == TRUE) {
-                            g_printf ("ac path: %s\n", ac_path);
+                            g_printf ("ac supply path: %s\n", ac_path);
+                        }
+                    }
+                }
+
+                /* process USB supplies */
+
+                if (g_str_has_prefix (sysattr_value, "USB") == TRUE &&
+                    get_ac_online (path, NULL) == TRUE) {
+                    if (configuration.list_power_supplies == TRUE) {
+                        gchar *power_supply_id = g_path_get_basename (path);
+                        g_print (_("type: %-*.*s\tid: %-*.*s\tpath: %s\n"), 12, 12, _("USB"), 12, 12, power_supply_id, path);
+                        g_free (power_supply_id);
+                    }
+
+                    if (usb_path == NULL) {
+                        usb_path = g_strdup (path);
+
+                        if (configuration.debug_output == TRUE) {
+                            g_printf ("usb supply path: %s\n", usb_path);
                         }
                     }
                 }
@@ -440,8 +465,8 @@ static void get_power_supplies (void)
             return;
         }
 
-        if (ac_path == NULL) {
-            g_printerr (_("No battery nor AC power supply found!\n"));
+        if (ac_path == NULL && usb_path == NULL) {
+            g_printerr (_("No battery, AC nor USB supply found!\n"));
             return;
         }
     }
@@ -476,7 +501,7 @@ static gboolean get_sysattr_double (gchar *path, gchar *attribute, gdouble *valu
     g_free (sysattr_filename);
 
     if (sysattr_status == TRUE) {
-        gdouble double_value = g_ascii_strtod (sysattr_value, NULL);
+        gdouble double_value = fabs (g_ascii_strtod (sysattr_value, NULL));
 
         if (errno != 0 || double_value < 0.01) {
             sysattr_status = FALSE;
@@ -508,7 +533,7 @@ static gboolean get_ac_online (gchar *path, gboolean *online)
         }
 
         if (configuration.debug_output == TRUE) {
-            g_printf ("ac online: %s", sysattr_value);
+            g_printf ("AC or USB supply online: %s", sysattr_value);
         }
 
         g_free (sysattr_value);
@@ -827,9 +852,9 @@ static void update_tray_icon_status (struct icon *tray_icon)
         if (ac_only == FALSE) {
             ac_only = TRUE;
 
-            NOTIFY_MESSAGE (&notification, _("AC only, no battery!"), NULL, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
+            NOTIFY_MESSAGE (&notification, _("AC or USB supply only, no battery!"), NULL, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
 
-            gtk_status_icon_set_tooltip_text (tray_icon->gtk_icon, _("AC only, no battery!"));
+            gtk_status_icon_set_tooltip_text (tray_icon->gtk_icon, _("AC or USB supply only, no battery!"));
             set_tray_icon (tray_icon, "ac-adapter");
         }
 
@@ -852,7 +877,8 @@ static void update_tray_icon_status (struct icon *tray_icon)
         /* workaround for limited/bugged batteries/drivers */
         /* that unduly return unknown status               */
 
-        if (battery_status == UNKNOWN && get_ac_online (ac_path, &ac_online) == TRUE) {
+        if ((battery_status == UNKNOWN && get_ac_online (ac_path, &ac_online) == TRUE) ||
+            (battery_status == UNKNOWN && get_ac_online (usb_path, &ac_online) == TRUE)) {
             if (ac_online == TRUE) {
                 battery_status = CHARGING;
 
