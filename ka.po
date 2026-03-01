@@ -1,0 +1,282 @@
+# Copyright (C) 2015-2022 ValÃ¨re Monseur
+# This file is distributed under the same license as the cbatticon package.
+# Author: ValÃ¨re Monseur <archlinux@vale.re>, 2022.
+# Ekaterine Papava <papava.e@gtu.ge>, 2026.
+#msgid ""
+msgstr ""
+"Project-Id-Version: cbatticon 1.6.13\n"
+"Report-Msgid-Bugs-To: archlinux@vale.re\n"
+"POT-Creation-Date: 2022-04-27 21:27+0200\n"
+"PO-Revision-Date: 2026-02-02 16:00+0100\n"
+"Last-Translator: Ekaterine Papava <papava.e@gtu.ge>\n"
+"Language-Team: Georgian <(nothing)>\n"
+"Language: ka\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.8\n"
+
+#: cbatticon.c:163
+msgid "Display the version"
+msgstr "ვერსიის გამოტანა"
+
+#: cbatticon.c:164
+msgid "Display debug information"
+msgstr "გამართვის ინფორმაციის გამოტანა"
+
+#: cbatticon.c:165
+msgid "Set update interval (in seconds)"
+msgstr "განახლების ინტერვალის დაყენება (წმ)"
+
+#: cbatticon.c:166
+msgid "Set icon type ('standard', 'notification' or 'symbolic')"
+msgstr "ხატულას ტიპის დაყენება ('standard', 'notification' ან 'symbolic')"
+
+#: cbatticon.c:167
+msgid "Set low battery level (in percent)"
+msgstr "დააყენეთ ელემენტის დაბალი დონე (პროცენტებში)"
+
+#: cbatticon.c:168
+msgid "Set critical battery level (in percent)"
+msgstr "დააყენეთ ელემენტის კრიტიკული დონე (პროცენტებში)"
+
+#: cbatticon.c:169
+msgid "Command to execute when low battery level is reached"
+msgstr ""
+"ბრძანება, რომელიც შესრულდება, როცა მიღწეული იქნება ელემენტის დაბალი დონე"
+
+#: cbatticon.c:170
+msgid "Command to execute when critical battery level is reached"
+msgstr ""
+"ბრძანება, რომელიც შესრულდება, როცა მიღწეული იქნება ელემენტის კრიტიკული "
+"დონე"
+
+#: cbatticon.c:171
+msgid "Command to execute when left clicking on tray icon"
+msgstr ""
+"ბრძანება, რომელიც შესრულდება სისტემურ საათთან ხატულაზე მარცხენა წკაპისას"
+
+#: cbatticon.c:173
+msgid "Hide the notification popups"
+msgstr "გაფრთხილების მხტუნარების დამალვა"
+
+#: cbatticon.c:175
+msgid "List available icon types"
+msgstr "ხელმისაწვდომი ხატულას ტიპების სია"
+
+#: cbatticon.c:176
+msgid "List available power supplies (battery and AC)"
+msgstr "ხელმისაწვდომი კვების წყაროების სია (ელემენტი და AC)"
+
+#: cbatticon.c:180
+msgid "[BATTERY ID]"
+msgstr "[ელემენტის ID]"
+
+#: cbatticon.c:184
+#, c-format
+msgid "Cannot parse command line arguments: %s\n"
+msgstr "ბრძანების სტრიქონის არგუმენტების დამუშავება შეუძლებელია: %s\n"
+
+#: cbatticon.c:195
+msgid ""
+"cbatticon: a lightweight and fast battery icon that sits in your system "
+"tray\n"
+msgstr ""
+"cbatticon: მსუბუქი და სწრაფი ელემენტის ხატულა, რომელიც საათთან ზის "
+"სისტემურ კუთხეში\n"
+
+#: cbatticon.c:196
+#, c-format
+msgid "version %s\n"
+msgstr "ვერსია %s\n"
+
+#: cbatticon.c:204
+msgid "List of available power supplies:\n"
+msgstr "ხელმისაწვდომი კვების წყაროების სია:\n"
+
+#: cbatticon.c:219
+msgid "List of available icon types:\n"
+msgstr "ხელმისაწვდომი ხატულას ტიპების სია:\n"
+
+#: cbatticon.c:220 cbatticon.c:221 cbatticon.c:222
+msgid "available"
+msgstr "ხელმისაწვდომია"
+
+#: cbatticon.c:220 cbatticon.c:221 cbatticon.c:222
+msgid "unavailable"
+msgstr "მიუწვდომელი"
+
+#: cbatticon.c:236
+#, c-format
+msgid "Unknown icon type: %s\n"
+msgstr "უცნობი ხატულას ტიპი: %s\n"
+
+#: cbatticon.c:248
+msgid "No icon type found!\n"
+msgstr "ხატულას ტიპები აღმოჩენილი არაა!\n"
+
+#: cbatticon.c:255
+#, c-format
+msgid ""
+"Invalid update interval! It has been reset to default (%d seconds)\n"
+msgstr ""
+"არასწორი განახლების ინტერვალი! ის დაყენებულია ნაგულისხმევზე (%d წამი)\n"
+
+#: cbatticon.c:262
+#, c-format
+msgid "Invalid low level! It has been reset to default (%d percent)\n"
+msgstr ""
+"არასწორი დაბალი დონე! ის დაყენებულია ნაგულისხმევზე (%d პროცენტი)\n"
+
+#: cbatticon.c:267
+#, c-format
+msgid ""
+"Invalid critical level! It has been reset to default (%d percent)\n"
+msgstr ""
+"არასწორი კრიტიკული დონე! ის დაყენებულია ნაგულისხმევზე (%d პროცენტი)\n"
+
+#: cbatticon.c:273
+msgid ""
+"Critical level is higher than low level! They have been reset to "
+"default\n"
+msgstr ""
+"კრიტიკული დონე დაბალზე მაღალია! მოხდა ორივეს ნაგულისხმევზე ჩამოყრა\n"
+
+#: cbatticon.c:367 cbatticon.c:402
+#, c-format
+msgid "type: %-*.*s\tid: %-*.*s\tpath: %s\n"
+msgstr "ტიპი: %-*.*s\tid: %-*.*s\tბილიკი: %s\n"
+
+#: cbatticon.c:367
+msgid "Battery"
+msgstr "ელემენტი"
+
+#: cbatticon.c:402
+msgid "AC"
+msgstr "AC"
+
+#: cbatticon.c:424
+#, c-format
+msgid "Cannot open sysfs directory: %s (%s)\n"
+msgstr "გახსნის შეცდომა sysfs-ის საქაღალდისთვის: %s (%s)\n"
+
+#: cbatticon.c:431
+#, c-format
+msgid "No battery with suffix %s found!\n"
+msgstr "ელემენტი სუფიქსით %s აღმოჩენილი არაა!\n"
+
+#: cbatticon.c:436
+msgid "No battery nor AC power supply found!\n"
+msgstr "არც ელემენტი, არც AC კვების ბლოკი აღმოჩენილი არაა!\n"
+
+#: cbatticon.c:784 cbatticon.c:786
+msgid "AC only, no battery!"
+msgstr "ხელმისაწვდომია, მხოლოდ AC, ელემენტი კი - არა!"
+
+#: cbatticon.c:910
+#, c-format
+msgid "Spawning low battery level command in 5 seconds: %s"
+msgstr "ელემენტის დაბალი დონის ბრძანება გაეშვება 5 წამში: %s"
+
+#: cbatticon.c:915
+msgid "Skipping low battery level command, no longer discharging"
+msgstr ""
+"ელემენტის დაბალი დონის ბრძანება გამოტოვებული იქნება, რადგან ელემენტი "
+"აღარ იცლება"
+
+#: cbatticon.c:921 cbatticon.c:923
+#, c-format
+msgid "Cannot spawn low battery level command: %s\n"
+msgstr "ელემენტის დაბალი დონის ბრძანების გაშვება შეუძლებელია: %s\n"
+
+#: cbatticon.c:928
+msgid "Cannot spawn low battery level command!"
+msgstr "ელემენტის დაბალი დონის ბრძანების გაშვება შეუძლებელია!"
+
+#: cbatticon.c:938
+#, c-format
+msgid "Spawning critical battery level command in 30 seconds: %s"
+msgstr "ელემენტის კრიტიკული დონის ბრძანება გაეშვება 30 წამში: %s"
+
+#: cbatticon.c:943
+msgid "Skipping critical battery level command, no longer discharging"
+msgstr ""
+"ელემენტის კრიტიკული დონის ბრძანება გამოტოვებული იქნება, რადგან ელემენტი "
+"აღარ იცლება"
+
+#: cbatticon.c:949 cbatticon.c:951
+#, c-format
+msgid "Cannot spawn critical battery level command: %s\n"
+msgstr "ელემენტის კრიტიკული დონის ბრძანების გაშვება შეუძლებელია: %s\n"
+
+#: cbatticon.c:956
+msgid "Cannot spawn critical battery level command!"
+msgstr "ელემენტის კრიტიკული დონის ბრძანების გაშვება შეუძლებელია!"
+
+#: cbatticon.c:971 cbatticon.c:973
+#, c-format
+msgid "Cannot spawn left click command: %s\n"
+msgstr "მარცხელა წკაპის ბრძანების გაშვება შეუძლებელია: %s\n"
+
+#: cbatticon.c:978
+msgid "Cannot spawn left click command!"
+msgstr "მარცხელა წკაპის ბრძანების გაშვება შეუძლებელია!"
+
+#: cbatticon.c:1042
+msgid "Battery is missing!"
+msgstr "ელემენტი აღმოჩენილი არაა!"
+
+#: cbatticon.c:1046
+msgid "Battery status is unknown!"
+msgstr "ელემენტის სტატუსი უცნობია!"
+
+#: cbatticon.c:1050
+msgid "Battery is charged!"
+msgstr "ელემენტი დამუხტულია!"
+
+#: cbatticon.c:1054
+#, c-format
+msgid "Battery is discharging (%i%% remaining)"
+msgstr "ელემენტი იცლება (დარჩენილია %i%%)"
+
+#: cbatticon.c:1058
+#, c-format
+msgid "Battery is not charging (%i%% remaining)"
+msgstr "ელემენტი არ იტენება (დარჩენილია %i%%)"
+
+#: cbatticon.c:1062
+#, c-format
+msgid "Battery level is low! (%i%% remaining)"
+msgstr "ელემენტის დონე დაბალია! (დარჩენილია %i%%)"
+
+#: cbatticon.c:1066
+#, c-format
+msgid "Battery level is critical! (%i%% remaining)"
+msgstr "ელემენტის დონე კრიტიკულია! (დარჩენილია %i%%)"
+
+#: cbatticon.c:1070
+#, c-format
+msgid "Battery is charging (%i%%)"
+msgstr "ელემენტი იტენება (%i%%)"
+
+#: cbatticon.c:1099
+#, c-format
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d წუთი"
+msgstr[1] "%d წუთი"
+
+#: cbatticon.c:1100
+#, c-format
+msgid "%d hour, %s remaining"
+msgid_plural "%d hours, %s remaining"
+msgstr[0] "დარჩენილია %d სთ, %s"
+msgstr[1] "დარჩენილია %d სთ, %s"
+
+#: cbatticon.c:1102
+#, c-format
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] "დარჩენილია %d წუთი"
+msgstr[1] "დარჩენილია %d წუთი"
