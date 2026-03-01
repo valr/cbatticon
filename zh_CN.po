@@ -1,0 +1,274 @@
+# Chinese translations for cbatticon package
+# cbatticon 软件包的简体中文翻译
+# Copyright (C) 2022-2025 Bing Liu
+# Copyright (C) 2025 THE cbatticon'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the cbatticon package.
+# Sipingal <sipingal@163.com>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: cbatticon\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-02 10:40+0800\n"
+"PO-Revision-Date: 2025-01-02 10:41+0800\n"
+"Last-Translator: Bing Liu<sipingal@163.com>\n"
+"Language-Team: N/A\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: cbatticon.c:191
+msgid "Display the version"
+msgstr "显示版本"
+
+#: cbatticon.c:192
+msgid "Display debug information"
+msgstr "显示调试信息"
+
+#: cbatticon.c:193
+msgid "Set update interval (in seconds)"
+msgstr "设置更新间隔（秒）"
+
+#: cbatticon.c:194
+msgid "Set icon type ('standard', 'notification' or 'symbolic')"
+msgstr "设置图标类型（'standard'、'notification' 或 'symbolic'）"
+
+#: cbatticon.c:195
+msgid "Set low battery level (in percent)"
+msgstr "设置低电量水平（百分比）"
+
+#: cbatticon.c:196
+msgid "Set critical battery level (in percent)"
+msgstr "设置严重低电量水平（百分比）"
+
+#: cbatticon.c:197
+msgid "Command to execute when low battery level is reached"
+msgstr "达到低电量水平时执行的命令"
+
+#: cbatticon.c:198
+msgid "Command to execute when critical battery level is reached"
+msgstr "达到严重低电量水平时执行的命令"
+
+#: cbatticon.c:199
+msgid "Command to execute when left clicking on tray icon"
+msgstr "左键点击托盘图标时执行的命令"
+
+#: cbatticon.c:201
+msgid "Hide the notification popups"
+msgstr "隐藏通知弹窗"
+
+#: cbatticon.c:203
+msgid "List available icon types"
+msgstr "列出可用的图标类型"
+
+#: cbatticon.c:204
+msgid "Use custom icon theme by name"
+msgstr "使用指定名称的自定义图标主题"
+
+#: cbatticon.c:205
+msgid "List available power supplies (battery and AC)"
+msgstr "列出可用的电源（电池和交流电）"
+
+#: cbatticon.c:209
+msgid "[BATTERY ID]"
+msgstr "[电池 ID]"
+
+#: cbatticon.c:213
+#, c-format
+msgid "Cannot parse command line arguments: %s\n"
+msgstr "无法解析命令行参数：%s\n"
+
+#: cbatticon.c:224
+msgid ""
+"cbatticon: a lightweight and fast battery icon that sits in your system "
+"tray\n"
+msgstr "cbatticon：一个轻量快速的系统托盘电池图标\n"
+
+#: cbatticon.c:225
+#, c-format
+msgid "version %s\n"
+msgstr "版本 %s\n"
+
+#: cbatticon.c:233
+msgid "List of available power supplies:\n"
+msgstr "可用电源列表：\n"
+
+#: cbatticon.c:248
+#, c-format
+msgid "Cannot use icon theme %s: %s\n"
+msgstr "无法使用图标主题 %s：%s\n"
+
+#: cbatticon.c:261
+msgid "List of available icon types:\n"
+msgstr "可用图标类型列表：\n"
+
+#: cbatticon.c:262 cbatticon.c:263 cbatticon.c:264
+msgid "available"
+msgstr "可用"
+
+#: cbatticon.c:262 cbatticon.c:263 cbatticon.c:264
+msgid "unavailable"
+msgstr "不可用"
+
+#: cbatticon.c:278
+#, c-format
+msgid "Unknown icon type: %s\n"
+msgstr "未知图标类型：%s\n"
+
+#: cbatticon.c:290
+msgid "No icon type found!\n"
+msgstr "未找到图标类型！\n"
+
+#: cbatticon.c:297
+#, c-format
+msgid "Invalid update interval! It has been reset to default (%d seconds)\n"
+msgstr "无效的更新间隔！已重置为默认值（%d 秒）\n"
+
+
+#: cbatticon.c:304
+#, c-format
+msgid "Invalid low level! It has been reset to default (%d percent)\n"
+msgstr "无效的低电量水平！已重置为默认值（%d 百分比）\n"
+
+#: cbatticon.c:309
+#, c-format
+msgid "Invalid critical level! It has been reset to default (%d percent)\n"
+msgstr "无效的严重低电量水平！已重置为默认值（%d 百分比）\n"
+
+#: cbatticon.c:315
+msgid ""
+"Critical level is higher than low level! They have been reset to default\n"
+msgstr "严重低电量水平高于低电量水平！已重置为默认值\n"
+
+#: cbatticon.c:409 cbatticon.c:444
+#, c-format
+msgid "type: %-*.*s\tid: %-*.*s\tpath: %s\n"
+msgstr "类型：%-*.*s\t标识：%-*.*s\t路径：%s\n"
+
+#: cbatticon.c:409
+msgid "Battery"
+msgstr "电池"
+
+#: cbatticon.c:444
+msgid "AC"
+msgstr "交流电源"
+
+#: cbatticon.c:466
+#, c-format
+msgid "Cannot open sysfs directory: %s (%s)\n"
+msgstr "无法打开 sysfs 目录：%s (%s)\n"
+
+#: cbatticon.c:473
+#, c-format
+msgid "No battery with suffix %s found!\n"
+msgstr "未找到后缀为 %s 的电池！\n"
+
+#: cbatticon.c:478
+msgid "No battery nor AC power supply found!\n"
+msgstr "未找到电池或交流电源！\n"
+
+#: cbatticon.c:827 cbatticon.c:829
+msgid "AC only, no battery!"
+msgstr "仅使用交流电源，无电池！"
+
+#: cbatticon.c:956
+#, c-format
+msgid "Spawning low battery level command in 5 seconds: %s"
+msgstr "5秒后执行低电量命令：%s"
+
+#: cbatticon.c:961
+msgid "Skipping low battery level command, no longer discharging"
+msgstr "跳过低电量命令，不再放电"
+
+#: cbatticon.c:967 cbatticon.c:969
+#, c-format
+msgid "Cannot spawn low battery level command: %s\n"
+msgstr "无法执行低电量命令：%s\n"
+
+#: cbatticon.c:974
+msgid "Cannot spawn low battery level command!"
+msgstr "无法执行低电量命令！"
+
+#: cbatticon.c:984
+#, c-format
+msgid "Spawning critical battery level command in 30 seconds: %s"
+msgstr "30秒后执行严重低电量命令：%s"
+
+#: cbatticon.c:989
+msgid "Skipping critical battery level command, no longer discharging"
+msgstr "跳过严重低电量命令，不再放电"
+
+#: cbatticon.c:995 cbatticon.c:997
+#, c-format
+msgid "Cannot spawn critical battery level command: %s\n"
+msgstr "无法执行严重低电量命令：%s\n"
+
+#: cbatticon.c:1002
+msgid "Cannot spawn critical battery level command!"
+msgstr "无法执行严重低电量命令！"
+
+#: cbatticon.c:1017 cbatticon.c:1019
+#, c-format
+msgid "Cannot spawn left click command: %s\n"
+msgstr "无法执行左键点击命令：%s\n"
+
+#: cbatticon.c:1024
+msgid "Cannot spawn left click command!"
+msgstr "无法执行左键点击命令！"
+
+#: cbatticon.c:1088
+msgid "Battery is missing!"
+msgstr "未检测到电池！"
+
+#: cbatticon.c:1092
+msgid "Battery status is unknown!"
+msgstr "电池状态未知！"
+
+#: cbatticon.c:1096
+msgid "Battery is charged!"
+msgstr "电池已充满！"
+
+#: cbatticon.c:1100
+#, c-format
+msgid "Battery is discharging (%i%% remaining)"
+msgstr "电池正在放电（剩余 %i%%）"
+
+#: cbatticon.c:1104
+#, c-format
+msgid "Battery is not charging (%i%% remaining)"
+msgstr "电池未在充电（剩余 %i%%）"
+
+#: cbatticon.c:1108
+#, c-format
+msgid "Battery level is low! (%i%% remaining)"
+msgstr "电池电量低！（剩余 %i%%）"
+
+#: cbatticon.c:1112
+#, c-format
+msgid "Battery level is critical! (%i%% remaining)"
+msgstr "电池电量严重不足！（剩余 %i%%）"
+
+#: cbatticon.c:1116
+#, c-format
+msgid "Battery is charging (%i%%)"
+msgstr "电池正在充电（%i%%）"
+
+#: cbatticon.c:1145
+#, c-format
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d 分钟"
+
+#: cbatticon.c:1146
+#, c-format
+msgid "%d hour, %s remaining"
+msgid_plural "%d hours, %s remaining"
+msgstr[0] "剩余 %d 小时 %s"
+
+#: cbatticon.c:1148
+#, c-format
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] "剩余 %d 分钟"

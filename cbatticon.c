@@ -80,6 +80,7 @@ struct configuration {
     gboolean hide_notification;
 #endif
     gboolean list_icon_types;
+    gchar   *icon_theme_name;
     gboolean list_power_supplies;
 } configuration = {
     FALSE,
@@ -90,10 +91,12 @@ struct configuration {
     DEFAULT_CRITICAL_LEVEL,
     NULL,
     NULL,
+    NULL,
 #ifdef WITH_NOTIFY
     FALSE,
 #endif
     FALSE,
+    NULL,
     FALSE
 };
 
@@ -132,7 +135,7 @@ static void update_tray_icon_status (struct icon *tray_icon);
 static void on_tray_icon_click (struct icon *tray_icon, gpointer user_data);
 
 #ifdef WITH_NOTIFY
-static void notify_message (NotifyNotification **notification, gchar *summary, gchar *body, gint timeout, NotifyUrgency urgency);
+static void notify_message (NotifyNotification **notification, gchar *summary, gchar *body, gchar *icon, gint timeout, NotifyUrgency urgency);
 #define NOTIFY_MESSAGE(...) notify_message(__VA_ARGS__)
 #else
 #define NOTIFY_MESSAGE(...)
@@ -142,6 +145,7 @@ static gchar* get_tooltip_string (gchar *battery, gchar *time);
 static gchar* get_battery_string (gint state, gint percentage);
 static gchar* get_time_string (gint minutes);
 static gchar* get_icon_name (gint state, gint percentage);
+gchar* get_icon_path_from_theme(const gchar *theme_name, const gchar *icon_name);
 
 static gchar *battery_suffix = NULL;
 static gchar *battery_path   = NULL;
@@ -160,6 +164,29 @@ static GTimer  *estimation_timer              = NULL;
 /*
  * command line options function
  */
+
+GtkIconTheme* set_custom_icon_theme(const char *theme_name, GError **error) {
+    GtkIconTheme *theme = gtk_icon_theme_new();
+
+    if (theme == NULL) {
+        g_set_error(error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                   "Failed to get default icon theme");
+        return NULL;
+    }
+
+    if (theme_name != NULL) {
+        gtk_icon_theme_set_custom_theme(theme, theme_name);
+
+        // 验证主题是否成功设置
+        if (!gtk_icon_theme_has_icon(theme, "folder")) {  // 测试一个基本图标
+            g_set_error(error, G_FILE_ERROR, G_FILE_ERROR_FAILED,
+                       "Theme '%s' appears to be invalid", theme_name);
+            return NULL;
+        }
+    }
+
+    return theme;
+}
 
 static gint get_options (int argc, char **argv)
 {
@@ -181,6 +208,7 @@ static gint get_options (int argc, char **argv)
         { "hide-notification"     , 'n', 0, G_OPTION_ARG_NONE  , &configuration.hide_notification     , N_("Hide the notification popups")                             , NULL },
 #endif
         { "list-icon-types"       , 't', 0, G_OPTION_ARG_NONE  , &configuration.list_icon_types       , N_("List available icon types")                                , NULL },
+        { "icon-theme-name"       , 'I', 0, G_OPTION_ARG_STRING, &configuration.icon_theme_name       , N_("Use custom icon theme by name")                            , NULL },
         { "list-power-supplies"   , 'p', 0, G_OPTION_ARG_NONE  , &configuration.list_power_supplies   , N_("List available power supplies (battery and AC)")           , NULL },
         { NULL }
     };
@@ -219,9 +247,22 @@ static gint get_options (int argc, char **argv)
 
     gtk_init (&argc, &argv); /* gtk is required as from this point */
 
-    #define HAS_STANDARD_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-full")
-    #define HAS_NOTIFICATION_ICON_TYPE gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "notification-battery-100")
-    #define HAS_SYMBOLIC_ICON_TYPE     gtk_icon_theme_has_icon (gtk_icon_theme_get_default (), "battery-full-symbolic")
+    GtkIconTheme* icon_theme = NULL;
+    
+    if (configuration.icon_theme_name != NULL) {
+	icon_theme = set_custom_icon_theme(configuration.icon_theme_name, &error);
+	if (icon_theme == NULL) {
+	    g_printerr (_("Cannot use icon theme %s: %s\n"), configuration.icon_theme_name, error->message);
+	    g_error_free (error); error = NULL;
+	}
+    }
+    if (icon_theme == NULL) {
+	    icon_theme = gtk_icon_theme_get_default();
+    }
+
+    #define HAS_STANDARD_ICON_TYPE     gtk_icon_theme_has_icon (icon_theme, "battery-full")
+    #define HAS_NOTIFICATION_ICON_TYPE gtk_icon_theme_has_icon (icon_theme, "notification-battery-100")
+    #define HAS_SYMBOLIC_ICON_TYPE     gtk_icon_theme_has_icon (icon_theme, "battery-full-symbolic")
 
     if (configuration.list_icon_types == TRUE) {
         g_print (_("List of available icon types:\n"));
@@ -801,6 +842,7 @@ static void update_tray_icon_status (struct icon *tray_icon)
 
     gint percentage, time;
     gchar *battery_string, *time_string;
+    gchar *icon = NULL;
 
 #ifdef WITH_NOTIFY
     static NotifyNotification *notification = NULL;
@@ -827,7 +869,7 @@ static void update_tray_icon_status (struct icon *tray_icon)
         if (ac_only == FALSE) {
             ac_only = TRUE;
 
-            NOTIFY_MESSAGE (&notification, _("AC only, no battery!"), NULL, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
+            NOTIFY_MESSAGE (&notification, _("AC only, no battery!"), NULL, icon, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
 
             gtk_status_icon_set_tooltip_text (tray_icon->gtk_icon, _("AC only, no battery!"));
             set_tray_icon (tray_icon, "ac-adapter");
@@ -870,11 +912,12 @@ static void update_tray_icon_status (struct icon *tray_icon)
             percentage = PCT;                                                                               \
                                                                                                             \
             battery_string = get_battery_string (battery_status, percentage);                               \
+            icon = get_icon_path_from_theme(configuration.icon_theme_name, get_icon_name(battery_status, percentage)); \
             time_string    = get_time_string (TIM);                                                         \
                                                                                                             \
             if (old_battery_status != battery_status) {                                                     \
                 old_battery_status  = battery_status;                                                       \
-                NOTIFY_MESSAGE (&notification, battery_string, time_string, EXP, URG);                      \
+                NOTIFY_MESSAGE (&notification, battery_string, time_string, icon, EXP, URG);                      \
             }                                                                                               \
                                                                                                             \
             gtk_status_icon_set_tooltip_text (tray_icon->gtk_icon, get_tooltip_string (battery_string, time_string)); \
@@ -915,12 +958,13 @@ static void update_tray_icon_status (struct icon *tray_icon)
                 return;
             }
 
+            icon = get_icon_path_from_theme(configuration.icon_theme_name, get_icon_name(battery_status, percentage));
             battery_string = get_battery_string (battery_status, percentage);
             time_string    = get_time_string (time);
 
             if (old_battery_status != DISCHARGING) {
                 old_battery_status  = DISCHARGING;
-                NOTIFY_MESSAGE (&notification, battery_string, time_string, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL);
+                NOTIFY_MESSAGE (&notification, battery_string, time_string, icon, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL);
 
                 battery_low            = FALSE;
                 battery_critical       = FALSE;
@@ -932,7 +976,7 @@ static void update_tray_icon_status (struct icon *tray_icon)
                 battery_low = TRUE;
 
                 battery_string = get_battery_string (LOW_LEVEL, percentage);
-                NOTIFY_MESSAGE (&notification, battery_string, time_string, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
+                NOTIFY_MESSAGE (&notification, battery_string, time_string, icon, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
 
                 spawn_command_low = TRUE;
             }
@@ -941,7 +985,7 @@ static void update_tray_icon_status (struct icon *tray_icon)
                 battery_critical = TRUE;
 
                 battery_string = get_battery_string (CRITICAL_LEVEL, percentage);
-                NOTIFY_MESSAGE (&notification, battery_string, time_string, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+                NOTIFY_MESSAGE (&notification, battery_string, time_string, icon, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
 
                 spawn_command_critical = TRUE;
             }
@@ -971,7 +1015,7 @@ static void update_tray_icon_status (struct icon *tray_icon)
 
 #ifdef WITH_NOTIFY
                         static NotifyNotification *spawn_notification = NULL;
-                        NOTIFY_MESSAGE (&spawn_notification, _("Cannot spawn low battery level command!"), configuration.command_low_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+                        NOTIFY_MESSAGE (&spawn_notification, _("Cannot spawn low battery level command!"), configuration.command_low_level, icon, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
 #endif
                     }
                 }
@@ -999,7 +1043,7 @@ static void update_tray_icon_status (struct icon *tray_icon)
 
 #ifdef WITH_NOTIFY
                         static NotifyNotification *spawn_notification = NULL;
-                        NOTIFY_MESSAGE (&spawn_notification, _("Cannot spawn critical battery level command!"), configuration.command_critical_level, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
+                        NOTIFY_MESSAGE (&spawn_notification, _("Cannot spawn critical battery level command!"), configuration.command_critical_level, icon, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_CRITICAL);
 #endif
                     }
                 }
@@ -1021,14 +1065,14 @@ static void on_tray_icon_click (struct icon *tray_icon, gpointer user_data)
 
 #ifdef WITH_NOTIFY
             static NotifyNotification *spawn_notification = NULL;
-            NOTIFY_MESSAGE (&spawn_notification, _("Cannot spawn left click command!"), configuration.command_left_click, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_CRITICAL);
+            NOTIFY_MESSAGE (&spawn_notification, _("Cannot spawn left click command!"), configuration.command_left_click, NULL, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_CRITICAL);
 #endif
         }
     }
 }
 
 #ifdef WITH_NOTIFY
-static void notify_message (NotifyNotification **notification, gchar *summary, gchar *body, gint timeout, NotifyUrgency urgency)
+static void notify_message (NotifyNotification **notification, gchar *summary, gchar *body, gchar *icon, gint timeout, NotifyUrgency urgency)
 {
     g_return_if_fail (notification != NULL);
     g_return_if_fail (summary != NULL);
@@ -1039,12 +1083,12 @@ static void notify_message (NotifyNotification **notification, gchar *summary, g
 
     if (*notification == NULL) {
 #if NOTIFY_CHECK_VERSION (0, 7, 0)
-        *notification = notify_notification_new (summary, body, NULL);
+        *notification = notify_notification_new (summary, body, icon);
 #else
-        *notification = notify_notification_new (summary, body, NULL, NULL);
+        *notification = notify_notification_new (summary, body, icon, NULL);
 #endif
     } else {
-        notify_notification_update (*notification, summary, body, NULL);
+        notify_notification_update (*notification, summary, body, icon);
     }
 
     notify_notification_set_timeout (*notification, timeout);
@@ -1173,10 +1217,15 @@ static gchar* get_icon_name (gint state, gint percentage)
         }
     } else {
         if (configuration.icon_type == BATTERY_ICON_NOTIFICATION) {
-                 if (percentage <= 20)  g_strlcat (icon_name, "-020", STR_LTH);
+                 if (percentage <= 10)  g_strlcat (icon_name, "-010", STR_LTH);
+            else if (percentage <= 20)  g_strlcat (icon_name, "-020", STR_LTH);
+            else if (percentage <= 30)  g_strlcat (icon_name, "-030", STR_LTH);
             else if (percentage <= 40)  g_strlcat (icon_name, "-040", STR_LTH);
+            else if (percentage <= 50)  g_strlcat (icon_name, "-050", STR_LTH);
             else if (percentage <= 60)  g_strlcat (icon_name, "-060", STR_LTH);
+            else if (percentage <= 70)  g_strlcat (icon_name, "-070", STR_LTH);
             else if (percentage <= 80)  g_strlcat (icon_name, "-080", STR_LTH);
+            else if (percentage <= 90)  g_strlcat (icon_name, "-090", STR_LTH);
             else                        g_strlcat (icon_name, "-100", STR_LTH);
 
                  if (state == CHARGING) g_strlcat (icon_name, "-plugged", STR_LTH);
@@ -1205,6 +1254,36 @@ static gchar* get_icon_name (gint state, gint percentage)
     return icon_name;
 }
 
+gchar* get_icon_path_from_theme(const gchar *theme_name, const gchar *icon_name)
+{
+    GtkIconTheme *theme;
+    GtkIconInfo *icon_info;
+    gchar *icon_path = NULL;
+
+    // 根据主题名称获取主题对象
+    theme = gtk_icon_theme_new();
+    gtk_icon_theme_set_custom_theme(theme, theme_name);
+
+    // 查找图标，48是图标大小，0是标志位
+    icon_info = gtk_icon_theme_lookup_icon(theme,
+                                         icon_name,
+                                         48,        // 图标大小
+                                         0);        // 没有特殊标志
+
+    if (icon_info) {
+        // 获取图标文件的完整路径
+        icon_path = g_strdup(gtk_icon_info_get_filename(icon_info));
+
+        // 释放 icon_info
+        g_object_unref(icon_info);
+    }
+
+    // 释放主题对象
+    g_object_unref(theme);
+
+    return icon_path;
+}
+
 int main (int argc, char **argv)
 {
     gint ret;
@@ -1219,6 +1298,8 @@ int main (int argc, char **argv)
         return ret;
     }
 
+    GtkSettings *settings = gtk_settings_get_default();
+    g_object_set(settings, "gtk-icon-theme-name", configuration.icon_theme_name, NULL);
 #ifdef WITH_NOTIFY
     if (configuration.hide_notification == FALSE) {
         if (notify_init (CBATTICON_STRING) == FALSE) {
