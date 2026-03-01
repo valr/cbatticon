@@ -9,6 +9,9 @@ Make options:
   WITH_NOTIFY=1 to build with libnotify support, it is the default option
   WITH_NOTIFY=0 to build without libnotify support
 
+  WITH_APPINDICATOR=1 to build with ayatana-appindicator support, it is the default option
+  WITH_APPINDICATOR=0 to build without ayatana-appindicator support
+
 Usage:
   cbatticon [OPTION...] [BATTERY ID]
 

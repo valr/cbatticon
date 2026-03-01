@@ -33,6 +33,9 @@
 #ifdef WITH_NOTIFY
 #include <libnotify/notify.h>
 #endif
+#ifdef WITH_APPINDICATOR
+#include <libayatana-appindicator/app-indicator.h>
+#endif
 
 #include <errno.h>
 #include <libintl.h>
@@ -98,9 +101,13 @@ struct configuration {
 };
 
 struct icon {
+    #ifdef WITH_APPINDICATOR
+    AppIndicator *app_indicator;
+    #else
     GtkStatusIcon *gtk_icon;
-    gchar *name;
-    gint size;
+    #endif
+    char *name;
+    int size;
 };
 
 static gint get_options (int argc, char **argv);
@@ -126,10 +133,12 @@ static void reset_battery_time_estimation (void);
 
 static void create_tray_icon (void);
 static void set_tray_icon (struct icon *tray_icon, const gchar *name);
+#ifndef WITH_APPINDICATOR
 static gboolean resize_tray_icon (GtkStatusIcon *gtk_icon, gint size, struct icon *tray_icon);
+#endif
 static gboolean update_tray_icon (struct icon *tray_icon);
 static void update_tray_icon_status (struct icon *tray_icon);
-static void on_tray_icon_click (struct icon *tray_icon, gpointer user_data);
+static void on_tray_icon_click(GtkStatusIcon *gtk_icon, gpointer user_data);
 
 #ifdef WITH_NOTIFY
 static void notify_message (NotifyNotification **notification, gchar *summary, gchar *body, gint timeout, NotifyUrgency urgency);
@@ -719,47 +728,86 @@ static void reset_battery_time_estimation (void)
  * tray icon functions
  */
 
-static void create_tray_icon (void)
-{
-    struct icon* tray_icon = g_malloc (sizeof(*tray_icon));
-    tray_icon->gtk_icon = gtk_status_icon_new ();
+static void create_tray_icon(void) {
+    struct icon *tray_icon = g_malloc(sizeof(*tray_icon));
     tray_icon->name = g_strdup("");
     tray_icon->size = 0;
 
-    gtk_status_icon_set_tooltip_text (tray_icon->gtk_icon, CBATTICON_STRING);
-    gtk_status_icon_set_visible (tray_icon->gtk_icon, TRUE);
+    #ifdef WITH_APPINDICATOR
 
-    update_tray_icon (tray_icon);
-    g_timeout_add_seconds (configuration.update_interval, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
+    tray_icon->app_indicator = app_indicator_new(
+        "battery-low",
+        "cbatticon",
+        APP_INDICATOR_CATEGORY_APPLICATION_STATUS
+    );
 
-    g_signal_connect (G_OBJECT (tray_icon->gtk_icon), "activate", G_CALLBACK (on_tray_icon_click), NULL);
-    g_signal_connect (G_OBJECT (tray_icon->gtk_icon), "size-changed", G_CALLBACK (resize_tray_icon), (gpointer)tray_icon);
+    // Don't remove this menu, for some reason ayatana doesn't show the tray icon without this
+    GtkWidget *traymenu = gtk_menu_new();
+
+    //Ayatana does not support click events (see #30), remove this when ayatana gets support
+    GtkWidget *traymenu_item;
+    if (configuration.command_left_click != NULL) {
+       traymenu_item = gtk_menu_item_new_with_label(configuration.command_left_click);
+    } else {
+       traymenu_item = gtk_menu_item_new_with_label("No command provided, declare it with -x argument");
+       gtk_widget_set_sensitive(traymenu_item, FALSE);
+    }
+    g_signal_connect(G_OBJECT(traymenu_item), "activate", G_CALLBACK(on_tray_icon_click), NULL);
+
+    gtk_menu_shell_append(GTK_MENU_SHELL(traymenu), traymenu_item);
+    gtk_widget_show_all(traymenu);
+
+    app_indicator_set_menu(tray_icon->app_indicator, GTK_MENU(traymenu));
+    
+    app_indicator_set_status(tray_icon->app_indicator, APP_INDICATOR_STATUS_ACTIVE);
+    app_indicator_set_attention_icon(tray_icon->app_indicator, "icon-name-attention");
+
+    #else
+    tray_icon->gtk_icon = gtk_status_icon_new();
+    gtk_status_icon_set_tooltip_text(tray_icon->gtk_icon, CBATTICON_STRING);
+    gtk_status_icon_set_visible(tray_icon->gtk_icon, TRUE);
+
+    g_signal_connect(G_OBJECT(tray_icon->gtk_icon), "activate", G_CALLBACK(on_tray_icon_click), NULL);
+    g_signal_connect(G_OBJECT(tray_icon->gtk_icon), "size-changed", G_CALLBACK(resize_tray_icon), (gpointer)tray_icon);
+    #endif
+
+    update_tray_icon(tray_icon);
+    g_timeout_add_seconds(configuration.update_interval, (GSourceFunc)update_tray_icon, (gpointer)tray_icon);
 }
 
-static void set_tray_icon (struct icon *tray_icon, const gchar *name)
+static void set_tray_icon(struct icon *tray_icon, const gchar *name)
 {
-    gint size = gtk_status_icon_get_size (tray_icon->gtk_icon);
+    #ifdef WITH_APPINDICATOR
+    if (name != NULL) {
+        g_free(tray_icon->name);
+        tray_icon->name = g_strdup(name);
+    }
+    app_indicator_set_icon_full(tray_icon->app_indicator, tray_icon->name, "");
+    #else
+    gint size = gtk_status_icon_get_size(tray_icon->gtk_icon);
 
-    if (size == tray_icon->size && (name == NULL || g_strcmp0 (name, tray_icon->name) == 0)) {
+    if (size == tray_icon->size && (name == NULL || g_strcmp0(name, tray_icon->name) == 0)) {
         return;
     }
 
     tray_icon->size = size;
 
-    if (name != NULL)
-    {
-        g_free (tray_icon->name);
-        tray_icon->name = g_strdup (name);
+    if (name != NULL) {
+        g_free(tray_icon->name);
+        tray_icon->name = g_strdup(name);
     }
 
-    GdkPixbuf *pix = gtk_icon_theme_load_icon (gtk_icon_theme_get_default(),
-                                               tray_icon->name,
-                                               tray_icon->size,
-                                               GTK_ICON_LOOKUP_USE_BUILTIN,
-                                               NULL);
-    gtk_status_icon_set_from_pixbuf (tray_icon->gtk_icon, pix);
+    GdkPixbuf *pix = gtk_icon_theme_load_icon(gtk_icon_theme_get_default(),
+                                              tray_icon->name,
+                                              tray_icon->size,
+                                              GTK_ICON_LOOKUP_USE_BUILTIN,
+                                              NULL);
+    gtk_status_icon_set_from_pixbuf(tray_icon->gtk_icon, pix);
+    #endif
 }
 
+
+#ifndef WITH_APPINDICATOR
 static gboolean resize_tray_icon (GtkStatusIcon *gtk_icon, gint size, struct icon *tray_icon)
 {
     g_return_val_if_fail (tray_icon != NULL, FALSE);
@@ -768,6 +816,8 @@ static gboolean resize_tray_icon (GtkStatusIcon *gtk_icon, gint size, struct ico
 
     return TRUE;
 }
+#endif
+
 
 static gboolean update_tray_icon (struct icon *tray_icon)
 {
@@ -827,12 +877,16 @@ static void update_tray_icon_status (struct icon *tray_icon)
         if (ac_only == FALSE) {
             ac_only = TRUE;
 
-            NOTIFY_MESSAGE (&notification, _("AC only, no battery!"), NULL, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
+            NOTIFY_MESSAGE(&notification, _("AC only, no battery!"), NULL, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
 
-            gtk_status_icon_set_tooltip_text (tray_icon->gtk_icon, _("AC only, no battery!"));
-            set_tray_icon (tray_icon, "ac-adapter");
+            #ifdef WITH_APPINDICATOR
+            app_indicator_set_title(tray_icon->app_indicator, _("AC only, no battery!"));
+            #else
+            gtk_status_icon_set_tooltip_text(tray_icon->gtk_icon, _("AC only, no battery!"));
+            #endif
+
+            set_tray_icon(tray_icon, "ac-adapter");
         }
-
         return;
     }
 
@@ -865,32 +919,49 @@ static void update_tray_icon_status (struct icon *tray_icon)
         }
     }
 
-    #define HANDLE_BATTERY_STATUS(PCT,TIM,EXP,URG)                                                          \
-                                                                                                            \
-            percentage = PCT;                                                                               \
-                                                                                                            \
-            battery_string = get_battery_string (battery_status, percentage);                               \
-            time_string    = get_time_string (TIM);                                                         \
-                                                                                                            \
-            if (old_battery_status != battery_status) {                                                     \
-                old_battery_status  = battery_status;                                                       \
-                NOTIFY_MESSAGE (&notification, battery_string, time_string, EXP, URG);                      \
-            }                                                                                               \
-                                                                                                            \
-            gtk_status_icon_set_tooltip_text (tray_icon->gtk_icon, get_tooltip_string (battery_string, time_string)); \
-            set_tray_icon (tray_icon, get_icon_name (battery_status, percentage));
+    #ifdef WITH_APPINDICATOR
+        #define HANDLE_BATTERY_STATUS(PCT,TIM,EXP,URG)                                                          \
+                                                                                                                \
+                percentage = PCT;                                                                               \
+                                                                                                                \
+                battery_string = get_battery_string (battery_status, percentage);                               \
+                time_string    = get_time_string (TIM);                                                         \
+                                                                                                                \
+                if (old_battery_status != battery_status) {                                                     \
+                    old_battery_status  = battery_status;                                                       \
+                    NOTIFY_MESSAGE (&notification, battery_string, time_string, EXP, URG);                      \
+                }                                                                                               \
+                                                                                                                \
+                app_indicator_set_title(tray_icon->app_indicator, get_tooltip_string(battery_string, time_string)); \
+                set_tray_icon (tray_icon, get_icon_name (battery_status, percentage));
+    #else
+        #define HANDLE_BATTERY_STATUS(PCT,TIM,EXP,URG)                                                          \
+                                                                                                                \
+                percentage = PCT;                                                                               \
+                                                                                                                \
+                battery_string = get_battery_string (battery_status, percentage);                               \
+                time_string    = get_time_string (TIM);                                                         \
+                                                                                                                \
+                if (old_battery_status != battery_status) {                                                     \
+                    old_battery_status  = battery_status;                                                       \
+                    NOTIFY_MESSAGE (&notification, battery_string, time_string, EXP, URG);                      \
+                }                                                                                               \
+                                                                                                                \
+                gtk_status_icon_set_tooltip_text (tray_icon->gtk_icon, get_tooltip_string (battery_string, time_string)); \
+                set_tray_icon (tray_icon, get_icon_name (battery_status, percentage));
+    #endif
 
     switch (battery_status) {
         case MISSING:
-            HANDLE_BATTERY_STATUS (0, -1, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL)
+            HANDLE_BATTERY_STATUS (0, -1, NOTIFY_EXPIRES_NEVER, NOTIFY_URGENCY_NORMAL);
             break;
 
         case UNKNOWN:
-            HANDLE_BATTERY_STATUS (0, -1, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL)
+            HANDLE_BATTERY_STATUS (0, -1, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL);
             break;
 
         case CHARGED:
-            HANDLE_BATTERY_STATUS (100, -1, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL)
+            HANDLE_BATTERY_STATUS (100, -1, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL);
             break;
 
         case CHARGING:
@@ -902,7 +973,7 @@ static void update_tray_icon_status (struct icon *tray_icon)
                 return;
             }
 
-            HANDLE_BATTERY_STATUS (percentage, time, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL)
+            HANDLE_BATTERY_STATUS (percentage, time, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_NORMAL);
             break;
 
         case DISCHARGING:
@@ -946,8 +1017,13 @@ static void update_tray_icon_status (struct icon *tray_icon)
                 spawn_command_critical = TRUE;
             }
 
-            gtk_status_icon_set_tooltip_text (tray_icon->gtk_icon, get_tooltip_string (battery_string, time_string));
-            set_tray_icon (tray_icon, get_icon_name (battery_status, percentage));
+            #ifdef WITH_APPINDICATOR
+            app_indicator_set_title(tray_icon->app_indicator, get_tooltip_string(battery_string, time_string));
+            app_indicator_set_icon_full(tray_icon->app_indicator, get_icon_name(battery_status, percentage), "");
+            #else
+            gtk_status_icon_set_tooltip_text(tray_icon->gtk_icon, get_tooltip_string(battery_string, time_string));
+            set_tray_icon(tray_icon, get_icon_name(battery_status, percentage));
+            #endif
 
             if (spawn_command_low == TRUE) {
                 spawn_command_low = FALSE;
@@ -1008,21 +1084,21 @@ static void update_tray_icon_status (struct icon *tray_icon)
     }
 }
 
-static void on_tray_icon_click (struct icon *tray_icon, gpointer user_data)
+static void on_tray_icon_click(GtkStatusIcon *gtk_icon, gpointer user_data)
 {
     GError *error = NULL;
 
     if (configuration.command_left_click != NULL) {
-        if (g_spawn_command_line_async (configuration.command_left_click, &error) == FALSE) {
-            syslog (LOG_ERR, _("Cannot spawn left click command: %s\n"), error->message);
+        if (g_spawn_command_line_async(configuration.command_left_click, &error) == FALSE) {
+            syslog(LOG_ERR, _("Cannot spawn left click command: %s\n"), error->message);
+            g_printerr(_("Cannot spawn left click command: %s\n"), error->message);
+            g_error_free(error);
+            error = NULL;
 
-            g_printerr (_("Cannot spawn left click command: %s\n"), error->message);
-            g_error_free (error); error = NULL;
-
-#ifdef WITH_NOTIFY
+            #ifdef WITH_NOTIFY
             static NotifyNotification *spawn_notification = NULL;
-            NOTIFY_MESSAGE (&spawn_notification, _("Cannot spawn left click command!"), configuration.command_left_click, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_CRITICAL);
-#endif
+            NOTIFY_MESSAGE(&spawn_notification, _("Cannot spawn left click command!"), configuration.command_left_click, NOTIFY_EXPIRES_DEFAULT, NOTIFY_URGENCY_CRITICAL);
+            #endif
         }
     }
 }

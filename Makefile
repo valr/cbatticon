@@ -9,6 +9,9 @@ WITH_GTK3 = 1
 ### libnotify support: 0 for off, 1 for on (default: on)
 WITH_NOTIFY = 1
 
+### libappindicator support: 0 for off, 1 for on (default: on)
+WITH_APPINDICATOR = 1
+
 # programs
 
 CC ?= gcc
@@ -48,6 +51,9 @@ endif
 ifeq ($(WITH_NOTIFY),1)
 CPPFLAGS += -DWITH_NOTIFY
 endif
+ifeq ($(WITH_APPINDICATOR),1)
+CPPFLAGS += -DWITH_APPINDICATOR
+endif
 CPPFLAGS += -DNLSDIR=\"$(NLSDIR)\"
 
 CFLAGS ?= -O2
@@ -62,6 +68,9 @@ endif
 
 ifeq ($(WITH_NOTIFY),1)
 PKG_DEPS += libnotify
+endif
+ifeq ($(WITH_APPINDICATOR),1)
+PKG_DEPS += ayatana-appindicator3-0.1
 endif
 
 LIBS += $(shell $(PKG_CONFIG) --libs $(PKG_DEPS)) -lm
